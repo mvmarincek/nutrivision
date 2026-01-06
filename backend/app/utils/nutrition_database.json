@@ -1,0 +1,675 @@
+{
+  "alimentos": [
+    {
+      "id": "arroz_branco",
+      "nome": "Arroz branco cozido",
+      "sinonimos": ["arroz", "arroz branco", "arroz cozido"],
+      "categoria": "cereais",
+      "por_100g": {
+        "calorias": 130,
+        "proteina": 2.7,
+        "carboidrato": 28.2,
+        "gordura": 0.3,
+        "fibra": 0.4
+      }
+    },
+    {
+      "id": "arroz_integral",
+      "nome": "Arroz integral cozido",
+      "sinonimos": ["arroz integral"],
+      "categoria": "cereais",
+      "por_100g": {
+        "calorias": 111,
+        "proteina": 2.6,
+        "carboidrato": 23.0,
+        "gordura": 0.9,
+        "fibra": 1.8
+      }
+    },
+    {
+      "id": "feijao_carioca",
+      "nome": "Feijão carioca cozido",
+      "sinonimos": ["feijão", "feijao", "feijão carioca"],
+      "categoria": "leguminosas",
+      "por_100g": {
+        "calorias": 76,
+        "proteina": 4.8,
+        "carboidrato": 13.6,
+        "gordura": 0.5,
+        "fibra": 8.5
+      }
+    },
+    {
+      "id": "feijao_preto",
+      "nome": "Feijão preto cozido",
+      "sinonimos": ["feijão preto"],
+      "categoria": "leguminosas",
+      "por_100g": {
+        "calorias": 77,
+        "proteina": 4.5,
+        "carboidrato": 14.0,
+        "gordura": 0.5,
+        "fibra": 8.4
+      }
+    },
+    {
+      "id": "frango_peito",
+      "nome": "Peito de frango grelhado",
+      "sinonimos": ["frango", "peito de frango", "frango grelhado", "filé de frango"],
+      "categoria": "carnes",
+      "por_100g": {
+        "calorias": 165,
+        "proteina": 31.0,
+        "carboidrato": 0.0,
+        "gordura": 3.6,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "frango_coxa",
+      "nome": "Coxa de frango assada",
+      "sinonimos": ["coxa de frango", "sobrecoxa"],
+      "categoria": "carnes",
+      "por_100g": {
+        "calorias": 209,
+        "proteina": 26.0,
+        "carboidrato": 0.0,
+        "gordura": 11.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "carne_bovina",
+      "nome": "Carne bovina grelhada",
+      "sinonimos": ["carne", "bife", "carne vermelha", "carne bovina"],
+      "categoria": "carnes",
+      "por_100g": {
+        "calorias": 250,
+        "proteina": 26.0,
+        "carboidrato": 0.0,
+        "gordura": 15.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "carne_moida",
+      "nome": "Carne moída refogada",
+      "sinonimos": ["carne moída", "carne moida"],
+      "categoria": "carnes",
+      "por_100g": {
+        "calorias": 250,
+        "proteina": 25.0,
+        "carboidrato": 0.0,
+        "gordura": 16.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "peixe_tilapia",
+      "nome": "Tilápia grelhada",
+      "sinonimos": ["peixe", "tilápia", "tilapia", "filé de peixe"],
+      "categoria": "peixes",
+      "por_100g": {
+        "calorias": 129,
+        "proteina": 26.0,
+        "carboidrato": 0.0,
+        "gordura": 2.7,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "salmao",
+      "nome": "Salmão grelhado",
+      "sinonimos": ["salmão", "salmao"],
+      "categoria": "peixes",
+      "por_100g": {
+        "calorias": 208,
+        "proteina": 20.0,
+        "carboidrato": 0.0,
+        "gordura": 13.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "ovo_cozido",
+      "nome": "Ovo cozido",
+      "sinonimos": ["ovo", "ovos", "ovo cozido"],
+      "categoria": "ovos",
+      "por_100g": {
+        "calorias": 155,
+        "proteina": 13.0,
+        "carboidrato": 1.1,
+        "gordura": 11.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "ovo_frito",
+      "nome": "Ovo frito",
+      "sinonimos": ["ovo frito"],
+      "categoria": "ovos",
+      "por_100g": {
+        "calorias": 196,
+        "proteina": 14.0,
+        "carboidrato": 1.0,
+        "gordura": 15.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "alface",
+      "nome": "Alface",
+      "sinonimos": ["alface", "salada verde"],
+      "categoria": "verduras",
+      "por_100g": {
+        "calorias": 15,
+        "proteina": 1.4,
+        "carboidrato": 2.9,
+        "gordura": 0.2,
+        "fibra": 1.3
+      }
+    },
+    {
+      "id": "tomate",
+      "nome": "Tomate",
+      "sinonimos": ["tomate", "tomates"],
+      "categoria": "verduras",
+      "por_100g": {
+        "calorias": 18,
+        "proteina": 0.9,
+        "carboidrato": 3.9,
+        "gordura": 0.2,
+        "fibra": 1.2
+      }
+    },
+    {
+      "id": "brocolis",
+      "nome": "Brócolis cozido",
+      "sinonimos": ["brócolis", "brocolis"],
+      "categoria": "verduras",
+      "por_100g": {
+        "calorias": 35,
+        "proteina": 2.4,
+        "carboidrato": 7.2,
+        "gordura": 0.4,
+        "fibra": 3.3
+      }
+    },
+    {
+      "id": "cenoura",
+      "nome": "Cenoura cozida",
+      "sinonimos": ["cenoura"],
+      "categoria": "legumes",
+      "por_100g": {
+        "calorias": 35,
+        "proteina": 0.8,
+        "carboidrato": 8.2,
+        "gordura": 0.2,
+        "fibra": 3.0
+      }
+    },
+    {
+      "id": "batata",
+      "nome": "Batata cozida",
+      "sinonimos": ["batata", "batatas"],
+      "categoria": "tuberculos",
+      "por_100g": {
+        "calorias": 87,
+        "proteina": 1.9,
+        "carboidrato": 20.1,
+        "gordura": 0.1,
+        "fibra": 1.8
+      }
+    },
+    {
+      "id": "batata_frita",
+      "nome": "Batata frita",
+      "sinonimos": ["batata frita", "fritas", "french fries"],
+      "categoria": "tuberculos",
+      "por_100g": {
+        "calorias": 312,
+        "proteina": 3.4,
+        "carboidrato": 41.4,
+        "gordura": 15.0,
+        "fibra": 3.8
+      }
+    },
+    {
+      "id": "batata_doce",
+      "nome": "Batata doce cozida",
+      "sinonimos": ["batata doce"],
+      "categoria": "tuberculos",
+      "por_100g": {
+        "calorias": 90,
+        "proteina": 2.0,
+        "carboidrato": 21.0,
+        "gordura": 0.1,
+        "fibra": 3.0
+      }
+    },
+    {
+      "id": "macarrao",
+      "nome": "Macarrão cozido",
+      "sinonimos": ["macarrão", "macarrao", "massa", "espaguete", "spaghetti"],
+      "categoria": "massas",
+      "por_100g": {
+        "calorias": 131,
+        "proteina": 5.0,
+        "carboidrato": 25.0,
+        "gordura": 1.1,
+        "fibra": 1.8
+      }
+    },
+    {
+      "id": "macarrao_molho",
+      "nome": "Macarrão com molho de tomate",
+      "sinonimos": ["macarrão ao sugo", "massa com molho"],
+      "categoria": "massas",
+      "por_100g": {
+        "calorias": 150,
+        "proteina": 5.0,
+        "carboidrato": 26.0,
+        "gordura": 3.0,
+        "fibra": 2.0
+      }
+    },
+    {
+      "id": "pao_frances",
+      "nome": "Pão francês",
+      "sinonimos": ["pão", "pao", "pão francês", "pãozinho"],
+      "categoria": "paes",
+      "por_100g": {
+        "calorias": 300,
+        "proteina": 8.0,
+        "carboidrato": 58.6,
+        "gordura": 3.1,
+        "fibra": 2.3
+      }
+    },
+    {
+      "id": "pao_integral",
+      "nome": "Pão integral",
+      "sinonimos": ["pão integral"],
+      "categoria": "paes",
+      "por_100g": {
+        "calorias": 247,
+        "proteina": 13.0,
+        "carboidrato": 41.0,
+        "gordura": 4.2,
+        "fibra": 6.0
+      }
+    },
+    {
+      "id": "queijo_mussarela",
+      "nome": "Queijo mussarela",
+      "sinonimos": ["queijo", "mussarela", "muçarela"],
+      "categoria": "laticinios",
+      "por_100g": {
+        "calorias": 280,
+        "proteina": 22.0,
+        "carboidrato": 2.2,
+        "gordura": 21.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "queijo_branco",
+      "nome": "Queijo branco",
+      "sinonimos": ["queijo branco", "queijo minas"],
+      "categoria": "laticinios",
+      "por_100g": {
+        "calorias": 264,
+        "proteina": 17.4,
+        "carboidrato": 3.5,
+        "gordura": 20.2,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "leite_integral",
+      "nome": "Leite integral",
+      "sinonimos": ["leite"],
+      "categoria": "laticinios",
+      "por_100g": {
+        "calorias": 61,
+        "proteina": 3.2,
+        "carboidrato": 4.8,
+        "gordura": 3.3,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "iogurte_natural",
+      "nome": "Iogurte natural",
+      "sinonimos": ["iogurte"],
+      "categoria": "laticinios",
+      "por_100g": {
+        "calorias": 63,
+        "proteina": 5.3,
+        "carboidrato": 7.0,
+        "gordura": 1.5,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "banana",
+      "nome": "Banana",
+      "sinonimos": ["banana"],
+      "categoria": "frutas",
+      "por_100g": {
+        "calorias": 89,
+        "proteina": 1.1,
+        "carboidrato": 22.8,
+        "gordura": 0.3,
+        "fibra": 2.6
+      }
+    },
+    {
+      "id": "maca",
+      "nome": "Maçã",
+      "sinonimos": ["maçã", "maca"],
+      "categoria": "frutas",
+      "por_100g": {
+        "calorias": 52,
+        "proteina": 0.3,
+        "carboidrato": 14.0,
+        "gordura": 0.2,
+        "fibra": 2.4
+      }
+    },
+    {
+      "id": "laranja",
+      "nome": "Laranja",
+      "sinonimos": ["laranja"],
+      "categoria": "frutas",
+      "por_100g": {
+        "calorias": 47,
+        "proteina": 0.9,
+        "carboidrato": 12.0,
+        "gordura": 0.1,
+        "fibra": 2.4
+      }
+    },
+    {
+      "id": "acucar",
+      "nome": "Açúcar",
+      "sinonimos": ["açúcar", "acucar"],
+      "categoria": "acucares",
+      "por_100g": {
+        "calorias": 387,
+        "proteina": 0.0,
+        "carboidrato": 100.0,
+        "gordura": 0.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "oleo_soja",
+      "nome": "Óleo de soja",
+      "sinonimos": ["óleo", "oleo", "óleo vegetal"],
+      "categoria": "oleos",
+      "por_100g": {
+        "calorias": 884,
+        "proteina": 0.0,
+        "carboidrato": 0.0,
+        "gordura": 100.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "azeite",
+      "nome": "Azeite de oliva",
+      "sinonimos": ["azeite"],
+      "categoria": "oleos",
+      "por_100g": {
+        "calorias": 884,
+        "proteina": 0.0,
+        "carboidrato": 0.0,
+        "gordura": 100.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "manteiga",
+      "nome": "Manteiga",
+      "sinonimos": ["manteiga"],
+      "categoria": "gorduras",
+      "por_100g": {
+        "calorias": 717,
+        "proteina": 0.9,
+        "carboidrato": 0.1,
+        "gordura": 81.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "refrigerante_cola",
+      "nome": "Refrigerante cola",
+      "sinonimos": ["refrigerante", "coca", "coca-cola", "pepsi"],
+      "categoria": "bebidas",
+      "por_100g": {
+        "calorias": 42,
+        "proteina": 0.0,
+        "carboidrato": 10.6,
+        "gordura": 0.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "refrigerante_zero",
+      "nome": "Refrigerante zero",
+      "sinonimos": ["refrigerante zero", "coca zero", "zero açúcar"],
+      "categoria": "bebidas",
+      "por_100g": {
+        "calorias": 0,
+        "proteina": 0.0,
+        "carboidrato": 0.0,
+        "gordura": 0.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "suco_laranja",
+      "nome": "Suco de laranja natural",
+      "sinonimos": ["suco de laranja", "suco"],
+      "categoria": "bebidas",
+      "por_100g": {
+        "calorias": 45,
+        "proteina": 0.7,
+        "carboidrato": 10.4,
+        "gordura": 0.2,
+        "fibra": 0.2
+      }
+    },
+    {
+      "id": "cafe",
+      "nome": "Café sem açúcar",
+      "sinonimos": ["café", "cafe"],
+      "categoria": "bebidas",
+      "por_100g": {
+        "calorias": 2,
+        "proteina": 0.3,
+        "carboidrato": 0.0,
+        "gordura": 0.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "cerveja",
+      "nome": "Cerveja",
+      "sinonimos": ["cerveja"],
+      "categoria": "bebidas",
+      "por_100g": {
+        "calorias": 43,
+        "proteina": 0.5,
+        "carboidrato": 3.6,
+        "gordura": 0.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "bolo_chocolate",
+      "nome": "Bolo de chocolate",
+      "sinonimos": ["bolo", "bolo de chocolate"],
+      "categoria": "doces",
+      "por_100g": {
+        "calorias": 371,
+        "proteina": 4.5,
+        "carboidrato": 51.0,
+        "gordura": 16.0,
+        "fibra": 2.0
+      }
+    },
+    {
+      "id": "sorvete",
+      "nome": "Sorvete",
+      "sinonimos": ["sorvete"],
+      "categoria": "doces",
+      "por_100g": {
+        "calorias": 207,
+        "proteina": 3.5,
+        "carboidrato": 24.0,
+        "gordura": 11.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "chocolate",
+      "nome": "Chocolate ao leite",
+      "sinonimos": ["chocolate"],
+      "categoria": "doces",
+      "por_100g": {
+        "calorias": 535,
+        "proteina": 7.7,
+        "carboidrato": 59.4,
+        "gordura": 30.0,
+        "fibra": 3.4
+      }
+    },
+    {
+      "id": "pizza_mussarela",
+      "nome": "Pizza de mussarela",
+      "sinonimos": ["pizza", "pizza de queijo"],
+      "categoria": "pratos_prontos",
+      "por_100g": {
+        "calorias": 266,
+        "proteina": 11.4,
+        "carboidrato": 33.0,
+        "gordura": 10.0,
+        "fibra": 2.0
+      }
+    },
+    {
+      "id": "hamburguer",
+      "nome": "Hambúrguer",
+      "sinonimos": ["hambúrguer", "hamburger", "burger"],
+      "categoria": "pratos_prontos",
+      "por_100g": {
+        "calorias": 295,
+        "proteina": 17.0,
+        "carboidrato": 24.0,
+        "gordura": 14.0,
+        "fibra": 1.0
+      }
+    },
+    {
+      "id": "farofa",
+      "nome": "Farofa",
+      "sinonimos": ["farofa"],
+      "categoria": "acompanhamentos",
+      "por_100g": {
+        "calorias": 403,
+        "proteina": 2.0,
+        "carboidrato": 65.0,
+        "gordura": 15.0,
+        "fibra": 4.0
+      }
+    },
+    {
+      "id": "vinagrete",
+      "nome": "Vinagrete",
+      "sinonimos": ["vinagrete", "molho vinagrete"],
+      "categoria": "acompanhamentos",
+      "por_100g": {
+        "calorias": 45,
+        "proteina": 0.8,
+        "carboidrato": 5.0,
+        "gordura": 2.5,
+        "fibra": 1.0
+      }
+    },
+    {
+      "id": "molho_tomate",
+      "nome": "Molho de tomate",
+      "sinonimos": ["molho", "molho de tomate"],
+      "categoria": "molhos",
+      "por_100g": {
+        "calorias": 29,
+        "proteina": 1.3,
+        "carboidrato": 5.1,
+        "gordura": 0.5,
+        "fibra": 1.5
+      }
+    },
+    {
+      "id": "maionese",
+      "nome": "Maionese",
+      "sinonimos": ["maionese"],
+      "categoria": "molhos",
+      "por_100g": {
+        "calorias": 680,
+        "proteina": 1.0,
+        "carboidrato": 0.6,
+        "gordura": 75.0,
+        "fibra": 0.0
+      }
+    },
+    {
+      "id": "ketchup",
+      "nome": "Ketchup",
+      "sinonimos": ["ketchup", "catchup"],
+      "categoria": "molhos",
+      "por_100g": {
+        "calorias": 112,
+        "proteina": 1.0,
+        "carboidrato": 26.0,
+        "gordura": 0.1,
+        "fibra": 0.3
+      }
+    },
+    {
+      "id": "mostarda",
+      "nome": "Mostarda",
+      "sinonimos": ["mostarda"],
+      "categoria": "molhos",
+      "por_100g": {
+        "calorias": 66,
+        "proteina": 4.4,
+        "carboidrato": 5.3,
+        "gordura": 3.3,
+        "fibra": 3.3
+      }
+    }
+  ],
+  "categorias_fallback": {
+    "cereais": {"calorias": 120, "proteina": 2.5, "carboidrato": 25, "gordura": 0.5, "fibra": 1},
+    "leguminosas": {"calorias": 80, "proteina": 5, "carboidrato": 14, "gordura": 0.5, "fibra": 7},
+    "carnes": {"calorias": 200, "proteina": 25, "carboidrato": 0, "gordura": 10, "fibra": 0},
+    "peixes": {"calorias": 150, "proteina": 22, "carboidrato": 0, "gordura": 6, "fibra": 0},
+    "ovos": {"calorias": 155, "proteina": 13, "carboidrato": 1, "gordura": 11, "fibra": 0},
+    "verduras": {"calorias": 25, "proteina": 1.5, "carboidrato": 4, "gordura": 0.2, "fibra": 2},
+    "legumes": {"calorias": 40, "proteina": 1, "carboidrato": 8, "gordura": 0.2, "fibra": 2.5},
+    "tuberculos": {"calorias": 90, "proteina": 2, "carboidrato": 20, "gordura": 0.1, "fibra": 2},
+    "massas": {"calorias": 140, "proteina": 5, "carboidrato": 26, "gordura": 1.5, "fibra": 2},
+    "paes": {"calorias": 270, "proteina": 9, "carboidrato": 50, "gordura": 3.5, "fibra": 3},
+    "laticinios": {"calorias": 150, "proteina": 10, "carboidrato": 5, "gordura": 10, "fibra": 0},
+    "frutas": {"calorias": 60, "proteina": 0.8, "carboidrato": 15, "gordura": 0.2, "fibra": 2.5},
+    "oleos": {"calorias": 884, "proteina": 0, "carboidrato": 0, "gordura": 100, "fibra": 0},
+    "gorduras": {"calorias": 750, "proteina": 0.5, "carboidrato": 0, "gordura": 83, "fibra": 0},
+    "bebidas": {"calorias": 35, "proteina": 0.3, "carboidrato": 8, "gordura": 0, "fibra": 0},
+    "doces": {"calorias": 350, "proteina": 4, "carboidrato": 50, "gordura": 15, "fibra": 1},
+    "pratos_prontos": {"calorias": 250, "proteina": 12, "carboidrato": 28, "gordura": 12, "fibra": 2},
+    "acompanhamentos": {"calorias": 200, "proteina": 2, "carboidrato": 30, "gordura": 8, "fibra": 2},
+    "molhos": {"calorias": 150, "proteina": 1, "carboidrato": 10, "gordura": 12, "fibra": 0.5}
+  }
+}
