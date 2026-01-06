@@ -51,3 +51,37 @@ async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
         access_token=access_token,
         user=UserResponse.model_validate(user)
     )
+
+@router.post("/create-test-user", response_model=TokenResponse)
+async def create_test_user(db: AsyncSession = Depends(get_db)):
+    test_email = "teste@nutrivision.com"
+    test_password = "teste123"
+    
+    result = await db.execute(select(User).where(User.email == test_email))
+    existing_user = result.scalar_one_or_none()
+    
+    if existing_user:
+        existing_user.credit_balance = 100000
+        await db.commit()
+        await db.refresh(existing_user)
+        access_token = create_access_token(data={"sub": str(existing_user.id)})
+        return TokenResponse(
+            access_token=access_token,
+            user=UserResponse.model_validate(existing_user)
+        )
+    
+    user = User(
+        email=test_email,
+        password_hash=get_password_hash(test_password),
+        credit_balance=100000
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    
+    access_token = create_access_token(data={"sub": str(user.id)})
+    
+    return TokenResponse(
+        access_token=access_token,
+        user=UserResponse.model_validate(user)
+    )

@@ -483,6 +483,21 @@ curl https://nutrivision-api-dcr0.onrender.com/health
 
 ---
 
+## Usuário de Teste
+
+Para criar/resetar o usuário de teste com 100.000 créditos:
+
+```bash
+curl -X POST https://nutrivision-api-dcr0.onrender.com/auth/create-test-user
+```
+
+**Credenciais:**
+- Email: `teste@nutrivision.com`
+- Senha: `teste123`
+- Créditos: 100.000
+
+---
+
 ## Chaves e Credenciais
 
 **IMPORTANTE:** As chaves reais estão configuradas nas variáveis de ambiente do Render e Vercel.
