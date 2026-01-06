@@ -230,3 +230,12 @@ export const creditsApi = {
   getBalance: (token: string) =>
     api<{ credit_balance: number; pro_analyses_remaining: number }>('/credits/balance', { token })
 };
+
+export const feedbackApi = {
+  send: (token: string, tipo: string, mensagem: string) =>
+    api<{ success: boolean; message: string }>('/feedback', {
+      method: 'POST',
+      token,
+      body: { tipo, mensagem }
+    })
+};
