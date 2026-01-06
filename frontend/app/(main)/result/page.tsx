@@ -134,11 +134,6 @@ function ResultContent() {
             className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-          <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
-            <span className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1 ${confiancaInfo.color}`}>
-              {confiancaInfo.emoji} Confiança {confiancaInfo.label}
-            </span>
-          </div>
         </div>
 
         <div className="p-6">
@@ -196,9 +191,6 @@ function ResultContent() {
               {analysis.itens_identificados.map((item, idx) => (
                 <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
                   <span className="font-medium">{item.nome}</span>
-                  <span className={`text-xs px-2 py-1 rounded-full ${getConfiancaInfo(item.confianca).color}`}>
-                    {getConfiancaInfo(item.confianca).label}
-                  </span>
                 </div>
               ))}
             </div>
@@ -349,9 +341,6 @@ function ResultContent() {
                   alt="Versão melhorada"
                   className="w-full h-auto rounded-2xl shadow-lg"
                 />
-                <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur px-2 py-1 rounded-full text-xs font-medium text-purple-700">
-                  Gerado por IA
-                </div>
               </div>
             </div>
           )}
