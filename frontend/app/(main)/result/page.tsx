@@ -342,14 +342,16 @@ function ResultContent() {
           )}
 
           {analysis.sugestao_melhorada_imagem_url && (
-            <div className="relative">
-              <img
-                src={analysis.sugestao_melhorada_imagem_url}
-                alt="Versão melhorada"
-                className="w-full h-auto rounded-2xl shadow-lg"
-              />
-              <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-medium text-purple-700">
-                Gerado por IA
+            <div className="relative flex justify-center">
+              <div className="relative w-4/5 max-w-xs">
+                <img
+                  src={analysis.sugestao_melhorada_imagem_url}
+                  alt="Versão melhorada"
+                  className="w-full h-auto rounded-2xl shadow-lg"
+                />
+                <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur px-2 py-1 rounded-full text-xs font-medium text-purple-700">
+                  Gerado por IA
+                </div>
               </div>
             </div>
           )}
