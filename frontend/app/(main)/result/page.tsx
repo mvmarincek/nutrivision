@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { mealsApi, MealDetail } from '@/lib/api';
-import { CheckCircle, AlertTriangle, Lightbulb, ArrowLeft, Sparkles, Trophy, Heart, Flame, Salad } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Lightbulb, ArrowRight, Sparkles, Trophy, Heart, Flame, Salad } from 'lucide-react';
 import Image from 'next/image';
 
 const celebrationMessages = [
@@ -108,13 +108,6 @@ function ResultContent() {
 
   return (
     <div className="max-w-2xl mx-auto pb-8">
-      <button
-        onClick={() => router.push('/home')}
-        className="flex items-center text-gray-500 mb-4 hover:text-green-600 transition-colors"
-      >
-        <ArrowLeft className="w-5 h-5 mr-1" /> Nova análise
-      </button>
-
       <div className="bg-gradient-to-r from-green-100 to-teal-100 rounded-2xl p-4 mb-6 flex items-center gap-3">
         <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
           <Trophy className="w-6 h-6 text-yellow-500" />
@@ -341,9 +334,16 @@ function ResultContent() {
         </p>
       </div>
 
-      <p className="text-xs text-gray-400 text-center">
+      <p className="text-xs text-gray-400 text-center mb-4">
         Esta análise é informativa e não substitui orientação de nutricionista ou médico.
       </p>
+
+      <button
+        onClick={() => router.push('/home')}
+        className="w-full gradient-fresh text-white py-3 rounded-full font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+      >
+        Nova análise <ArrowRight className="w-5 h-5" />
+      </button>
     </div>
   );
 }
