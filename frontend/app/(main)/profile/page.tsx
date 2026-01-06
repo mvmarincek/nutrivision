@@ -28,6 +28,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
   const { token, user } = useAuth();
 
   useEffect(() => {
@@ -61,6 +62,7 @@ export default function ProfilePage() {
     if (!token) return;
     setSaving(true);
     setSuccess(false);
+    setError('');
 
     try {
       await profileApi.update(token, {
@@ -70,8 +72,8 @@ export default function ProfilePage() {
       });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setError(err.message || 'Erro ao salvar perfil');
     } finally {
       setSaving(false);
     }
@@ -154,6 +156,12 @@ export default function ProfilePage() {
             placeholder="Ex: amendoim, camarão, leite"
           />
         </div>
+
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
+            {error}
+          </div>
+        )}
 
         {success && (
           <div className="bg-green-50 text-green-600 p-3 rounded-lg mb-4 text-sm">
