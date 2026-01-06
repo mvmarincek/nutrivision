@@ -33,7 +33,7 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     plan = Column(String(20), default=PlanType.FREE.value)
-    credit_balance = Column(Integer, default=20)
+    credit_balance = Column(Integer, default=27)
     stripe_customer_id = Column(String(255), nullable=True)
     pro_analyses_remaining = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)

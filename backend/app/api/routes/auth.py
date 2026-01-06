@@ -21,7 +21,7 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
     user = User(
         email=user_data.email,
         password_hash=get_password_hash(user_data.password),
-        credit_balance=20
+        credit_balance=27
     )
     db.add(user)
     await db.commit()
