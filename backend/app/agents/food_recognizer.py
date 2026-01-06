@@ -1,9 +1,9 @@
 import openai
 from typing import Dict, Any
-import json
 import base64
 import os
 from app.core.config import settings
+from app.agents.json_utils import parse_json_safe
 
 FOOD_RECOGNIZER_INSTRUCTIONS = """
 Você é um especialista em identificação de alimentos em imagens. Sua função é:
@@ -70,11 +70,7 @@ class FoodRecognizerAgent:
             )
             
             content = response.choices[0].message.content
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0]
-            elif "```" in content:
-                content = content.split("```")[1].split("```")[0]
-            return json.loads(content.strip())
+            return parse_json_safe(content)
         except Exception as e:
             return {
                 "itens_identificados": [],

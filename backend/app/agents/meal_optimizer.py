@@ -1,6 +1,6 @@
 import openai
 from typing import Dict, Any, List, Optional
-import json
+from app.agents.json_utils import parse_json_safe
 
 MEAL_OPTIMIZER_INSTRUCTIONS = """
 Você é um especialista em otimização de refeições. Sua função é:
@@ -28,6 +28,8 @@ Retorne SEMPRE um JSON válido no formato:
   "prompt_para_imagem": "string (prompt em inglês para gerar imagem do prato otimizado)"
 }
 """
+
+import json
 
 class MealOptimizerAgent:
     def __init__(self, openai_api_key: str):
@@ -77,11 +79,7 @@ Retorne APENAS o JSON, sem texto adicional."""
             )
             
             content = response.choices[0].message.content
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0]
-            elif "```" in content:
-                content = content.split("```")[1].split("```")[0]
-            return json.loads(content.strip())
+            return parse_json_safe(content)
         except Exception as e:
             return {
                 "sugestao_melhorada_texto": "Não foi possível gerar sugestão",

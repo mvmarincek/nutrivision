@@ -95,12 +95,15 @@ function ProcessingContent() {
   if (error) {
     return (
       <div className="max-w-lg mx-auto">
-        <div className="bg-white rounded-3xl shadow-xl p-8 text-center border border-red-100">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">😕</span>
+        <div className="bg-white rounded-3xl shadow-xl p-8 text-center border border-amber-100">
+          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl">🙏</span>
           </div>
-          <h2 className="text-xl font-bold mb-2 text-gray-900">Ops! Algo deu errado</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <h2 className="text-xl font-bold mb-2 text-gray-900">Ops! Tivemos um probleminha</h2>
+          <p className="text-gray-600 mb-6">
+            Desculpe pelo inconveniente! Isso pode acontecer em alguns casos. 
+            Por favor, tente novamente - geralmente funciona na segunda tentativa.
+          </p>
           <button
             onClick={() => router.push('/home')}
             className="gradient-fresh text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all"

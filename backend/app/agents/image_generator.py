@@ -10,17 +10,14 @@ class ImageGenerationManager:
             return None
         
         try:
-            full_prompt = f"""Create a SQUARE image (1:1 aspect ratio) of appetizing food photography showing: {prompt}
+            full_prompt = f"""Create a SQUARE image of appetizing food: {prompt}
 
-Style: Professional food photography, natural lighting, shallow depth of field, 
-white or wooden table background, top-down or 45-degree angle view, 
-realistic and appetizing presentation. The image MUST be perfectly square."""
+Style: Professional food photography, natural lighting, top-down view, white background."""
 
             response = await self.client.images.generate(
-                model="dall-e-3",
+                model="dall-e-2",
                 prompt=full_prompt,
-                size="1024x1024",
-                quality="standard",
+                size="512x512",
                 n=1
             )
             return response.data[0].url

@@ -1,6 +1,6 @@
 import openai
 from typing import Dict, Any, Optional
-import json
+from app.agents.json_utils import parse_json_safe
 
 HEALTH_ADVISOR_INSTRUCTIONS = """
 Você é um consultor nutricional amigável e motivador, como um personal trainer de alimentação. 
@@ -105,11 +105,7 @@ Retorne APENAS o JSON, sem texto adicional."""
             )
             
             content = response.choices[0].message.content
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0]
-            elif "```" in content:
-                content = content.split("```")[1].split("```")[0]
-            result = json.loads(content.strip())
+            result = parse_json_safe(content)
             if "aviso" not in result:
                 result["aviso"] = "Lembre-se: esta análise é informativa e complementar. Para orientações personalizadas, consulte um nutricionista."
             return result

@@ -4,6 +4,7 @@ import json
 import base64
 import os
 from app.core.config import settings
+from app.agents.json_utils import parse_json_safe
 
 PORTION_ESTIMATOR_INSTRUCTIONS = """
 Você é um especialista em estimativa de porções alimentares com anos de experiência.
@@ -129,11 +130,7 @@ Retorne APENAS o JSON, sem texto adicional."""
             )
             
             content = response.choices[0].message.content
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0]
-            elif "```" in content:
-                content = content.split("```")[1].split("```")[0]
-            result = json.loads(content.strip())
+            result = parse_json_safe(content)
             
             result["questions"] = []
             
