@@ -54,16 +54,19 @@ async def forgot_password(request: ForgotPasswordRequest, background_tasks: Back
     result = await db.execute(select(User).where(User.email == request.email))
     user = result.scalar_one_or_none()
     
-    if user:
-        token = secrets.token_urlsafe(32)
-        password_reset_tokens[token] = {
-            "user_id": user.id,
-            "email": user.email,
-            "expires": datetime.utcnow() + timedelta(hours=1)
-        }
-        background_tasks.add_task(send_password_reset_email, user.email, token)
+    if not user:
+        return {"exists": False, "message": "Email não encontrado. Deseja criar uma conta?"}
     
-    return {"message": "Se o email existir, você receberá instruções para redefinir sua senha."}
+    token = secrets.token_urlsafe(32)
+    password_reset_tokens[token] = {
+        "user_id": user.id,
+        "email": user.email,
+        "expires": datetime.utcnow() + timedelta(hours=1)
+    }
+    
+    send_password_reset_email(user.email, token)
+    
+    return {"exists": True, "message": "Email de recuperação enviado!"}
 
 @router.post("/reset-password")
 async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
@@ -115,16 +118,19 @@ async def forgot_password(request: ForgotPasswordRequest, background_tasks: Back
     result = await db.execute(select(User).where(User.email == request.email))
     user = result.scalar_one_or_none()
     
-    if user:
-        token = secrets.token_urlsafe(32)
-        password_reset_tokens[token] = {
-            "user_id": user.id,
-            "email": user.email,
-            "expires": datetime.utcnow() + timedelta(hours=1)
-        }
-        background_tasks.add_task(send_password_reset_email, user.email, token)
+    if not user:
+        return {"exists": False, "message": "Email não encontrado. Deseja criar uma conta?"}
     
-    return {"message": "Se o email existir, você receberá instruções para redefinir sua senha."}
+    token = secrets.token_urlsafe(32)
+    password_reset_tokens[token] = {
+        "user_id": user.id,
+        "email": user.email,
+        "expires": datetime.utcnow() + timedelta(hours=1)
+    }
+    
+    send_password_reset_email(user.email, token)
+    
+    return {"exists": True, "message": "Email de recuperação enviado!"}
 
 @router.post("/reset-password")
 async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
@@ -192,16 +198,19 @@ async def forgot_password(request: ForgotPasswordRequest, background_tasks: Back
     result = await db.execute(select(User).where(User.email == request.email))
     user = result.scalar_one_or_none()
     
-    if user:
-        token = secrets.token_urlsafe(32)
-        password_reset_tokens[token] = {
-            "user_id": user.id,
-            "email": user.email,
-            "expires": datetime.utcnow() + timedelta(hours=1)
-        }
-        background_tasks.add_task(send_password_reset_email, user.email, token)
+    if not user:
+        return {"exists": False, "message": "Email não encontrado. Deseja criar uma conta?"}
     
-    return {"message": "Se o email existir, você receberá instruções para redefinir sua senha."}
+    token = secrets.token_urlsafe(32)
+    password_reset_tokens[token] = {
+        "user_id": user.id,
+        "email": user.email,
+        "expires": datetime.utcnow() + timedelta(hours=1)
+    }
+    
+    send_password_reset_email(user.email, token)
+    
+    return {"exists": True, "message": "Email de recuperação enviado!"}
 
 @router.post("/reset-password")
 async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):

@@ -175,7 +175,7 @@ export const authApi = {
     api<TokenResponse>('/auth/login', { method: 'POST', body: { email, password } }),
   
   forgotPassword: (email: string) =>
-    api<{ message: string }>('/auth/forgot-password', { method: 'POST', body: { email } }),
+    api<{ exists: boolean; message: string }>('/auth/forgot-password', { method: 'POST', body: { email } }),
   
   resetPassword: (token: string, new_password: string) =>
     api<{ message: string }>('/auth/reset-password', { method: 'POST', body: { token, new_password } })
