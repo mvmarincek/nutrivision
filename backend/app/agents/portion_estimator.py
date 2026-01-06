@@ -6,30 +6,53 @@ import os
 from app.core.config import settings
 
 PORTION_ESTIMATOR_INSTRUCTIONS = """
-Você é um especialista em estimativa de porções alimentares. Sua função é:
+Você é um especialista em estimativa de porções alimentares com anos de experiência.
+Sua função é estimar porções COM AUTONOMIA, sem depender de perguntas ao usuário.
 
-1. Estimar o peso/volume de cada alimento identificado
-2. Usar referências visuais (prato, copo, talheres) para escala
-3. Gerar intervalos min/max para cada estimativa
-4. Identificar quando a incerteza é alta e gerar perguntas
+PRINCÍPIO FUNDAMENTAL:
+- NUNCA faça perguntas ao usuário. Você é o especialista.
+- Use seu conhecimento e a análise visual para fazer as melhores estimativas.
+- Em caso de dúvida, use valores médios/típicos brasileiros.
+- Amplie a faixa min/max quando houver incerteza, mas SEMPRE forneça uma estimativa.
 
-REFERÊNCIAS DE TAMANHO:
-- Prato raso padrão: 25-27cm diâmetro
+REFERÊNCIAS VISUAIS PARA ESCALA:
+- Prato raso padrão brasileiro: 25-27cm diâmetro
 - Prato fundo: 20-22cm diâmetro
+- Prato de sobremesa: 19cm
 - Copo americano: 190ml
 - Copo long drink: 300ml
-- Colher de sopa: 15ml/15g
-- Colher de chá: 5ml/5g
-- Porção de arroz (concha): 100-150g
-- Porção de feijão (concha): 80-100g
-- Filé de frango médio: 100-150g
-- Bife médio: 100-120g
+- Tulipa de chopp: 300ml
+- Caneca: 350ml
+- Lata de cerveja/refrigerante: 350ml
+- Garrafa long neck: 355ml
 
-REGRAS:
-- Sempre forneça valor central E faixa
-- Se confiança baixa, gere perguntas focadas no maior erro calórico
-- Máximo de 4 perguntas
-- Seja conservador nas estimativas
+PORÇÕES TÍPICAS BRASILEIRAS:
+- Arroz (1 colher de servir cheia): 100-150g
+- Feijão (1 concha média): 80-100g
+- Bife/filé médio: 100-150g
+- Frango grelhado (filé): 120-180g
+- Batata frita (porção individual): 100-150g
+- Salada (prato de acompanhamento): 50-80g
+- Óleo de preparo por porção: 5-10ml (sempre assuma uso moderado)
+
+BEBIDAS - ASSUMA AUTOMATICAMENTE:
+- Líquido amarelo/dourado em copo/tulipa = Chopp/Cerveja (300-350ml)
+- Líquido escuro = Refrigerante ou suco (300ml)
+- Líquido transparente = Água ou refrigerante claro (300ml)
+- Na dúvida sobre tipo de bebida, assuma a mais comum para o contexto
+
+ÓLEOS E GORDURAS:
+- Comida frita (batata, pastel, etc): assuma 10-15ml de óleo absorvido por 100g
+- Comida grelhada/refogada: assuma 5-10ml de óleo por porção
+- Salada temperada: assuma 10ml de azeite
+- NUNCA pergunte sobre óleo. Estime baseado no tipo de preparo visível.
+
+REGRAS ABSOLUTAS:
+1. NUNCA retorne questions. O array questions deve ser sempre vazio.
+2. Use a imagem para determinar tamanhos relativos ao prato/copo visível.
+3. Forneça sempre valor central E faixa min/max.
+4. Em caso de incerteza, aumente a faixa mas dê uma estimativa.
+5. Liste incertezas em fatores_incerteza, não como perguntas.
 
 Retorne SEMPRE um JSON válido no formato:
 {
@@ -42,10 +65,8 @@ Retorne SEMPRE um JSON válido no formato:
       "confianca": "baixo|medio|alto"
     }
   ],
-  "questions": [
-    {"id": "string", "question": "string", "options": ["string"]}
-  ],
-  "fatores_incerteza": ["string"]
+  "questions": [],
+  "fatores_incerteza": ["string - liste aqui as incertezas, mas NÃO faça perguntas"]
 }
 """
 
@@ -77,17 +98,19 @@ class PortionEstimatorAgent:
                 image_content = {"type": "image_url", "image_url": {"url": image_url}}
             
             itens_str = json.dumps(itens_identificados, ensure_ascii=False)
-            answers_str = json.dumps(answers, ensure_ascii=False) if answers else "Nenhuma resposta fornecida"
             
             prompt = f"""Analise esta imagem e estime as porções dos alimentos identificados.
+Você é o especialista. NÃO faça perguntas. Estime tudo com base na imagem e seu conhecimento.
 
 Itens identificados:
 {itens_str}
 
-Respostas do usuário (se houver):
-{answers_str}
+IMPORTANTE: 
+- Retorne questions como array vazio [].
+- Use valores típicos brasileiros quando não puder determinar visualmente.
+- Para bebidas, assuma o tipo mais provável pelo contexto e aparência.
+- Para óleo/gordura, estime baseado no método de preparo visível.
 
-Estime o peso/volume de cada item e gere perguntas SE necessário para reduzir incerteza.
 Retorne APENAS o JSON, sem texto adicional."""
             
             response = await self.client.chat.completions.create(
@@ -111,8 +134,9 @@ Retorne APENAS o JSON, sem texto adicional."""
             elif "```" in content:
                 content = content.split("```")[1].split("```")[0]
             result = json.loads(content.strip())
-            if "questions" not in result:
-                result["questions"] = []
+            
+            result["questions"] = []
+            
             if "fatores_incerteza" not in result:
                 result["fatores_incerteza"] = []
             return result
