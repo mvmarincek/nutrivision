@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { mealsApi } from '@/lib/api';
-import { Camera, Upload, UtensilsCrossed, Cake, Coffee } from 'lucide-react';
+import { Upload, UtensilsCrossed, Cake, Coffee } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 
 const mealTypes = [
@@ -21,7 +21,6 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const { user, token } = useAuth();
   const router = useRouter();
 
@@ -150,30 +149,16 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="mb-6">
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => cameraInputRef.current?.click()}
-                className="p-8 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center gap-2 hover:border-primary-400 hover:bg-primary-50 transition"
-              >
-                <Camera className="w-10 h-10 text-gray-400" />
-                <span className="text-sm text-gray-600">Tirar Foto</span>
-              </button>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="p-8 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center gap-2 hover:border-primary-400 hover:bg-primary-50 transition"
-              >
-                <Upload className="w-10 h-10 text-gray-400" />
-                <span className="text-sm text-gray-600">Enviar Imagem</span>
-              </button>
-            </div>
-            <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
+            <p className="text-sm text-gray-600 mb-3 text-center">
+              Tire uma foto do seu alimento e anexe aqui
+            </p>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full p-8 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center gap-2 hover:border-primary-400 hover:bg-primary-50 transition"
+            >
+              <Upload className="w-10 h-10 text-gray-400" />
+              <span className="text-sm text-gray-600">Selecionar Imagem</span>
+            </button>
             <input
               ref={fileInputRef}
               type="file"
