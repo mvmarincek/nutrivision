@@ -1,7 +1,9 @@
-from agno.agent import Agent
-from agno.models.openai import OpenAIChat
+import openai
 from typing import Dict, Any, List, Optional
 import json
+import base64
+import os
+from app.core.config import settings
 
 PORTION_ESTIMATOR_INSTRUCTIONS = """
 Você é um especialista em estimativa de porções alimentares. Sua função é:
@@ -49,12 +51,7 @@ Retorne SEMPRE um JSON válido no formato:
 
 class PortionEstimatorAgent:
     def __init__(self, openai_api_key: str):
-        self.agent = Agent(
-            name="PortionEstimator",
-            model=OpenAIChat(id="gpt-4o", api_key=openai_api_key),
-            instructions=PORTION_ESTIMATOR_INSTRUCTIONS,
-            markdown=False
-        )
+        self.client = openai.AsyncOpenAI(api_key=openai_api_key)
     
     async def estimate(
         self, 
@@ -62,13 +59,27 @@ class PortionEstimatorAgent:
         itens_identificados: List[Dict], 
         answers: Optional[Dict[str, str]] = None
     ) -> Dict[str, Any]:
-        itens_str = json.dumps(itens_identificados, ensure_ascii=False)
-        answers_str = json.dumps(answers, ensure_ascii=False) if answers else "Nenhuma resposta fornecida"
-        
-        prompt = f"""
-Analise esta imagem e estime as porções dos alimentos identificados.
-
-URL da imagem: {image_url}
+        try:
+            if image_url.startswith("/uploads/"):
+                file_path = os.path.join(settings.UPLOAD_DIR, image_url.replace("/uploads/", ""))
+                if os.path.exists(file_path):
+                    with open(file_path, "rb") as f:
+                        image_data = base64.b64encode(f.read()).decode("utf-8")
+                    ext = file_path.split(".")[-1].lower()
+                    mime_type = "image/jpeg" if ext in ["jpg", "jpeg"] else "image/png"
+                    image_content = {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:{mime_type};base64,{image_data}"}
+                    }
+                else:
+                    return {"porcoes": [], "questions": [], "fatores_incerteza": ["Imagem não encontrada"]}
+            else:
+                image_content = {"type": "image_url", "image_url": {"url": image_url}}
+            
+            itens_str = json.dumps(itens_identificados, ensure_ascii=False)
+            answers_str = json.dumps(answers, ensure_ascii=False) if answers else "Nenhuma resposta fornecida"
+            
+            prompt = f"""Analise esta imagem e estime as porções dos alimentos identificados.
 
 Itens identificados:
 {itens_str}
@@ -77,11 +88,24 @@ Respostas do usuário (se houver):
 {answers_str}
 
 Estime o peso/volume de cada item e gere perguntas SE necessário para reduzir incerteza.
-Retorne APENAS o JSON, sem texto adicional.
-"""
-        try:
-            response = self.agent.run(prompt, images=[image_url])
-            content = response.content
+Retorne APENAS o JSON, sem texto adicional."""
+            
+            response = await self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": PORTION_ESTIMATOR_INSTRUCTIONS},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            image_content
+                        ]
+                    }
+                ],
+                max_tokens=1500
+            )
+            
+            content = response.choices[0].message.content
             if "```json" in content:
                 content = content.split("```json")[1].split("```")[0]
             elif "```" in content:

@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     STRIPE_WEBHOOK_SECRET: str = ""
     OPENAI_API_KEY: str = ""
     FRONTEND_URL: str = "http://localhost:3000"
+    BACKEND_URL: str = "https://nutrivision-api-dcr0.onrender.com"
     UPLOAD_DIR: str = "./uploads"
     
     CREDIT_COST_SIMPLE: int = 5

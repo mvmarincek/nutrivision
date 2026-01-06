@@ -1,24 +1,22 @@
-from openai import OpenAI
+import openai
 from typing import Optional
-import httpx
 
 class ImageGenerationManager:
     def __init__(self, openai_api_key: str):
-        self.client = OpenAI(api_key=openai_api_key)
+        self.client = openai.AsyncOpenAI(api_key=openai_api_key)
     
     async def generate(self, prompt: str) -> Optional[str]:
         if not prompt:
             return None
         
         try:
-            full_prompt = f"""
-A beautiful, appetizing food photography of: {prompt}
+            full_prompt = f"""A beautiful, appetizing food photography of: {prompt}
 
 Style: Professional food photography, natural lighting, shallow depth of field, 
 white or wooden table background, top-down or 45-degree angle view, 
-realistic and appetizing presentation.
-"""
-            response = self.client.images.generate(
+realistic and appetizing presentation."""
+
+            response = await self.client.images.generate(
                 model="dall-e-3",
                 prompt=full_prompt,
                 size="1024x1024",

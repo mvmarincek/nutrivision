@@ -1,5 +1,4 @@
-from agno.agent import Agent
-from agno.models.openai import OpenAIChat
+import openai
 from typing import Dict, Any, Optional
 import json
 
@@ -30,12 +29,7 @@ Retorne SEMPRE um JSON válido no formato:
 
 class HealthAdvisorAgent:
     def __init__(self, openai_api_key: str):
-        self.agent = Agent(
-            name="HealthAdvisor",
-            model=OpenAIChat(id="gpt-4o-mini", api_key=openai_api_key),
-            instructions=HEALTH_ADVISOR_INSTRUCTIONS,
-            markdown=False
-        )
+        self.client = openai.AsyncOpenAI(api_key=openai_api_key)
     
     async def analyze(
         self, 
@@ -45,8 +39,7 @@ class HealthAdvisorAgent:
     ) -> Dict[str, Any]:
         perfil_str = json.dumps(perfil, ensure_ascii=False) if perfil else "Perfil não informado"
         
-        prompt = f"""
-Analise esta refeição e forneça orientações práticas.
+        prompt = f"""Analise esta refeição e forneça orientações práticas.
 
 DADOS NUTRICIONAIS:
 - Calorias: {calorias['central']} kcal (faixa: {calorias['min']}-{calorias['max']} kcal)
@@ -59,11 +52,19 @@ PERFIL DO USUÁRIO:
 {perfil_str}
 
 Forneça benefícios, pontos de atenção e 3 recomendações práticas.
-Retorne APENAS o JSON, sem texto adicional.
-"""
+Retorne APENAS o JSON, sem texto adicional."""
+
         try:
-            response = self.agent.run(prompt)
-            content = response.content
+            response = await self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": HEALTH_ADVISOR_INSTRUCTIONS},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=1000
+            )
+            
+            content = response.choices[0].message.content
             if "```json" in content:
                 content = content.split("```json")[1].split("```")[0]
             elif "```" in content:

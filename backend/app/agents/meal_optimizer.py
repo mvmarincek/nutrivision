@@ -1,5 +1,4 @@
-from agno.agent import Agent
-from agno.models.openai import OpenAIChat
+import openai
 from typing import Dict, Any, List, Optional
 import json
 
@@ -32,12 +31,7 @@ Retorne SEMPRE um JSON válido no formato:
 
 class MealOptimizerAgent:
     def __init__(self, openai_api_key: str):
-        self.agent = Agent(
-            name="MealOptimizer",
-            model=OpenAIChat(id="gpt-4o-mini", api_key=openai_api_key),
-            instructions=MEAL_OPTIMIZER_INSTRUCTIONS,
-            markdown=False
-        )
+        self.client = openai.AsyncOpenAI(api_key=openai_api_key)
     
     async def optimize(
         self,
@@ -51,8 +45,7 @@ class MealOptimizerAgent:
         itens_str = json.dumps(itens, ensure_ascii=False)
         porcoes_str = json.dumps(porcoes, ensure_ascii=False)
         
-        prompt = f"""
-Crie uma versão otimizada desta refeição.
+        prompt = f"""Crie uma versão otimizada desta refeição.
 
 ITENS ATUAIS:
 {itens_str}
@@ -71,11 +64,19 @@ PERFIL DO USUÁRIO:
 {perfil_str}
 
 Sugira uma versão melhorada mantendo a essência do prato.
-Retorne APENAS o JSON, sem texto adicional.
-"""
+Retorne APENAS o JSON, sem texto adicional."""
+
         try:
-            response = self.agent.run(prompt)
-            content = response.content
+            response = await self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": MEAL_OPTIMIZER_INSTRUCTIONS},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=1500
+            )
+            
+            content = response.choices[0].message.content
             if "```json" in content:
                 content = content.split("```json")[1].split("```")[0]
             elif "```" in content:
