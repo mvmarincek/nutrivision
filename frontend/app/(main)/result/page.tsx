@@ -342,11 +342,11 @@ function ResultContent() {
           )}
 
           {analysis.sugestao_melhorada_imagem_url && (
-            <div className="relative rounded-2xl overflow-hidden shadow-lg">
+            <div className="relative">
               <img
                 src={analysis.sugestao_melhorada_imagem_url}
                 alt="Versão melhorada"
-                className="w-full h-auto"
+                className="w-full h-auto rounded-2xl shadow-lg"
               />
               <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-medium text-purple-700">
                 Gerado por IA
