@@ -34,7 +34,7 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks, db:
     user = User(
         email=user_data.email,
         password_hash=get_password_hash(user_data.password),
-        credit_balance=27
+        credit_balance=0
     )
     db.add(user)
     await db.commit()

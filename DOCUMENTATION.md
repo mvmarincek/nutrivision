@@ -269,7 +269,9 @@ created_at: datetime
 | Pro | 1000 | R$ 129,90 |
 
 ### Créditos Gratuitos
-- Novos usuários recebem **27 créditos** (3 análises simples + 1 completa)
+- Novos usuários FREE começam com **0 créditos**
+- Análises simples são **gratuitas e ilimitadas** para FREE
+- Para análise completa (PRO), precisa comprar créditos
 
 ---
 

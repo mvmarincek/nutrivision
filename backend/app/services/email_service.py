@@ -47,7 +47,7 @@ def send_welcome_email(user_email: str):
                 <li>Visualizar versoes otimizadas dos seus pratos</li>
             </ul>
             <p style="color: #334155; line-height: 1.8; margin: 0;">
-                Voce ganhou <strong style="color: #22c55e;">27 creditos gratis</strong> para comecar! Isso e suficiente para fazer varias analises e conhecer o poder da nossa IA.
+                As <strong style="color: #22c55e;">analises rapidas sao gratuitas e ilimitadas</strong>! Comece agora mesmo a conhecer melhor sua alimentacao.
             </p>
         </div>
         
