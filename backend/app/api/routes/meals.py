@@ -118,11 +118,12 @@ async def analyze_meal(
     if not meal:
         raise HTTPException(status_code=404, detail="Refeição não encontrada")
     
+    is_free_simple = current_user.plan == "free" and request.mode == "simple"
     cost = settings.CREDIT_COST_FULL if request.mode == "full" else settings.CREDIT_COST_SIMPLE
     has_pro_quota = current_user.plan == "pro" and current_user.pro_analyses_remaining > 0
     has_credits = current_user.credit_balance >= cost
     
-    if not has_pro_quota and not has_credits:
+    if not is_free_simple and not has_pro_quota and not has_credits:
         raise HTTPException(
             status_code=402, 
             detail=f"Créditos insuficientes. Necessário: {cost}, Disponível: {current_user.credit_balance}"

@@ -21,6 +21,8 @@ class NutriOrchestrator:
         self.image_generator = ImageGenerationManager(openai_api_key)
     
     async def validate_credits(self, user: User, mode: str) -> tuple[bool, str]:
+        if user.plan == "free" and mode == "simple":
+            return True, "free_unlimited"
         cost = settings.CREDIT_COST_FULL if mode == "full" else settings.CREDIT_COST_SIMPLE
         if user.plan == "pro" and user.pro_analyses_remaining > 0:
             return True, "pro_quota"
@@ -29,6 +31,8 @@ class NutriOrchestrator:
         return False, f"Créditos insuficientes. Necessário: {cost}, Disponível: {user.credit_balance}"
     
     async def deduct_credits(self, db: AsyncSession, user: User, mode: str, source: str):
+        if source == "free_unlimited":
+            return
         cost = settings.CREDIT_COST_FULL if mode == "full" else settings.CREDIT_COST_SIMPLE
         if source == "pro_quota":
             user.pro_analyses_remaining -= 1

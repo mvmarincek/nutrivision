@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth';
 import { mealsApi, MealDetail } from '@/lib/api';
 import { CheckCircle, AlertTriangle, Lightbulb, ArrowRight, Sparkles, Trophy, Heart, Flame, Salad } from 'lucide-react';
 import Image from 'next/image';
+import AdBanner from '@/components/AdBanner';
 
 const celebrationMessages = [
   "Excelente escolha! Continue assim!",
@@ -19,7 +20,7 @@ function ResultContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [celebration, setCelebration] = useState('');
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const mealId = searchParams.get('mealId');
@@ -339,6 +340,12 @@ function ResultContent() {
       <p className="text-xs text-gray-400 text-center mb-4">
         Esta análise é informativa e não substitui orientação de nutricionista ou médico.
       </p>
+
+      {user?.plan === 'free' && (
+        <div className="mb-4">
+          <AdBanner slot="RESULT_BANNER" format="rectangle" className="rounded-2xl overflow-hidden" />
+        </div>
+      )}
 
       <button
         onClick={() => router.push('/home')}

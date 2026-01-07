@@ -4,8 +4,9 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { mealsApi } from '@/lib/api';
-import { Upload, UtensilsCrossed, Cake, Coffee, Sparkles, Target, Zap, ArrowRight, Heart } from 'lucide-react';
+import { Upload, UtensilsCrossed, Cake, Coffee, Sparkles, Target, Zap, ArrowRight, Heart, Crown } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
+import AdBanner from '@/components/AdBanner';
 
 const mealTypes = [
   { id: 'prato', label: 'Prato', icon: UtensilsCrossed, color: 'from-green-400 to-teal-400' },
@@ -71,8 +72,10 @@ export default function HomePage() {
   const handleAnalyze = async () => {
     if (!file || !token) return;
 
+    const isFreeSimple = user?.plan === 'free' && mode === 'simple';
     const cost = mode === 'full' ? 12 : 5;
-    if (user && user.credit_balance < cost && user.pro_analyses_remaining <= 0) {
+    
+    if (!isFreeSimple && user && user.credit_balance < cost && user.pro_analyses_remaining <= 0) {
       setError(`Créditos insuficientes. Você precisa de ${cost} créditos.`);
       return;
     }
@@ -168,10 +171,16 @@ export default function HomePage() {
                 </span>
               </div>
               <p className="text-xs text-gray-500">Calorias e macros</p>
-              <div className="mt-2 inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full">
-                <Sparkles className="w-3 h-3" />
-                5 créditos
-              </div>
+              {user?.plan === 'free' ? (
+                <div className="mt-2 inline-flex items-center gap-1 bg-green-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+                  Grátis
+                </div>
+              ) : (
+                <div className="mt-2 inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full">
+                  <Sparkles className="w-3 h-3" />
+                  5 créditos
+                </div>
+              )}
             </button>
             <button
               onClick={() => setMode('full')}
@@ -181,7 +190,8 @@ export default function HomePage() {
                   : 'border-gray-100 hover:border-gray-200'
               }`}
             >
-              <div className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+              <div className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Crown className="w-3 h-3" />
                 PRO
               </div>
               <div className="flex items-center gap-2 mb-2">
@@ -261,9 +271,18 @@ export default function HomePage() {
         </button>
 
         <p className="text-center text-sm text-gray-500 mt-4">
-          Custo: {cost} créditos • Saldo: {user?.credit_balance} créditos
+          {user?.plan === 'free' && mode === 'simple' 
+            ? 'Análise rápida gratuita' 
+            : `Custo: ${cost} créditos • Saldo: ${user?.credit_balance} créditos`
+          }
         </p>
       </div>
+
+      {user?.plan === 'free' && (
+        <div className="mb-6">
+          <AdBanner slot="HOME_BANNER" format="horizontal" className="rounded-2xl overflow-hidden" />
+        </div>
+      )}
 
       <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-100">
         <p className="text-sm text-amber-800 flex items-start gap-2">
