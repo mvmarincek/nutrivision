@@ -178,7 +178,10 @@ export const authApi = {
     api<{ exists: boolean; message: string }>('/auth/forgot-password', { method: 'POST', body: { email } }),
   
   resetPassword: (token: string, new_password: string) =>
-    api<{ message: string }>('/auth/reset-password', { method: 'POST', body: { token, new_password } })
+    api<{ message: string }>('/auth/reset-password', { method: 'POST', body: { token, new_password } }),
+  
+  downgradeToFree: (token: string) =>
+    api<User>('/auth/downgrade-to-free', { method: 'POST', token })
 };
 
 export const profileApi = {

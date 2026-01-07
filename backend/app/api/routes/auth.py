@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from app.db.database import get_db
 from app.models.models import User
 from app.schemas.schemas import UserCreate, UserLogin, TokenResponse, UserResponse
-from app.core.security import get_password_hash, verify_password, create_access_token
+from app.core.security import get_password_hash, verify_password, create_access_token, get_current_user
 from app.services.email_service import send_welcome_email, send_password_reset_email
 import secrets
 from datetime import datetime, timedelta
@@ -49,52 +49,6 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks, db:
         user=UserResponse.model_validate(user)
     )
 
-@router.post("/forgot-password")
-async def forgot_password(request: ForgotPasswordRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == request.email))
-    user = result.scalar_one_or_none()
-    
-    if not user:
-        return {"exists": False, "message": "Email não encontrado. Deseja criar uma conta?"}
-    
-    token = secrets.token_urlsafe(32)
-    password_reset_tokens[token] = {
-        "user_id": user.id,
-        "email": user.email,
-        "expires": datetime.utcnow() + timedelta(hours=1)
-    }
-    
-    send_password_reset_email(user.email, token)
-    
-    return {"exists": True, "message": "Email de recuperação enviado!"}
-
-@router.post("/reset-password")
-async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
-    token_data = password_reset_tokens.get(request.token)
-    
-    if not token_data:
-        raise HTTPException(status_code=400, detail="Token inválido ou expirado")
-    
-    if datetime.utcnow() > token_data["expires"]:
-        del password_reset_tokens[request.token]
-        raise HTTPException(status_code=400, detail="Token expirado")
-    
-    if len(request.new_password) < 6:
-        raise HTTPException(status_code=400, detail="A senha deve ter pelo menos 6 caracteres")
-    
-    result = await db.execute(select(User).where(User.id == token_data["user_id"]))
-    user = result.scalar_one_or_none()
-    
-    if not user:
-        raise HTTPException(status_code=400, detail="Usuário não encontrado")
-    
-    user.password_hash = get_password_hash(request.new_password)
-    await db.commit()
-    
-    del password_reset_tokens[request.token]
-    
-    return {"message": "Senha alterada com sucesso!"}
-
 @router.post("/login", response_model=TokenResponse)
 async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == user_data.email))
@@ -128,7 +82,7 @@ async def forgot_password(request: ForgotPasswordRequest, background_tasks: Back
         "expires": datetime.utcnow() + timedelta(hours=1)
     }
     
-    send_password_reset_email(user.email, token)
+    background_tasks.add_task(send_password_reset_email, user.email, token)
     
     return {"exists": True, "message": "Email de recuperação enviado!"}
 
@@ -158,6 +112,17 @@ async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depen
     del password_reset_tokens[request.token]
     
     return {"message": "Senha alterada com sucesso!"}
+
+@router.post("/downgrade-to-free", response_model=UserResponse)
+async def downgrade_to_free(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    if current_user.plan == "free":
+        raise HTTPException(status_code=400, detail="Você já está no plano FREE")
+    
+    current_user.plan = "free"
+    await db.commit()
+    await db.refresh(current_user)
+    
+    return UserResponse.model_validate(current_user)
 
 @router.post("/create-test-user", response_model=TokenResponse)
 async def create_test_user(db: AsyncSession = Depends(get_db)):
@@ -192,49 +157,3 @@ async def create_test_user(db: AsyncSession = Depends(get_db)):
         access_token=access_token,
         user=UserResponse.model_validate(user)
     )
-
-@router.post("/forgot-password")
-async def forgot_password(request: ForgotPasswordRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == request.email))
-    user = result.scalar_one_or_none()
-    
-    if not user:
-        return {"exists": False, "message": "Email não encontrado. Deseja criar uma conta?"}
-    
-    token = secrets.token_urlsafe(32)
-    password_reset_tokens[token] = {
-        "user_id": user.id,
-        "email": user.email,
-        "expires": datetime.utcnow() + timedelta(hours=1)
-    }
-    
-    send_password_reset_email(user.email, token)
-    
-    return {"exists": True, "message": "Email de recuperação enviado!"}
-
-@router.post("/reset-password")
-async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
-    token_data = password_reset_tokens.get(request.token)
-    
-    if not token_data:
-        raise HTTPException(status_code=400, detail="Token inválido ou expirado")
-    
-    if datetime.utcnow() > token_data["expires"]:
-        del password_reset_tokens[request.token]
-        raise HTTPException(status_code=400, detail="Token expirado")
-    
-    if len(request.new_password) < 6:
-        raise HTTPException(status_code=400, detail="A senha deve ter pelo menos 6 caracteres")
-    
-    result = await db.execute(select(User).where(User.id == token_data["user_id"]))
-    user = result.scalar_one_or_none()
-    
-    if not user:
-        raise HTTPException(status_code=400, detail="Usuário não encontrado")
-    
-    user.password_hash = get_password_hash(request.new_password)
-    await db.commit()
-    
-    del password_reset_tokens[request.token]
-    
-    return {"message": "Senha alterada com sucesso!"}
