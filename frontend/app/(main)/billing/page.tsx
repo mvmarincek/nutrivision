@@ -100,8 +100,8 @@ export default function BillingPage() {
           <p className="text-sm text-gray-600 mb-2">Custo por análise:</p>
           <div className="flex gap-4">
             <div className="flex items-center">
-              <Zap className="w-4 h-4 text-gray-400 mr-1" />
-              <span className="text-sm">Simples: 5 créditos</span>
+              <Zap className="w-4 h-4 text-green-500 mr-1" />
+              <span className="text-sm font-medium text-green-600">Simples: Grátis</span>
             </div>
             <div className="flex items-center">
               <Star className="w-4 h-4 text-primary-500 mr-1" />
@@ -167,11 +167,11 @@ export default function BillingPage() {
               </li>
               <li className="flex items-center">
                 <span className="mr-2">-</span>
-                Desconto em créditos adicionais
+                Sem anúncios
               </li>
               <li className="flex items-center">
                 <span className="mr-2">-</span>
-                Suporte prioritário
+                Desconto em créditos adicionais
               </li>
             </ul>
             <div className="flex items-center justify-between">
