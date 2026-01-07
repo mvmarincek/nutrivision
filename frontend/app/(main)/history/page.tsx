@@ -6,11 +6,12 @@ import { useAuth } from '@/lib/auth';
 import { mealsApi, MealListItem } from '@/lib/api';
 import Image from 'next/image';
 import { Calendar, Trash2 } from 'lucide-react';
+import AdBanner from '@/components/AdBanner';
 
 export default function HistoryPage() {
   const [meals, setMeals] = useState<MealListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -154,6 +155,12 @@ export default function HistoryPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {user?.plan === 'free' && (
+        <div className="mt-6">
+          <AdBanner slot="HISTORY_BANNER" format="horizontal" className="rounded-2xl overflow-hidden" />
         </div>
       )}
     </div>

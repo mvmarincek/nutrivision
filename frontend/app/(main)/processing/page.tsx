@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { jobsApi, mealsApi, JobResponse } from '@/lib/api';
 import { Loader2, Salad, ArrowRight } from 'lucide-react';
+import AdBanner from '@/components/AdBanner';
 
 const dicasEMotivacao = [
   { emoji: "🥗", texto: "Comer devagar ajuda na digestão e aumenta a saciedade!" },
@@ -36,7 +37,7 @@ function ProcessingContent() {
   const [submitting, setSubmitting] = useState(false);
   const [pollingActive, setPollingActive] = useState(true);
   const [dicaAtual, setDicaAtual] = useState(0);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const jobId = searchParams.get('jobId');
@@ -246,6 +247,12 @@ function ProcessingContent() {
           <div className="text-3xl mb-2">{dicasEMotivacao[dicaAtual].emoji}</div>
           <p className="text-gray-700 font-medium">{dicasEMotivacao[dicaAtual].texto}</p>
         </div>
+
+        {user?.plan === 'free' && (
+          <div className="mt-6">
+            <AdBanner slot="PROCESSING_BANNER" format="rectangle" className="rounded-2xl overflow-hidden" />
+          </div>
+        )}
       </div>
     </div>
   );

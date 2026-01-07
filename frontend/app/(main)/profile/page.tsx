@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { profileApi, feedbackApi } from '@/lib/api';
 import { Save, User, ArrowRight, Salad, Send, Lightbulb } from 'lucide-react';
+import AdBanner from '@/components/AdBanner';
 
 const objetivos = [
   { id: 'emagrecer', label: 'Emagrecer', emoji: '🏃' },
@@ -260,6 +261,12 @@ export default function ProfilePage() {
           </button>
         )}
       </div>
+
+      {user?.plan === 'free' && (
+        <div className="mt-6">
+          <AdBanner slot="PROFILE_BANNER" format="horizontal" className="rounded-2xl overflow-hidden" />
+        </div>
+      )}
     </div>
   );
 }
