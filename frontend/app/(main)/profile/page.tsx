@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth';
 import { profileApi, feedbackApi } from '@/lib/api';
 import { Save, User, ArrowRight, Salad, Send, Lightbulb, Gift, Copy, Check, QrCode } from 'lucide-react';
 import AdBanner from '@/components/AdBanner';
+import PageAds from '@/components/PageAds';
 
 const objetivos = [
   { id: 'emagrecer', label: 'Emagrecer', emoji: '🏃' },
@@ -123,6 +124,8 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-lg mx-auto">
+      <PageAds slot="PROFILE_BANNER" position="top" />
+
       <h1 className="text-2xl font-bold mb-6">Meu Perfil</h1>
 
       <div className="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-green-100">
@@ -365,11 +368,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {user?.plan === 'free' && (
-        <div className="mt-6">
-          <AdBanner slot="PROFILE_BANNER" format="horizontal" className="rounded-2xl overflow-hidden" />
-        </div>
-      )}
+      <PageAds slot="PROFILE_BANNER" position="bottom" />
     </div>
   );
 }

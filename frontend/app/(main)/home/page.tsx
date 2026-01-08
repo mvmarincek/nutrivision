@@ -7,6 +7,7 @@ import { mealsApi } from '@/lib/api';
 import { Upload, UtensilsCrossed, Cake, Coffee, Sparkles, Target, Zap, ArrowRight, Heart, Crown } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import AdBanner from '@/components/AdBanner';
+import PageAds from '@/components/PageAds';
 
 const mealTypes = [
   { id: 'prato', label: 'Prato', icon: UtensilsCrossed, color: 'from-green-400 to-teal-400' },
@@ -134,6 +135,8 @@ export default function HomePage() {
 
   return (
     <div className="max-w-lg mx-auto">
+      <PageAds slot="HOME_BANNER" position="top" />
+
       <div className="text-center mb-6">
         <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-100 to-teal-100 px-4 py-2 rounded-full mb-4">
           <Heart className="w-4 h-4 text-rose-500" />
@@ -315,11 +318,7 @@ export default function HomePage() {
         </p>
       </div>
 
-      {user?.plan === 'free' && (
-        <div className="mb-6">
-          <AdBanner slot="HOME_BANNER" format="horizontal" className="rounded-2xl overflow-hidden" />
-        </div>
-      )}
+      <PageAds slot="HOME_BANNER" position="bottom" />
 
       <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-100">
         <p className="text-sm text-amber-800 flex items-start gap-2">

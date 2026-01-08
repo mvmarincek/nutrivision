@@ -7,6 +7,7 @@ import { mealsApi, MealListItem } from '@/lib/api';
 import Image from 'next/image';
 import { Calendar, Trash2 } from 'lucide-react';
 import AdBanner from '@/components/AdBanner';
+import PageAds from '@/components/PageAds';
 
 export default function HistoryPage() {
   const [meals, setMeals] = useState<MealListItem[]>([]);
@@ -83,6 +84,8 @@ export default function HistoryPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
+      <PageAds slot="HISTORY_BANNER" position="top" />
+
       <h1 className="text-2xl font-bold mb-6">Histórico de Análises</h1>
 
       {meals.length === 0 ? (
@@ -158,11 +161,7 @@ export default function HistoryPage() {
         </div>
       )}
 
-      {user?.plan === 'free' && (
-        <div className="mt-6">
-          <AdBanner slot="HISTORY_BANNER" format="horizontal" className="rounded-2xl overflow-hidden" />
-        </div>
-      )}
+      <PageAds slot="HISTORY_BANNER" position="bottom" />
     </div>
   );
 }

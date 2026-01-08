@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth';
 import { jobsApi, mealsApi, JobResponse } from '@/lib/api';
 import { Loader2, Salad, ArrowRight } from 'lucide-react';
 import AdBanner from '@/components/AdBanner';
+import PageAds from '@/components/PageAds';
 
 const dicasEMotivacao = [
   { emoji: "🥗", texto: "Comer devagar ajuda na digestão e aumenta a saciedade!" },
@@ -230,6 +231,8 @@ function ProcessingContent() {
 
   return (
     <div className="max-w-lg mx-auto">
+      <PageAds slot="PROCESSING_BANNER" position="top" />
+
       <div className="bg-white rounded-3xl shadow-xl p-8 text-center border border-green-100">
         <div className="w-20 h-20 mx-auto mb-6 rounded-2xl gradient-fresh flex items-center justify-center animate-pulse">
           <Salad className="w-10 h-10 text-white" />
@@ -247,13 +250,9 @@ function ProcessingContent() {
           <div className="text-3xl mb-2">{dicasEMotivacao[dicaAtual].emoji}</div>
           <p className="text-gray-700 font-medium">{dicasEMotivacao[dicaAtual].texto}</p>
         </div>
-
-        {user?.plan === 'free' && (
-          <div className="mt-6">
-            <AdBanner slot="PROCESSING_BANNER" format="rectangle" className="rounded-2xl overflow-hidden" />
-          </div>
-        )}
       </div>
+
+      <PageAds slot="PROCESSING_BANNER" position="bottom" />
     </div>
   );
 }

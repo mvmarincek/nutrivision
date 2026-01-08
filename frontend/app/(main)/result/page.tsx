@@ -7,6 +7,7 @@ import { mealsApi, MealDetail } from '@/lib/api';
 import { CheckCircle, AlertTriangle, Lightbulb, ArrowRight, Sparkles, Trophy, Heart, Flame, Salad } from 'lucide-react';
 import Image from 'next/image';
 import AdBanner from '@/components/AdBanner';
+import PageAds from '@/components/PageAds';
 
 const celebrationMessages = [
   "Excelente escolha! Continue assim!",
@@ -109,6 +110,8 @@ function ResultContent() {
 
   return (
     <div className="max-w-2xl mx-auto pb-8">
+      <PageAds slot="RESULT_BANNER" position="top" />
+
       <div className="bg-gradient-to-r from-green-100 to-teal-100 rounded-2xl p-4 mb-6 flex items-center gap-3">
         <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
           <Trophy className="w-6 h-6 text-yellow-500" />
@@ -341,15 +344,11 @@ function ResultContent() {
         Esta análise é informativa e não substitui orientação de nutricionista ou médico.
       </p>
 
-      {user?.plan === 'free' && (
-        <div className="mb-4">
-          <AdBanner slot="RESULT_BANNER" format="rectangle" className="rounded-2xl overflow-hidden" />
-        </div>
-      )}
+      <PageAds slot="RESULT_BANNER" position="bottom" />
 
       <button
         onClick={() => router.push('/home')}
-        className="w-full gradient-fresh text-white py-3 rounded-full font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+        className="w-full gradient-fresh text-white py-3 rounded-full font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all mt-4"
       >
         Nova análise <ArrowRight className="w-5 h-5" />
       </button>
