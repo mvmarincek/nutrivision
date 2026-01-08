@@ -18,10 +18,10 @@ class Settings(BaseSettings):
     PRO_MONTHLY_ANALYSES: int = 30
     
     CREDIT_PACKAGES: dict = {
-        "50": {"credits": 50, "price": 990},
-        "100": {"credits": 100, "price": 1790},
-        "300": {"credits": 300, "price": 4490},
-        "1000": {"credits": 1000, "price": 12990}
+        "12": {"credits": 12, "price": 490},
+        "36": {"credits": 36, "price": 1290},
+        "60": {"credits": 60, "price": 1990},
+        "120": {"credits": 120, "price": 3490}
     }
     
     class Config:

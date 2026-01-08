@@ -72,7 +72,7 @@ export default function BillingPage() {
     );
   }
 
-  const packageOrder = ['50', '100', '300', '1000'];
+  const packageOrder = ['12', '36', '60', '120'];
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -116,7 +116,7 @@ export default function BillingPage() {
         {packageOrder.map((pkgId) => {
           const pkg = packages[pkgId];
           if (!pkg) return null;
-          const isPopular = pkgId === '100';
+          const isPopular = pkgId === '36';
           
           return (
             <div
