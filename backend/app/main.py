@@ -56,6 +56,7 @@ async def run_migration():
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_token VARCHAR(64)",
         "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_referral_code ON users(referral_code)",
+        "ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500)",
     ]
     
     results = []
@@ -69,3 +70,26 @@ async def run_migration():
                 results.append({"sql": sql, "status": "error", "error": str(e)})
     
     return {"migrations": results}
+
+@app.get("/fix-referral-codes")
+async def fix_referral_codes():
+    import secrets
+    import string
+    from sqlalchemy import select, update
+    from app.models.models import User
+    
+    async with async_session() as session:
+        result = await session.execute(
+            select(User).where(User.referral_code == None)
+        )
+        users = result.scalars().all()
+        
+        count = 0
+        for user in users:
+            code = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(8))
+            user.referral_code = code
+            count += 1
+        
+        await session.commit()
+    
+    return {"fixed_users": count}
