@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { mealsApi, logClientError } from '@/lib/api';
 import { Upload, UtensilsCrossed, Cake, Coffee, Target, Heart, Crown, Zap, Sparkles, ArrowRight } from 'lucide-react';
@@ -39,18 +39,23 @@ export default function HomePage() {
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [motivationalMessage, setMotivationalMessage] = useState('');
   const [tip, setTip] = useState('');
+  const [pageKey, setPageKey] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user, token } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
+    setPageKey(prev => prev + 1);
     setMotivationalMessage(motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)]);
     setTip(tips[Math.floor(Math.random() * tips.length)]);
     setPreview(null);
     setFile(null);
     setError('');
+    setLoading(false);
+    setShowErrorPopup(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
-  }, []);
+  }, [pathname]);
 
   const clearImage = () => {
     if (preview) {
