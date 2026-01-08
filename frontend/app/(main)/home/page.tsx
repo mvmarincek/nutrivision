@@ -4,10 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { mealsApi } from '@/lib/api';
+import { normalizeImageOrientation } from '@/lib/image-utils';
 import { Upload, UtensilsCrossed, Cake, Coffee, Target, Heart, Crown, Zap, Sparkles, ArrowRight, X } from 'lucide-react';
 import PageAds from '@/components/PageAds';
 
-type Phase = 'idle' | 'uploading' | 'error';
+type Phase = 'idle' | 'loading_image' | 'uploading' | 'error';
 
 const mealTypes = [
   { id: 'prato', label: 'Prato', icon: UtensilsCrossed, color: 'from-green-400 to-teal-400' },
@@ -48,24 +49,24 @@ export default function HomePage() {
     setTip(tips[Math.floor(Math.random() * tips.length)]);
   }, []);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const frozenFile = new File([file], file.name, {
-      type: file.type,
-      lastModified: file.lastModified,
-    });
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(frozenFile);
-
-    setImageFile(frozenFile);
-    setPhase('idle');
+    setPhase('loading_image');
     setErrorMessage(null);
+    setImageFile(null);
+    setImagePreview(null);
+
+    try {
+      const { normalizedFile, previewBase64 } = await normalizeImageOrientation(file);
+      setImageFile(normalizedFile);
+      setImagePreview(previewBase64);
+      setPhase('idle');
+    } catch {
+      setPhase('error');
+      setErrorMessage('Não foi possível processar a imagem. Tente outra foto.');
+    }
   };
 
   const clearImage = () => {
@@ -121,6 +122,29 @@ export default function HomePage() {
           >
             Tentar Novamente
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'loading_image') {
+    return (
+      <div className="max-w-lg mx-auto">
+        <div className="bg-white rounded-3xl shadow-xl p-8 text-center border border-green-100">
+          <div className="w-20 h-20 rounded-full gradient-fresh flex items-center justify-center mx-auto mb-6 animate-pulse">
+            <Upload className="w-10 h-10 text-white" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Processando imagem...</h2>
+          <p className="text-gray-500 mb-6">Aguarde um momento</p>
+          <div className="flex justify-center gap-2">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-3 h-3 rounded-full bg-green-400 animate-bounce"
+                style={{ animationDelay: `${i * 0.15}s` }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     );
