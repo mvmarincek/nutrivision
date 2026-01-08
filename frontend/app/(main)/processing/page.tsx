@@ -4,8 +4,7 @@ import { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { jobsApi, mealsApi, JobResponse } from '@/lib/api';
-import { Loader2, Salad, ArrowRight } from 'lucide-react';
-import AdBanner from '@/components/AdBanner';
+import { Salad, ArrowRight } from 'lucide-react';
 import PageAds from '@/components/PageAds';
 
 const dicasEMotivacao = [
@@ -37,70 +36,62 @@ function ProcessingContent() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [dicaAtual, setDicaAtual] = useState(0);
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const jobId = searchParams.get('jobId');
   const mealId = searchParams.get('mealId');
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
-  const isMountedRef = useRef(true);
+  const jobIdRef = useRef(jobId);
 
   useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-      if (pollingRef.current) {
-        clearTimeout(pollingRef.current);
-      }
-    };
-  }, []);
+    jobIdRef.current = jobId;
+  }, [jobId]);
 
   useEffect(() => {
     setDicaAtual(Math.floor(Math.random() * dicasEMotivacao.length));
-    const interval = setInterval(() => {
+    const tipInterval = setInterval(() => {
       setDicaAtual(prev => (prev + 1) % dicasEMotivacao.length);
     }, 4000);
-    return () => clearInterval(interval);
+    return () => clearInterval(tipInterval);
   }, []);
 
   useEffect(() => {
-    if (!token || !jobId) return;
+    if (!jobId || !token) return;
 
-    const pollJob = async () => {
-      if (!isMountedRef.current) return;
-      
+    let stopped = false;
+
+    const checkStatus = async () => {
+      if (stopped || jobIdRef.current !== jobId) return;
+
       try {
         const result = await jobsApi.get(token, parseInt(jobId));
-        if (!isMountedRef.current) return;
-        
+        if (stopped) return;
+
         setJob(result);
 
         if (result.status === 'completed') {
+          stopped = true;
           router.push(`/result?mealId=${mealId}`);
         } else if (result.status === 'failed') {
+          stopped = true;
           setError(result.erro || 'Erro na análise');
-        } else if (result.status === 'waiting_user') {
-        } else {
-          pollingRef.current = setTimeout(pollJob, 2000);
         }
       } catch (err: any) {
-        if (isMountedRef.current) {
+        if (!stopped) {
           setError(err.message);
+          stopped = true;
         }
       }
     };
 
-    setJob(null);
-    setAnswers({});
-    setError('');
-    pollJob();
+    checkStatus();
+    const interval = setInterval(checkStatus, 1500);
 
     return () => {
-      if (pollingRef.current) {
-        clearTimeout(pollingRef.current);
-      }
+      stopped = true;
+      clearInterval(interval);
     };
-  }, [token, jobId, mealId, router]);
+  }, [jobId, token, mealId, router]);
 
   const handleSubmitAnswers = async () => {
     if (!token || !mealId) return;
@@ -109,40 +100,7 @@ function ProcessingContent() {
 
     try {
       const result = await mealsApi.submitAnswers(token, parseInt(mealId), answers);
-      setAnswers({});
-      setJob(null);
-      
-      const newUrl = `/processing?jobId=${result.job_id}&mealId=${mealId}`;
-      window.history.replaceState(null, '', newUrl);
-      
-      const pollNewJob = async () => {
-        if (!isMountedRef.current) return;
-        
-        try {
-          const jobResult = await jobsApi.get(token, result.job_id);
-          if (!isMountedRef.current) return;
-          
-          setJob(jobResult);
-
-          if (jobResult.status === 'completed') {
-            router.push(`/result?mealId=${mealId}`);
-          } else if (jobResult.status === 'failed') {
-            setError(jobResult.erro || 'Erro na análise');
-            setSubmitting(false);
-          } else if (jobResult.status === 'waiting_user') {
-            setSubmitting(false);
-          } else {
-            pollingRef.current = setTimeout(pollNewJob, 2000);
-          }
-        } catch (err: any) {
-          if (isMountedRef.current) {
-            setError(err.message);
-            setSubmitting(false);
-          }
-        }
-      };
-      
-      pollNewJob();
+      router.replace(`/processing?jobId=${result.job_id}&mealId=${mealId}`);
     } catch (err: any) {
       setError(err.message);
       setSubmitting(false);
@@ -198,18 +156,18 @@ function ProcessingContent() {
                   {q.question}
                 </p>
                 {q.options ? (
-                  <div className="space-y-2">
-                    {q.options.map((option) => (
+                  <div className="grid grid-cols-2 gap-2">
+                    {q.options.map((opt) => (
                       <button
-                        key={option}
-                        onClick={() => setAnswers({ ...answers, [q.id]: option })}
-                        className={`w-full text-left p-3 rounded-xl border-2 transition-all ${
-                          answers[q.id] === option
-                            ? 'border-green-400 bg-green-50 text-green-700 font-medium'
-                            : 'border-gray-200 bg-white hover:border-gray-300'
+                        key={opt}
+                        onClick={() => setAnswers(prev => ({ ...prev, [q.id]: opt }))}
+                        className={`p-3 rounded-xl text-sm font-medium transition-all ${
+                          answers[q.id] === opt
+                            ? 'bg-green-500 text-white shadow-md'
+                            : 'bg-white border border-gray-200 text-gray-700 hover:border-green-300'
                         }`}
                       >
-                        {option}
+                        {opt}
                       </button>
                     ))}
                   </div>
@@ -217,9 +175,9 @@ function ProcessingContent() {
                   <input
                     type="text"
                     value={answers[q.id] || ''}
-                    onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
-                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all"
-                    placeholder="Digite sua resposta"
+                    onChange={(e) => setAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                    className="w-full p-3 border border-gray-200 rounded-xl focus:border-green-400 focus:outline-none"
+                    placeholder="Digite sua resposta..."
                   />
                 )}
               </div>
@@ -228,11 +186,11 @@ function ProcessingContent() {
 
           <button
             onClick={handleSubmitAnswers}
-            disabled={submitting || !allAnswered}
+            disabled={!allAnswered || submitting}
             className={`w-full mt-6 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
-              submitting || !allAnswered
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'gradient-fresh text-white hover:shadow-xl hover:shadow-green-200'
+              allAnswered && !submitting
+                ? 'gradient-fresh text-white hover:shadow-xl'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
             {submitting ? (
@@ -252,27 +210,42 @@ function ProcessingContent() {
     );
   }
 
+  const dica = dicasEMotivacao[dicaAtual];
+
   return (
     <div className="max-w-lg mx-auto">
       <PageAds slot="PROCESSING_BANNER" position="top" />
-
+      
       <div className="bg-white rounded-3xl shadow-xl p-8 text-center border border-green-100">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl gradient-fresh flex items-center justify-center animate-pulse">
+        <div className="w-20 h-20 rounded-full gradient-fresh flex items-center justify-center mx-auto mb-6 animate-pulse">
           <Salad className="w-10 h-10 text-white" />
         </div>
-        <h2 className="text-xl font-bold mb-2 text-gray-900">Analisando sua refeição...</h2>
-        <p className="text-gray-500 mb-6">{job?.etapa_atual || 'Iniciando análise...'}</p>
         
-        <div className="flex justify-center gap-1 mb-6">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Analisando sua refeição...</h2>
+        <p className="text-gray-500 mb-6">Nossa IA está identificando os alimentos e calculando os nutrientes</p>
+        
+        <div className="flex justify-center gap-2 mb-8">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="w-3 h-3 rounded-full bg-green-400 animate-bounce"
+              style={{ animationDelay: `${i * 0.15}s` }}
+            />
+          ))}
         </div>
 
-        <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-4 transition-all duration-500">
-          <div className="text-3xl mb-2">{dicasEMotivacao[dicaAtual].emoji}</div>
-          <p className="text-gray-700 font-medium">{dicasEMotivacao[dicaAtual].texto}</p>
+        <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-4 border border-green-100">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{dica.emoji}</span>
+            <p className="text-sm text-gray-700 text-left">{dica.texto}</p>
+          </div>
         </div>
+
+        {job?.etapa_atual && (
+          <div className="mt-6 text-sm text-gray-500">
+            {job.etapa_atual}
+          </div>
+        )}
       </div>
 
       <PageAds slot="PROCESSING_BANNER" position="bottom" />
@@ -284,11 +257,11 @@ export default function ProcessingPage() {
   return (
     <Suspense fallback={
       <div className="max-w-lg mx-auto">
-        <div className="bg-white rounded-3xl shadow-xl p-8 text-center border border-green-100">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl gradient-fresh flex items-center justify-center animate-pulse">
-            <Salad className="w-10 h-10 text-white" />
+        <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
+          <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6 animate-pulse">
+            <Salad className="w-10 h-10 text-gray-300" />
           </div>
-          <h2 className="text-xl font-bold mb-2">Carregando...</h2>
+          <p className="text-gray-500">Carregando...</p>
         </div>
       </div>
     }>

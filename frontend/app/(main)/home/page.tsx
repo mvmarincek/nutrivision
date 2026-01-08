@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { mealsApi } from '@/lib/api';
 import { Upload, UtensilsCrossed, Cake, Coffee, Target, Heart, Crown, Zap, Sparkles, ArrowRight, X } from 'lucide-react';
-import ImageUploading, { ImageListType } from 'react-images-uploading';
 import PageAds from '@/components/PageAds';
 
 const mealTypes = [
@@ -32,11 +31,13 @@ const tips = [
 export default function HomePage() {
   const [mealType, setMealType] = useState('prato');
   const [mode, setMode] = useState<'simple' | 'full'>('simple');
-  const [images, setImages] = useState<ImageListType>([]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [motivationalMessage, setMotivationalMessage] = useState('');
   const [tip, setTip] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { user, token } = useAuth();
   const router = useRouter();
 
@@ -45,13 +46,35 @@ export default function HomePage() {
     setTip(tips[Math.floor(Math.random() * tips.length)]);
   }, []);
 
-  const onImageChange = (imageList: ImageListType) => {
-    setImages(imageList);
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const frozenFile = new File([file], file.name, {
+      type: file.type,
+      lastModified: file.lastModified,
+    });
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(frozenFile);
+
+    setImageFile(frozenFile);
     setError('');
   };
 
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleAnalyze = async () => {
-    if (images.length === 0 || !images[0].file || !token) return;
+    if (!imageFile || !token) return;
 
     const isFreeSimple = user?.plan === 'free' && mode === 'simple';
     const cost = mode === 'full' ? 12 : 5;
@@ -65,9 +88,8 @@ export default function HomePage() {
     setError('');
 
     try {
-      const uploadResult = await mealsApi.upload(token, images[0].file, mealType);
+      const uploadResult = await mealsApi.upload(token, imageFile, mealType);
       const analyzeResult = await mealsApi.analyze(token, uploadResult.meal_id, mode);
-      
       router.push(`/processing?jobId=${analyzeResult.job_id}&mealId=${uploadResult.meal_id}`);
     } catch (err: any) {
       setError(err.message || 'Erro ao iniciar análise');
@@ -76,7 +98,6 @@ export default function HomePage() {
   };
 
   const cost = mode === 'full' ? 12 : 5;
-  const hasImage = images.length > 0 && images[0].dataURL;
 
   return (
     <div className="max-w-lg mx-auto">
@@ -193,55 +214,53 @@ export default function HomePage() {
           </div>
         </div>
 
-        <ImageUploading
-          value={images}
-          onChange={onImageChange}
-          maxNumber={1}
-          acceptType={['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif']}
-        >
-          {({ imageList, onImageUpload, onImageRemove, dragProps }) => (
-            <div className="mb-6">
-              {imageList.length > 0 && imageList[0].dataURL ? (
-                <div className="relative rounded-2xl overflow-hidden shadow-lg">
-                  <img 
-                    src={imageList[0].dataURL} 
-                    alt="Preview" 
-                    className="w-full"
-                  />
-                  <button
-                    onClick={() => onImageRemove(0)}
-                    className="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                  <p className="text-center text-sm text-gray-500 mt-3 pb-2">
-                    Imagem pronta para análise
-                  </p>
-                </div>
-              ) : (
-                <div 
-                  className="bg-gradient-to-br from-green-50 to-teal-50 border-2 border-dashed border-green-200 rounded-2xl p-8 text-center cursor-pointer hover:border-green-400 transition-colors"
-                  onClick={onImageUpload}
-                  {...dragProps}
-                >
-                  <p className="text-gray-600 mb-4">
-                    Tire uma foto ou selecione da galeria
-                  </p>
-                  <div className="inline-flex items-center justify-center gap-2 gradient-fresh text-white px-6 py-3 rounded-full font-medium hover:shadow-lg transition-all">
-                    <Upload className="w-5 h-5" />
-                    Selecionar Imagem
-                  </div>
-                </div>
-              )}
+        <div className="mb-6">
+          {imagePreview ? (
+            <div className="relative rounded-2xl overflow-hidden shadow-lg">
+              <img 
+                src={imagePreview} 
+                alt="Preview" 
+                className="w-full"
+              />
+              <button
+                onClick={clearImage}
+                className="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <p className="text-center text-sm text-gray-500 mt-3 pb-2">
+                Imagem pronta para análise
+              </p>
+            </div>
+          ) : (
+            <div 
+              className="bg-gradient-to-br from-green-50 to-teal-50 border-2 border-dashed border-green-200 rounded-2xl p-8 text-center cursor-pointer hover:border-green-400 transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <p className="text-gray-600 mb-4">
+                Tire uma foto ou selecione da galeria
+              </p>
+              <div className="inline-flex items-center justify-center gap-2 gradient-fresh text-white px-6 py-3 rounded-full font-medium hover:shadow-lg transition-all">
+                <Upload className="w-5 h-5" />
+                Selecionar Imagem
+              </div>
             </div>
           )}
-        </ImageUploading>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+        </div>
 
         <button
           onClick={handleAnalyze}
-          disabled={!hasImage || loading}
+          disabled={!imageFile || loading}
           className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
-            hasImage && !loading
+            imageFile && !loading
               ? 'gradient-fresh text-white hover:shadow-xl hover:shadow-green-200'
               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
