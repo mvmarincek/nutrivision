@@ -20,12 +20,55 @@ REFERÊNCIAS VISUAIS PARA ESCALA:
 - Prato raso padrão brasileiro: 25-27cm diâmetro
 - Prato fundo: 20-22cm diâmetro
 - Prato de sobremesa: 19cm
-- Copo americano: 190ml
-- Copo long drink: 300ml
-- Tulipa de chopp: 300ml
-- Caneca: 350ml
-- Lata de cerveja/refrigerante: 350ml
-- Garrafa long neck: 355ml
+
+VOLUMES PADRÃO DE COPOS E RECIPIENTES (MUITO IMPORTANTE):
+
+COPOS COMUNS:
+- Copo americano (transparente, baixo): 190ml
+- Copo americano cheio: 180ml de líquido
+- Copo de requeijão: 250ml
+- Copo long drink/highball (alto, fino): 300-350ml
+- Copo tumbler/rocks (baixo, largo): 250-300ml
+- Copo de água de restaurante: 300ml
+
+COPOS DE CERVEJA/CHOPP:
+- Tulipa padrão: 300ml
+- Tulipa grande: 400ml
+- Caneca de chopp pequena: 300ml
+- Caneca de chopp média: 400ml
+- Caneca de chopp grande: 500ml
+- Copo caldereta: 350ml
+- Copo weizen (alto, curvado): 500ml
+
+XÍCARAS E CANECAS:
+- Xícara de café expresso: 50ml
+- Xícara de café média: 100ml
+- Xícara de chá: 180ml
+- Caneca padrão: 300-350ml
+- Caneca grande: 400-500ml
+
+TAÇAS:
+- Taça de vinho tinto: 200-250ml (servido 150ml)
+- Taça de vinho branco: 180ml (servido 120ml)
+- Taça de champagne/flauta: 150ml (servido 125ml)
+- Taça de coquetel/martini: 150ml
+- Taça de margarita: 250ml
+- Copo de shot/dose: 50ml
+
+GARRAFAS E LATAS:
+- Lata de refrigerante/cerveja: 350ml
+- Latinha mini: 220ml
+- Latão: 473ml
+- Long neck: 355ml
+- Garrafa de água pequena: 300-330ml
+- Garrafa de água média: 500ml
+- Garrafa de água grande: 1,5L
+
+ESTIMATIVA DE NÍVEL DE LÍQUIDO:
+- Copo cheio: 90% do volume total
+- Copo quase cheio: 75% do volume
+- Copo pela metade: 50% do volume
+- Copo com pouco: 25% do volume
 
 PORÇÕES TÍPICAS BRASILEIRAS:
 - Arroz (1 colher de servir cheia): 100-150g
@@ -36,11 +79,29 @@ PORÇÕES TÍPICAS BRASILEIRAS:
 - Salada (prato de acompanhamento): 50-80g
 - Óleo de preparo por porção: 5-10ml (sempre assuma uso moderado)
 
-BEBIDAS - ASSUMA AUTOMATICAMENTE:
-- Líquido amarelo/dourado em copo/tulipa = Chopp/Cerveja (300-350ml)
-- Líquido escuro = Refrigerante ou suco (300ml)
-- Líquido transparente = Água ou refrigerante claro (300ml)
-- Na dúvida sobre tipo de bebida, assuma a mais comum para o contexto
+BEBIDAS - ANÁLISE DETALHADA:
+1. Identifique o tipo de recipiente e seu volume padrão
+2. Estime o nível de líquido (cheio, meio, pouco)
+3. Calcule: volume_recipiente × nível_percentual = volume_real
+
+Exemplos:
+- Tulipa de chopp cheia = 300ml × 0.90 = 270ml
+- Copo long drink pela metade = 350ml × 0.50 = 175ml
+- Caneca de café cheia = 300ml × 0.85 = 255ml
+
+BEBIDAS - VALORES NUTRICIONAIS APROXIMADOS (por 100ml):
+- Cerveja: 40-45 kcal
+- Chopp: 40-45 kcal
+- Refrigerante comum: 40-45 kcal
+- Refrigerante zero: 0-2 kcal
+- Suco natural: 40-60 kcal
+- Suco de caixinha: 45-55 kcal
+- Vinho tinto: 85 kcal
+- Vinho branco: 80 kcal
+- Café sem açúcar: 2 kcal
+- Café com açúcar (1 sachê): 20 kcal
+- Leite integral: 60 kcal
+- Água de coco: 20 kcal
 
 ÓLEOS E GORDURAS:
 - Comida frita (batata, pastel, etc): assuma 10-15ml de óleo absorvido por 100g
@@ -54,6 +115,7 @@ REGRAS ABSOLUTAS:
 3. Forneça sempre valor central E faixa min/max.
 4. Em caso de incerteza, aumente a faixa mas dê uma estimativa.
 5. Liste incertezas em fatores_incerteza, não como perguntas.
+6. Para bebidas, SEMPRE identifique o tipo de copo e estime o volume corretamente.
 
 Retorne SEMPRE um JSON válido no formato:
 {
