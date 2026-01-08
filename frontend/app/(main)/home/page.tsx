@@ -53,22 +53,6 @@ export default function HomePage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const validateImage = (file: File): Promise<boolean> => {
-    return new Promise((resolve) => {
-      const url = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = () => {
-        URL.revokeObjectURL(url);
-        resolve(true);
-      };
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        resolve(false);
-      };
-      img.src = url;
-    });
-  };
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
@@ -90,20 +74,14 @@ export default function HomePage() {
         setPreview(URL.createObjectURL(jpegFile));
         return;
       } catch {
-        setError('Não foi possível processar este arquivo HEIC. Tire uma foto diretamente ou use outro formato.');
+        setError('Formato de imagem não suportado. Tire uma foto diretamente ou use: JPG, PNG, GIF, WebP ou HEIC.');
         return;
       }
     }
     
-    // Validate image can be loaded
-    const isValid = await validateImage(f);
-    
-    if (isValid) {
-      setFile(f);
-      setPreview(URL.createObjectURL(f));
-    } else {
-      setError('Formato de imagem não suportado. Tire uma foto diretamente ou use: JPG, PNG, GIF, WebP ou HEIC.');
-    }
+    // For all other formats, use directly
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
   };
 
   const handleAnalyze = async () => {
@@ -257,7 +235,7 @@ export default function HomePage() {
                 className="w-full"
                 onError={() => {
                   clearImage();
-                  setError('Formato de imagem não suportado. Tente outro arquivo.');
+                  setError('Formato de imagem não suportado. Tire uma foto diretamente ou use: JPG, PNG, GIF, WebP ou HEIC.');
                 }}
               />
               <button
