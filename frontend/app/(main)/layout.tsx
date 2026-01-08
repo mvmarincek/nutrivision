@@ -45,14 +45,25 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen bg-gradient-to-b from-green-50/50 to-white pb-24">
       <header className="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-10 border-b border-green-100">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/home" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl gradient-fresh flex items-center justify-center">
-              <Salad className="w-5 h-5 text-white" />
+          {pathname === '/home' ? (
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl gradient-fresh flex items-center justify-center">
+                <Salad className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-lg font-bold bg-gradient-to-r from-green-600 to-teal-500 bg-clip-text text-transparent">
+                Nutri-Vision
+              </span>
             </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-green-600 to-teal-500 bg-clip-text text-transparent">
-              Nutri-Vision
-            </span>
-          </Link>
+          ) : (
+            <Link href="/home" className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl gradient-fresh flex items-center justify-center">
+                <Salad className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-lg font-bold bg-gradient-to-r from-green-600 to-teal-500 bg-clip-text text-transparent">
+                Nutri-Vision
+              </span>
+            </Link>
+          )}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full">
               <Sparkles className="w-4 h-4 text-yellow-500" />
