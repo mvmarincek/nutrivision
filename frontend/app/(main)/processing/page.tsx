@@ -39,7 +39,7 @@ function ProcessingContent() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [dicaAtual, setDicaAtual] = useState(0);
-  const { token } = useAuth();
+  useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const jobId = searchParams.get('jobId');
@@ -55,7 +55,7 @@ function ProcessingContent() {
   }, []);
 
   useEffect(() => {
-    if (!jobId || !token) return;
+    if (!jobId) return;
 
     currentJobIdRef.current = jobId;
     setPhase('processing');
@@ -67,7 +67,7 @@ function ProcessingContent() {
       if (currentJobIdRef.current !== jobId) return;
 
       try {
-        const result = await jobsApi.get(token, parseInt(jobId));
+        const result = await jobsApi.get(parseInt(jobId));
         
         if (currentJobIdRef.current !== jobId) return;
 
@@ -96,17 +96,17 @@ function ProcessingContent() {
     return () => {
       clearInterval(interval);
     };
-  }, [jobId, token, mealId, router]);
+  }, [jobId, mealId, router]);
 
   const handleSubmitAnswers = async () => {
-    if (!token || !mealId) return;
+    if (!mealId) return;
     
     setSubmitting(true);
     setPhase('processing');
     setErrorMessage(null);
 
     try {
-      const result = await mealsApi.submitAnswers(token, parseInt(mealId), answers);
+      const result = await mealsApi.submitAnswers(parseInt(mealId), answers);
       router.replace(`/processing?jobId=${result.job_id}&mealId=${mealId}`);
     } catch (err: any) {
       setPhase('error');

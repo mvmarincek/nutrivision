@@ -1,12 +1,12 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { User, TokenResponse, authApi } from './api';
+import { User, TokenResponse, authApi, setAccessToken, clearAllTokens } from './api';
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isLoading: boolean;
+  isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, referralCode?: string) => Promise<void>;
   logout: () => void;
@@ -18,68 +18,74 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const logout = useCallback(() => {
-    setToken(null);
     setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    clearAllTokens();
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const storedToken = localStorage.getItem('token');
-    if (!storedToken) return;
     try {
-      const updatedUser = await authApi.getMe(storedToken);
+      const updatedUser = await authApi.getMe();
       setUser(updatedUser);
-      setToken(storedToken);
       localStorage.setItem('user', JSON.stringify(updatedUser));
     } catch (err) {
       console.error('Failed to refresh user:', err);
-      logout();
     }
-  }, [logout]);
+  }, []);
+
+  const initializeAuth = useCallback(async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    
+    if (!refreshToken) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await authApi.refresh(refreshToken);
+      
+      setAccessToken(response.access_token);
+      localStorage.setItem('refreshToken', response.refresh_token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      
+      setUser(response.user);
+      setIsAuthenticated(true);
+    } catch (err) {
+      console.error('Session initialization failed:', err);
+      clearAllTokens();
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const initAuth = async () => {
-      const storedToken = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-      
-      if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-        
-        try {
-          const updatedUser = await authApi.getMe(storedToken);
-          setUser(updatedUser);
-          localStorage.setItem('user', JSON.stringify(updatedUser));
-        } catch (err) {
-          console.error('Token validation failed:', err);
-          logout();
-        }
-      }
-      setIsLoading(false);
-    };
-    
-    initAuth();
-  }, [logout]);
+    initializeAuth();
+  }, [initializeAuth]);
 
   const login = async (email: string, password: string) => {
     const response = await authApi.login(email, password);
-    setToken(response.access_token);
-    setUser(response.user);
-    localStorage.setItem('token', response.access_token);
+    
+    setAccessToken(response.access_token);
+    localStorage.setItem('refreshToken', response.refresh_token);
     localStorage.setItem('user', JSON.stringify(response.user));
+    
+    setUser(response.user);
+    setIsAuthenticated(true);
   };
 
   const register = async (email: string, password: string, referralCode?: string) => {
     const response = await authApi.register(email, password, referralCode);
-    setToken(response.access_token);
-    setUser(response.user);
-    localStorage.setItem('token', response.access_token);
+    
+    setAccessToken(response.access_token);
+    localStorage.setItem('refreshToken', response.refresh_token);
     localStorage.setItem('user', JSON.stringify(response.user));
+    
+    setUser(response.user);
+    setIsAuthenticated(true);
   };
 
   const updateUser = (updatedUser: User) => {
@@ -88,7 +94,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, updateUser, refreshUser }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isLoading, 
+      isAuthenticated,
+      login, 
+      register, 
+      logout, 
+      updateUser, 
+      refreshUser 
+    }}>
       {children}
     </AuthContext.Provider>
   );

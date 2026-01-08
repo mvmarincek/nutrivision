@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from app.db.database import get_db
 from app.models.models import User, Referral
 from app.schemas.schemas import UserCreate, UserLogin, TokenResponse, UserResponse
-from app.core.security import get_password_hash, verify_password, create_access_token, get_current_user
+from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, decode_refresh_token, get_current_user
 from app.services.email_service import send_welcome_email, send_password_reset_email, send_referral_activated_email, send_email_verification, send_email_verified_success
 import secrets
 import string
@@ -30,6 +30,9 @@ class VerifyEmailRequest(BaseModel):
 
 class ResendVerificationRequest(BaseModel):
     email: str
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
 
 @router.post("/register", response_model=TokenResponse)
 async def register(user_data: UserCreate, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
@@ -93,9 +96,11 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks, db:
     background_tasks.add_task(send_email_verification, user.email, verification_token)
     
     access_token = create_access_token(data={"sub": str(user.id)})
+    refresh_token = create_refresh_token(user.id)
     
     return TokenResponse(
         access_token=access_token,
+        refresh_token=refresh_token,
         user=UserResponse.model_validate(user)
     )
 
@@ -111,9 +116,46 @@ async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
         )
     
     access_token = create_access_token(data={"sub": str(user.id)})
+    refresh_token = create_refresh_token(user.id)
     
     return TokenResponse(
         access_token=access_token,
+        refresh_token=refresh_token,
+        user=UserResponse.model_validate(user)
+    )
+
+@router.post("/refresh", response_model=TokenResponse)
+async def refresh_tokens(request: RefreshTokenRequest, db: AsyncSession = Depends(get_db)):
+    payload = decode_refresh_token(request.refresh_token)
+    
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token inválido ou expirado"
+        )
+    
+    user_id = payload.get("sub")
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido"
+        )
+    
+    result = await db.execute(select(User).where(User.id == int(user_id)))
+    user = result.scalar_one_or_none()
+    
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuário não encontrado"
+        )
+    
+    new_access_token = create_access_token(data={"sub": str(user.id)})
+    new_refresh_token = create_refresh_token(user.id)
+    
+    return TokenResponse(
+        access_token=new_access_token,
+        refresh_token=new_refresh_token,
         user=UserResponse.model_validate(user)
     )
 
@@ -236,8 +278,10 @@ async def create_test_user(db: AsyncSession = Depends(get_db)):
         await db.commit()
         await db.refresh(existing_user)
         access_token = create_access_token(data={"sub": str(existing_user.id)})
+        refresh_token = create_refresh_token(existing_user.id)
         return TokenResponse(
             access_token=access_token,
+            refresh_token=refresh_token,
             user=UserResponse.model_validate(existing_user)
         )
     
@@ -251,8 +295,10 @@ async def create_test_user(db: AsyncSession = Depends(get_db)):
     await db.refresh(user)
     
     access_token = create_access_token(data={"sub": str(user.id)})
+    refresh_token = create_refresh_token(user.id)
     
     return TokenResponse(
         access_token=access_token,
+        refresh_token=refresh_token,
         user=UserResponse.model_validate(user)
     )

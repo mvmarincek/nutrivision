@@ -12,15 +12,13 @@ import PageAds from '@/components/PageAds';
 export default function HistoryPage() {
   const [meals, setMeals] = useState<MealListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const { token, user } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!token) return;
-
     const fetchMeals = async () => {
       try {
-        const result = await mealsApi.list(token);
+        const result = await mealsApi.list();
         setMeals(result);
       } catch (err) {
         console.error(err);
@@ -30,13 +28,13 @@ export default function HistoryPage() {
     };
 
     fetchMeals();
-  }, [token]);
+  }, []);
 
   const handleDelete = async (mealId: number) => {
-    if (!token || !confirm('Excluir esta análise?')) return;
+    if (!confirm('Excluir esta análise?')) return;
 
     try {
-      await mealsApi.delete(token, mealId);
+      await mealsApi.delete(mealId);
       setMeals(meals.filter(m => m.id !== mealId));
     } catch (err) {
       console.error(err);

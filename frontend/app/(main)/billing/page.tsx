@@ -54,16 +54,14 @@ export default function BillingPage() {
   const [proBoletoUrl, setProBoletoUrl] = useState<string | null>(null);
   const [processingPro, setProcessingPro] = useState(false);
   const [cancelingSubscription, setCancelingSubscription] = useState(false);
-  const { token, user, refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (token) {
-          await refreshUser();
-          const status = await billingApi.getStatus(token);
-          setBillingStatus(status);
-        }
+        await refreshUser();
+        const status = await billingApi.getStatus();
+        setBillingStatus(status);
         const pkgs = await billingApi.getPackages();
         setPackages(pkgs);
       } catch (err) {
@@ -74,20 +72,20 @@ export default function BillingPage() {
     };
 
     fetchData();
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
     const paymentData = pixData || proPixData;
-    if (paymentData && token) {
+    if (paymentData) {
       interval = setInterval(async () => {
         try {
           setCheckingPayment(true);
-          const status = await billingApi.getPaymentStatus(token, paymentData.payment_id);
+          const status = await billingApi.getPaymentStatus(paymentData.payment_id);
           if (status.confirmed) {
             await refreshUser();
-            const newStatus = await billingApi.getStatus(token);
+            const newStatus = await billingApi.getStatus();
             setBillingStatus(newStatus);
             setPixData(null);
             setProPixData(null);
@@ -107,7 +105,7 @@ export default function BillingPage() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [pixData, proPixData, token, refreshUser]);
+  }, [pixData, proPixData, refreshUser]);
 
   const handleSelectPackage = (pkgId: string) => {
     setSelectedPackage(pkgId);
@@ -117,11 +115,11 @@ export default function BillingPage() {
   };
 
   const handlePixPayment = async () => {
-    if (!token || !selectedPackage) return;
+    if (!selectedPackage) return;
     setPurchasing(selectedPackage);
 
     try {
-      const result = await billingApi.createPixPayment(token, selectedPackage);
+      const result = await billingApi.createPixPayment(selectedPackage);
       setPixData(result);
     } catch (err) {
       console.error(err);
@@ -132,7 +130,7 @@ export default function BillingPage() {
   };
 
   const handleCardPayment = async () => {
-    if (!token || !selectedPackage) return;
+    if (!selectedPackage) return;
     
     if (!cardForm.card_holder_name || !cardForm.card_number || !cardForm.expiry_month || 
         !cardForm.expiry_year || !cardForm.cvv || !cardForm.holder_cpf || 
@@ -143,12 +141,12 @@ export default function BillingPage() {
 
     setProcessingCard(true);
     try {
-      await billingApi.createCardPayment(token, {
+      await billingApi.createCardPayment({
         package: selectedPackage,
         ...cardForm
       });
       await refreshUser();
-      const newStatus = await billingApi.getStatus(token);
+      const newStatus = await billingApi.getStatus();
       setBillingStatus(newStatus);
       setSelectedPackage(null);
       setShowCardForm(false);
@@ -163,8 +161,6 @@ export default function BillingPage() {
   };
 
   const handleProSubscription = async (billingType: 'PIX' | 'CREDIT_CARD' | 'BOLETO') => {
-    if (!token) return;
-    
     if (billingType === 'CREDIT_CARD') {
       if (!cardForm.card_holder_name || !cardForm.card_number || !cardForm.expiry_month || 
           !cardForm.expiry_year || !cardForm.cvv || !cardForm.holder_cpf || 
@@ -184,11 +180,11 @@ export default function BillingPage() {
         request.holder_cpf = cardForm.holder_cpf;
       }
 
-      const result = await billingApi.createProSubscription(token, request);
+      const result = await billingApi.createProSubscription(request);
       
       if (result.status === 'active') {
         await refreshUser();
-        const newStatus = await billingApi.getStatus(token);
+        const newStatus = await billingApi.getStatus();
         setBillingStatus(newStatus);
         setShowProModal(false);
         setProPaymentMethod(null);
@@ -214,14 +210,13 @@ export default function BillingPage() {
   };
 
   const handleCancelSubscription = async () => {
-    if (!token) return;
     if (!confirm('Tem certeza que deseja cancelar sua assinatura PRO?')) return;
 
     setCancelingSubscription(true);
     try {
-      await billingApi.cancelSubscription(token);
+      await billingApi.cancelSubscription();
       await refreshUser();
-      const newStatus = await billingApi.getStatus(token);
+      const newStatus = await billingApi.getStatus();
       setBillingStatus(newStatus);
       alert('Assinatura cancelada com sucesso.');
     } catch (err: any) {

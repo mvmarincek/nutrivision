@@ -39,7 +39,7 @@ export default function ProfilePage() {
   const [sugestaoEnviada, setSugestaoEnviada] = useState(false);
   const [linkCopiado, setLinkCopiado] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { token, user, refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const router = useRouter();
 
   const referralLink = user?.referral_code 
@@ -53,11 +53,11 @@ export default function ProfilePage() {
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !token) return;
+    if (!file) return;
     
     setUploadingAvatar(true);
     try {
-      const profile = await profileApi.uploadAvatar(token, file);
+      const profile = await profileApi.uploadAvatar(file);
       setAvatarUrl(profile.avatar_url);
     } catch (err) {
       console.error('Erro ao enviar foto:', err);
@@ -75,11 +75,11 @@ export default function ProfilePage() {
   };
 
   const handleEnviarSugestao = async () => {
-    if (!token || !sugestao.trim()) return;
+    if (!sugestao.trim()) return;
     setEnviandoSugestao(true);
     
     try {
-      await feedbackApi.send(token, sugestao);
+      await feedbackApi.send(sugestao);
       setSugestaoEnviada(true);
       setSugestao('');
       setTimeout(() => setSugestaoEnviada(false), 3000);
@@ -91,12 +91,10 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    if (!token) return;
-
     const fetchProfile = async () => {
       try {
         await refreshUser();
-        const profile = await profileApi.get(token);
+        const profile = await profileApi.get();
         setObjetivo(profile.objetivo || '');
         setRestricoes(profile.restricoes || []);
         setAlergias((profile.alergias || []).join(', '));
@@ -108,7 +106,7 @@ export default function ProfilePage() {
     };
 
     fetchProfile();
-  }, [token]);
+  }, []);
 
   const handleToggleRestricao = (id: string) => {
     if (restricoes.includes(id)) {
@@ -119,12 +117,11 @@ export default function ProfilePage() {
   };
 
   const handleSave = async () => {
-    if (!token) return;
     setSaving(true);
     setError('');
 
     try {
-      await profileApi.update(token, {
+      await profileApi.update({
         objetivo,
         restricoes,
         alergias: alergias.split(',').map(a => a.trim()).filter(Boolean)

@@ -41,7 +41,7 @@ export default function HomePage() {
   const [motivationalMessage, setMotivationalMessage] = useState('');
   const [tip, setTip] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -80,7 +80,7 @@ export default function HomePage() {
   };
 
   const handleAnalyze = async () => {
-    if (!imageFile || !token) return;
+    if (!imageFile) return;
 
     const isFreeSimple = user?.plan === 'free' && mode === 'simple';
     const cost = mode === 'full' ? 12 : 5;
@@ -95,8 +95,8 @@ export default function HomePage() {
     setErrorMessage(null);
 
     try {
-      const uploadResult = await mealsApi.upload(token, imageFile, mealType);
-      const analyzeResult = await mealsApi.analyze(token, uploadResult.meal_id, mode);
+      const uploadResult = await mealsApi.upload(imageFile, mealType);
+      const analyzeResult = await mealsApi.analyze(uploadResult.meal_id, mode);
       router.push(`/processing?jobId=${analyzeResult.job_id}&mealId=${uploadResult.meal_id}`);
     } catch (err: any) {
       setPhase('error');
