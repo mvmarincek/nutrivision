@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { profileApi, feedbackApi, authApi } from '@/lib/api';
-import { Save, User, ArrowRight, Salad, Send, Lightbulb, ArrowDownCircle } from 'lucide-react';
+import { Save, User, ArrowRight, Salad, Send, Lightbulb, ArrowDownCircle, Gift, Copy, Check, QrCode } from 'lucide-react';
 import AdBanner from '@/components/AdBanner';
 
 const objetivos = [
@@ -34,6 +34,7 @@ export default function ProfilePage() {
   const [enviandoSugestao, setEnviandoSugestao] = useState(false);
   const [sugestaoEnviada, setSugestaoEnviada] = useState(false);
   const [downgrading, setDowngrading] = useState(false);
+  const [linkCopiado, setLinkCopiado] = useState(false);
   const { token, user, updateUser } = useAuth();
   const router = useRouter();
 
@@ -48,6 +49,19 @@ export default function ProfilePage() {
       console.error(err);
     } finally {
       setDowngrading(false);
+    }
+  };
+
+  const referralLink = user?.referral_code 
+    ? `https://nutrivision-drab.vercel.app/register?ref=${user.referral_code}` 
+    : '';
+  const appLink = 'https://nutrivision-drab.vercel.app';
+
+  const handleCopyLink = () => {
+    if (referralLink) {
+      navigator.clipboard.writeText(referralLink);
+      setLinkCopiado(true);
+      setTimeout(() => setLinkCopiado(false), 2000);
     }
   };
 
@@ -304,6 +318,92 @@ export default function ProfilePage() {
             )}
           </button>
         )}
+      </div>
+
+      <div className="bg-white rounded-3xl shadow-xl p-6 border border-purple-100 mt-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
+            <Gift className="w-6 h-6 text-purple-600" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900">Indique Amigos</h3>
+            <p className="text-sm text-gray-500">Ganhe 12 creditos por indicacao!</p>
+          </div>
+        </div>
+
+        <p className="text-sm text-gray-600 mb-4">
+          Compartilhe seu link ou QR Code. Quando seu amigo se cadastrar, voce ganha 12 creditos para analises PRO!
+        </p>
+
+        {user?.referral_code && (
+          <>
+            <div className="bg-gray-50 rounded-2xl p-3 mb-4">
+              <p className="text-xs text-gray-500 mb-1">Seu link de indicacao:</p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={referralLink}
+                  className="flex-1 bg-white px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 truncate"
+                />
+                <button
+                  onClick={handleCopyLink}
+                  className={`px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-all ${
+                    linkCopiado
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:shadow-lg'
+                  }`}
+                >
+                  {linkCopiado ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      Copiado!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      Copiar
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <div className="bg-white p-4 rounded-2xl border-2 border-purple-100 inline-block">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(referralLink)}`}
+                  alt="QR Code de Indicacao"
+                  className="w-36 h-36"
+                />
+                <p className="text-xs text-center text-gray-500 mt-2">Escaneie para se cadastrar</p>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-3xl p-6 border border-green-100 mt-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-2xl gradient-fresh flex items-center justify-center">
+            <QrCode className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900">Acesse o App</h3>
+            <p className="text-sm text-gray-500">QR Code para acesso rapido</p>
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <div className="bg-white p-4 rounded-2xl border-2 border-green-100 inline-block">
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(appLink)}`}
+              alt="QR Code do App"
+              className="w-36 h-36"
+            />
+            <p className="text-xs text-center text-gray-500 mt-2">nutrivision-drab.vercel.app</p>
+          </div>
+        </div>
       </div>
 
       {user?.plan === 'free' && (

@@ -40,6 +40,7 @@ export interface User {
   plan: string;
   credit_balance: number;
   pro_analyses_remaining: number;
+  referral_code?: string;
   created_at: string;
 }
 
@@ -168,8 +169,8 @@ export interface CreditPackage {
 }
 
 export const authApi = {
-  register: (email: string, password: string) =>
-    api<TokenResponse>('/auth/register', { method: 'POST', body: { email, password } }),
+  register: (email: string, password: string, referral_code?: string) =>
+    api<TokenResponse>('/auth/register', { method: 'POST', body: { email, password, referral_code } }),
   
   login: (email: string, password: string) =>
     api<TokenResponse>('/auth/login', { method: 'POST', body: { email, password } }),
