@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense, useCallback } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { jobsApi, mealsApi, JobResponse } from '@/lib/api';
@@ -36,13 +36,24 @@ function ProcessingContent() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [pollingActive, setPollingActive] = useState(true);
   const [dicaAtual, setDicaAtual] = useState(0);
   const { token, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const jobId = searchParams.get('jobId');
   const mealId = searchParams.get('mealId');
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (pollingRef.current) {
+        clearTimeout(pollingRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     setDicaAtual(Math.floor(Math.random() * dicasEMotivacao.length));
@@ -52,37 +63,44 @@ function ProcessingContent() {
     return () => clearInterval(interval);
   }, []);
 
-  const pollJob = useCallback(async () => {
-    if (!token || !jobId || !pollingActive) return;
-
-    try {
-      const result = await jobsApi.get(token, parseInt(jobId));
-      setJob(result);
-
-      if (result.status === 'completed') {
-        setPollingActive(false);
-        router.push(`/result?mealId=${mealId}`);
-      } else if (result.status === 'failed') {
-        setPollingActive(false);
-        setError(result.erro || 'Erro na análise');
-      } else if (result.status === 'waiting_user') {
-        setPollingActive(false);
-      } else {
-        setTimeout(() => pollJob(), 2000);
-      }
-    } catch (err: any) {
-      setError(err.message);
-      setPollingActive(false);
-    }
-  }, [token, jobId, mealId, router, pollingActive]);
-
   useEffect(() => {
-    setPollingActive(true);
+    if (!token || !jobId) return;
+
+    const pollJob = async () => {
+      if (!isMountedRef.current) return;
+      
+      try {
+        const result = await jobsApi.get(token, parseInt(jobId));
+        if (!isMountedRef.current) return;
+        
+        setJob(result);
+
+        if (result.status === 'completed') {
+          router.push(`/result?mealId=${mealId}`);
+        } else if (result.status === 'failed') {
+          setError(result.erro || 'Erro na análise');
+        } else if (result.status === 'waiting_user') {
+        } else {
+          pollingRef.current = setTimeout(pollJob, 2000);
+        }
+      } catch (err: any) {
+        if (isMountedRef.current) {
+          setError(err.message);
+        }
+      }
+    };
+
     setJob(null);
     setAnswers({});
     setError('');
     pollJob();
-  }, [jobId]);
+
+    return () => {
+      if (pollingRef.current) {
+        clearTimeout(pollingRef.current);
+      }
+    };
+  }, [token, jobId, mealId, router]);
 
   const handleSubmitAnswers = async () => {
     if (!token || !mealId) return;
@@ -93,14 +111,17 @@ function ProcessingContent() {
       const result = await mealsApi.submitAnswers(token, parseInt(mealId), answers);
       setAnswers({});
       setJob(null);
-      setPollingActive(true);
       
       const newUrl = `/processing?jobId=${result.job_id}&mealId=${mealId}`;
       window.history.replaceState(null, '', newUrl);
       
       const pollNewJob = async () => {
+        if (!isMountedRef.current) return;
+        
         try {
           const jobResult = await jobsApi.get(token, result.job_id);
+          if (!isMountedRef.current) return;
+          
           setJob(jobResult);
 
           if (jobResult.status === 'completed') {
@@ -111,11 +132,13 @@ function ProcessingContent() {
           } else if (jobResult.status === 'waiting_user') {
             setSubmitting(false);
           } else {
-            setTimeout(pollNewJob, 2000);
+            pollingRef.current = setTimeout(pollNewJob, 2000);
           }
         } catch (err: any) {
-          setError(err.message);
-          setSubmitting(false);
+          if (isMountedRef.current) {
+            setError(err.message);
+            setSubmitting(false);
+          }
         }
       };
       
