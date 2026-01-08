@@ -39,7 +39,6 @@ export default function HomePage() {
   const [motivationalMessage, setMotivationalMessage] = useState('');
   const [tip, setTip] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const { user, token } = useAuth();
   const router = useRouter();
 
@@ -52,7 +51,6 @@ export default function HomePage() {
     setPreview(null);
     setFile(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
-    if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -239,33 +237,18 @@ export default function HomePage() {
               <p className="text-gray-600 mb-4">
                 Tire uma foto ou selecione da galeria
               </p>
-              <div className="flex gap-3 justify-center">
-                <button
-                  onClick={() => cameraInputRef.current?.click()}
-                  className="inline-flex items-center justify-center gap-2 gradient-fresh text-white px-5 py-3 rounded-full font-medium hover:shadow-lg transition-all"
-                >
-                  Tirar Foto
-                </button>
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="inline-flex items-center justify-center gap-2 bg-white border-2 border-green-400 text-green-600 px-5 py-3 rounded-full font-medium hover:bg-green-50 transition-all"
-                >
-                  Galeria
-                </button>
-              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center justify-center gap-2 gradient-fresh text-white px-6 py-3 rounded-full font-medium hover:shadow-lg transition-all"
+              >
+                <Upload className="w-5 h-5" />
+                Selecionar Imagem
+              </button>
             </div>
-            <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleFileChange}
-              className="hidden"
-            />
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*,.heic,.heif,.webp"
               onChange={handleFileChange}
               className="hidden"
             />
