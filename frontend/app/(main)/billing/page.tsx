@@ -194,7 +194,7 @@ export default function BillingPage() {
         setProPaymentMethod(null);
         setCardForm(initialCardForm);
         alert('Assinatura PRO ativada com sucesso!');
-      } else if (result.pix_code) {
+      } else if (result.pix_code && result.payment_id && result.pix_qr_code_base64) {
         setProPixData({
           payment_id: result.payment_id,
           pix_code: result.pix_code,
