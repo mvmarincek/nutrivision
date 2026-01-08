@@ -72,11 +72,15 @@ export default function HomePage() {
   };
 
   const handleGallerySelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
-    setError('');
-    setFile(selectedFile);
-    setPreview(URL.createObjectURL(selectedFile));
+    try {
+      const selectedFile = e.target.files?.[0];
+      if (!selectedFile) return;
+      setError('');
+      setFile(selectedFile);
+      setPreview(URL.createObjectURL(selectedFile));
+    } catch (err) {
+      setError('Erro ao carregar imagem. Tente outro arquivo.');
+    }
   };
 
   const handleCameraCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -254,6 +258,10 @@ export default function HomePage() {
                 src={preview} 
                 alt="Preview" 
                 className="w-full"
+                onError={() => {
+                  clearImage();
+                  setError('Formato de imagem não suportado. Tente outro arquivo.');
+                }}
               />
               <button
                 onClick={clearImage}
