@@ -342,7 +342,7 @@ function ResultContent() {
         Esta análise é informativa e não substitui orientação de nutricionista ou médico.
       </p>
 
-      <PageAds slot="RESULT" position="bottom" />
+      <PageAds position="bottom" />
 
       <button
         onClick={() => router.push('/home')}

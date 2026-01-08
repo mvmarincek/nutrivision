@@ -81,7 +81,7 @@ export default function HistoryPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <PageAds slot="HISTORY" position="top" />
+      <PageAds position="top" />
 
       <h1 className="text-2xl font-bold mb-6">Histórico de Análises</h1>
 
@@ -158,7 +158,7 @@ export default function HistoryPage() {
         </div>
       )}
 
-      <PageAds slot="HISTORY" position="bottom" />
+      <PageAds position="bottom" />
     </div>
   );
 }

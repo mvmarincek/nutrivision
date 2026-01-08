@@ -146,7 +146,7 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-lg mx-auto">
-      <PageAds slot="PROFILE" position="top" />
+      <PageAds position="top" />
 
       <h1 className="text-2xl font-bold mb-6">Meu Perfil</h1>
 
@@ -422,7 +422,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <PageAds slot="PROFILE" position="bottom" />
+      <PageAds position="bottom" />
     </div>
   );
 }
