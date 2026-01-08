@@ -189,7 +189,10 @@ export const authApi = {
     api<{ message: string; already_verified?: boolean }>('/auth/resend-verification', { method: 'POST', body: { email } }),
   
   checkEmailVerified: (token: string) =>
-    api<{ email_verified: boolean }>('/auth/check-email-verified', { token })
+    api<{ email_verified: boolean }>('/auth/check-email-verified', { token }),
+  
+  getMe: (token: string) =>
+    api<User>('/auth/me', { token })
 };
 
 export const profileApi = {

@@ -21,7 +21,7 @@ function ResultContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [celebration, setCelebration] = useState('');
-  const { token, user } = useAuth();
+  const { token, user, refreshUser } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const mealId = searchParams.get('mealId');
@@ -37,6 +37,7 @@ function ResultContent() {
       try {
         const result = await mealsApi.get(token, parseInt(mealId));
         setMeal(result);
+        await refreshUser();
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -45,7 +46,7 @@ function ResultContent() {
     };
 
     fetchMeal();
-  }, [token, mealId]);
+  }, [token, mealId, refreshUser]);
 
   if (loading) {
     return (

@@ -10,12 +10,13 @@ export default function BillingPage() {
   const [packages, setPackages] = useState<Record<string, CreditPackage>>({});
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
-  const { token, user, updateUser } = useAuth();
+  const { token, user, refreshUser } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (token) {
+          await refreshUser();
           const status = await billingApi.getStatus(token);
           setBillingStatus(status);
         }
@@ -29,7 +30,7 @@ export default function BillingPage() {
     };
 
     fetchData();
-  }, [token]);
+  }, [token, refreshUser]);
 
   const handleBuyCredits = async (packageId: string) => {
     if (!token) return;

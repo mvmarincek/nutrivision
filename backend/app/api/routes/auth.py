@@ -208,6 +208,10 @@ async def resend_verification(request: ResendVerificationRequest, background_tas
 async def check_email_verified(current_user: User = Depends(get_current_user)):
     return {"email_verified": current_user.email_verified}
 
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_info(current_user: User = Depends(get_current_user)):
+    return UserResponse.model_validate(current_user)
+
 @router.post("/downgrade-to-free", response_model=UserResponse)
 async def downgrade_to_free(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     if current_user.plan == "free":
