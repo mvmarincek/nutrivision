@@ -67,7 +67,7 @@ export default function LandingPage() {
             <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-600">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-green-500" />
-                <span>27 créditos grátis</span>
+                <span>36 créditos grátis</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-green-500" />
@@ -206,10 +206,10 @@ export default function LandingPage() {
                 <span className="text-xl">🌱</span>
               </div>
               <h3 className="font-bold text-lg mb-2">Inicial</h3>
-              <p className="text-4xl font-bold text-gray-900 mb-1">50</p>
+              <p className="text-4xl font-bold text-gray-900 mb-1">12</p>
               <p className="text-gray-500 mb-4">créditos</p>
-              <p className="text-2xl font-bold text-green-600">R$ 9,90</p>
-              <p className="text-xs text-gray-400 mt-2">10 análises simples</p>
+              <p className="text-2xl font-bold text-green-600">R$ 4,90</p>
+              <p className="text-xs text-gray-400 mt-2">1 análise completa</p>
             </div>
             
             <div className="bg-gradient-to-br from-green-500 to-teal-500 rounded-3xl p-6 text-center card-hover relative transform scale-105 shadow-xl shadow-green-200">
@@ -220,10 +220,10 @@ export default function LandingPage() {
                 <span className="text-xl">🌿</span>
               </div>
               <h3 className="font-bold text-lg mb-2 text-white">Básico</h3>
-              <p className="text-4xl font-bold text-white mb-1">100</p>
+              <p className="text-4xl font-bold text-white mb-1">36</p>
               <p className="text-green-100 mb-4">créditos</p>
-              <p className="text-2xl font-bold text-white">R$ 17,90</p>
-              <p className="text-xs text-green-100 mt-2">20 análises simples</p>
+              <p className="text-2xl font-bold text-white">R$ 12,90</p>
+              <p className="text-xs text-green-100 mt-2">3 análises completas</p>
             </div>
             
             <div className="bg-white border-2 border-gray-100 rounded-3xl p-6 text-center card-hover">
@@ -231,10 +231,10 @@ export default function LandingPage() {
                 <span className="text-xl">🌳</span>
               </div>
               <h3 className="font-bold text-lg mb-2">Avançado</h3>
-              <p className="text-4xl font-bold text-gray-900 mb-1">300</p>
+              <p className="text-4xl font-bold text-gray-900 mb-1">60</p>
               <p className="text-gray-500 mb-4">créditos</p>
-              <p className="text-2xl font-bold text-green-600">R$ 44,90</p>
-              <p className="text-xs text-gray-400 mt-2">60 análises simples</p>
+              <p className="text-2xl font-bold text-green-600">R$ 19,90</p>
+              <p className="text-xs text-gray-400 mt-2">5 análises completas</p>
             </div>
             
             <div className="bg-white border-2 border-gray-100 rounded-3xl p-6 text-center card-hover">
@@ -242,15 +242,15 @@ export default function LandingPage() {
                 <span className="text-xl">🌟</span>
               </div>
               <h3 className="font-bold text-lg mb-2">Pro</h3>
-              <p className="text-4xl font-bold text-gray-900 mb-1">1000</p>
+              <p className="text-4xl font-bold text-gray-900 mb-1">120</p>
               <p className="text-gray-500 mb-4">créditos</p>
-              <p className="text-2xl font-bold text-green-600">R$ 129,90</p>
-              <p className="text-xs text-gray-400 mt-2">200 análises simples</p>
+              <p className="text-2xl font-bold text-green-600">R$ 34,90</p>
+              <p className="text-xs text-gray-400 mt-2">10 análises completas</p>
             </div>
           </div>
           
           <p className="text-center text-gray-500 mt-8">
-            Análise simples: 5 créditos | Análise completa com sugestão visual: 12 créditos
+            Análise simples: 1 crédito | Análise completa com sugestão visual: 12 créditos
           </p>
         </div>
       </section>
@@ -261,7 +261,7 @@ export default function LandingPage() {
             Pronto para transformar sua alimentação?
           </h2>
           <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
-            Comece agora com 27 créditos gratuitos e descubra uma nova forma de se alimentar
+            Comece agora com 36 créditos gratuitos e descubra uma nova forma de se alimentar
           </p>
           <Link 
             href="/register"
