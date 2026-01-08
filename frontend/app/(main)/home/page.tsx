@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { mealsApi, logClientError } from '@/lib/api';
-import { Upload, UtensilsCrossed, Cake, Coffee, Target, Heart, Crown, Zap, Sparkles, ArrowRight } from 'lucide-react';
-import AdBanner from '@/components/AdBanner';
+import { mealsApi } from '@/lib/api';
+import { Upload, UtensilsCrossed, Cake, Coffee, Target, Heart, Crown, Zap, Sparkles, ArrowRight, X } from 'lucide-react';
+import ImageUploading, { ImageListType } from 'react-images-uploading';
 import PageAds from '@/components/PageAds';
 
 const mealTypes = [
@@ -32,14 +32,11 @@ const tips = [
 export default function HomePage() {
   const [mealType, setMealType] = useState('prato');
   const [mode, setMode] = useState<'simple' | 'full'>('simple');
-  const [preview, setPreview] = useState<string | null>(null);
-  const [file, setFile] = useState<File | null>(null);
+  const [images, setImages] = useState<ImageListType>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [motivationalMessage, setMotivationalMessage] = useState('');
   const [tip, setTip] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { user, token } = useAuth();
   const router = useRouter();
 
@@ -48,57 +45,13 @@ export default function HomePage() {
     setTip(tips[Math.floor(Math.random() * tips.length)]);
   }, []);
 
-  const clearImage = () => {
-    if (preview) {
-      URL.revokeObjectURL(preview);
-    }
-    setPreview(null);
-    setFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    
-    if (preview) {
-      URL.revokeObjectURL(preview);
-    }
-    setPreview(null);
-    setFile(null);
+  const onImageChange = (imageList: ImageListType) => {
+    setImages(imageList);
     setError('');
-    
-    try {
-      const fileName = f.name.toLowerCase();
-      const isHeic = f.type === 'image/heic' || f.type === 'image/heif' || 
-                     fileName.endsWith('.heic') || fileName.endsWith('.heif');
-      
-      let finalFile = f;
-      
-      if (isHeic) {
-        const heic2any = (await import('heic2any')).default;
-        const converted = await heic2any({ blob: f, toType: 'image/jpeg', quality: 0.92 });
-        const blob = Array.isArray(converted) ? converted[0] : converted;
-        finalFile = new File([blob], fileName.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' });
-      }
-      
-      const url = URL.createObjectURL(finalFile);
-      setFile(finalFile);
-      setPreview(url);
-    } catch (err) {
-      logClientError(err instanceof Error ? err : new Error(String(err)), { 
-        name: f.name, 
-        type: f.type, 
-        size: f.size 
-      });
-      setError('Formato de imagem não suportado. Tire uma foto diretamente ou use: JPG, PNG, GIF, WebP ou HEIC.');
-      setShowErrorPopup(true);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
   };
 
   const handleAnalyze = async () => {
-    if (!file || !token) return;
+    if (images.length === 0 || !images[0].file || !token) return;
 
     const isFreeSimple = user?.plan === 'free' && mode === 'simple';
     const cost = mode === 'full' ? 12 : 5;
@@ -112,7 +65,7 @@ export default function HomePage() {
     setError('');
 
     try {
-      const uploadResult = await mealsApi.upload(token, file, mealType);
+      const uploadResult = await mealsApi.upload(token, images[0].file, mealType);
       const analyzeResult = await mealsApi.analyze(token, uploadResult.meal_id, mode);
       
       router.push(`/processing?jobId=${analyzeResult.job_id}&mealId=${uploadResult.meal_id}`);
@@ -123,6 +76,7 @@ export default function HomePage() {
   };
 
   const cost = mode === 'full' ? 12 : 5;
+  const hasImage = images.length > 0 && images[0].dataURL;
 
   return (
     <div className="max-w-lg mx-auto">
@@ -239,54 +193,55 @@ export default function HomePage() {
           </div>
         </div>
 
-        {preview ? (
-          <div className="mb-6">
-            <div className="relative rounded-2xl overflow-hidden shadow-lg">
-              <img 
-                src={preview} 
-                alt="Preview" 
-                className="w-full"
-              />
-              <button
-                onClick={clearImage}
-                className="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-              >
-                ✕
-              </button>
+        <ImageUploading
+          value={images}
+          onChange={onImageChange}
+          maxNumber={1}
+          acceptType={['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif']}
+        >
+          {({ imageList, onImageUpload, onImageRemove, dragProps }) => (
+            <div className="mb-6">
+              {imageList.length > 0 && imageList[0].dataURL ? (
+                <div className="relative rounded-2xl overflow-hidden shadow-lg">
+                  <img 
+                    src={imageList[0].dataURL} 
+                    alt="Preview" 
+                    className="w-full"
+                  />
+                  <button
+                    onClick={() => onImageRemove(0)}
+                    className="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  <p className="text-center text-sm text-gray-500 mt-3 pb-2">
+                    Imagem pronta para análise
+                  </p>
+                </div>
+              ) : (
+                <div 
+                  className="bg-gradient-to-br from-green-50 to-teal-50 border-2 border-dashed border-green-200 rounded-2xl p-8 text-center cursor-pointer hover:border-green-400 transition-colors"
+                  onClick={onImageUpload}
+                  {...dragProps}
+                >
+                  <p className="text-gray-600 mb-4">
+                    Tire uma foto ou selecione da galeria
+                  </p>
+                  <div className="inline-flex items-center justify-center gap-2 gradient-fresh text-white px-6 py-3 rounded-full font-medium hover:shadow-lg transition-all">
+                    <Upload className="w-5 h-5" />
+                    Selecionar Imagem
+                  </div>
+                </div>
+              )}
             </div>
-            <p className="text-center text-sm text-gray-500 mt-3">
-              Imagem pronta para análise
-            </p>
-          </div>
-        ) : (
-          <div className="mb-6">
-            <div className="bg-gradient-to-br from-green-50 to-teal-50 border-2 border-dashed border-green-200 rounded-2xl p-8 text-center">
-              <p className="text-gray-600 mb-4">
-                Tire uma foto ou selecione da galeria
-              </p>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center justify-center gap-2 gradient-fresh text-white px-6 py-3 rounded-full font-medium hover:shadow-lg transition-all"
-              >
-                <Upload className="w-5 h-5" />
-                Selecionar Imagem
-              </button>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </div>
-        )}
+          )}
+        </ImageUploading>
 
         <button
           onClick={handleAnalyze}
-          disabled={!file || loading}
+          disabled={!hasImage || loading}
           className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
-            file && !loading
+            hasImage && !loading
               ? 'gradient-fresh text-white hover:shadow-xl hover:shadow-green-200'
               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
@@ -320,27 +275,6 @@ export default function HomePage() {
           <span>{tip}</span>
         </p>
       </div>
-
-      {showErrorPopup && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full text-center">
-            <div className="text-5xl mb-4">😕</div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Formato não suportado</h3>
-            <p className="text-gray-600 mb-6">
-              Tire uma foto diretamente ou use um dos formatos: JPG, PNG, GIF, WebP ou HEIC.
-            </p>
-            <button
-              onClick={() => {
-                setShowErrorPopup(false);
-                setError('');
-              }}
-              className="w-full gradient-fresh text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
-            >
-              Nova Análise
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
