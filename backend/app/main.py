@@ -2,9 +2,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
 import os
 
-from app.db.database import init_db
+from app.db.database import init_db, async_session
 from app.core.config import settings
 from app.api.routes import auth, profile, meals, jobs, billing, credits, feedback
 
@@ -46,3 +47,25 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+@app.get("/run-migration")
+async def run_migration():
+    migrations = [
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(20)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by INTEGER",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_token VARCHAR(64)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_referral_code ON users(referral_code)",
+    ]
+    
+    results = []
+    async with async_session() as session:
+        for sql in migrations:
+            try:
+                await session.execute(text(sql))
+                await session.commit()
+                results.append({"sql": sql, "status": "ok"})
+            except Exception as e:
+                results.append({"sql": sql, "status": "error", "error": str(e)})
+    
+    return {"migrations": results}
