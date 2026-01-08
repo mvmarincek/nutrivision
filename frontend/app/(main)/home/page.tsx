@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { mealsApi } from '@/lib/api';
 import { Upload, UtensilsCrossed, Cake, Coffee, Sparkles, Target, Zap, ArrowRight, Heart, Crown } from 'lucide-react';
-import imageCompression from 'browser-image-compression';
 import AdBanner from '@/components/AdBanner';
 import PageAds from '@/components/PageAds';
 
@@ -67,50 +66,12 @@ export default function HomePage() {
     }
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
-
     setError('');
-
-    const fileName = selectedFile.name.toLowerCase();
-    const isImage = selectedFile.type.startsWith('image/') || 
-                    fileName.endsWith('.heic') || 
-                    fileName.endsWith('.heif') ||
-                    fileName.endsWith('.webp') ||
-                    fileName.endsWith('.png') ||
-                    fileName.endsWith('.jpg') ||
-                    fileName.endsWith('.jpeg');
-    
-    if (!isImage) {
-      setError('Por favor, selecione uma imagem.');
-      return;
-    }
-
-    let fileToUse: File = selectedFile;
-    
-    try {
-      if (selectedFile.size > 2 * 1024 * 1024) {
-        const options = {
-          maxSizeMB: 1.5,
-          maxWidthOrHeight: 1920,
-          useWebWorker: false
-        };
-        const compressed = await imageCompression(selectedFile, options);
-        fileToUse = new File([compressed], selectedFile.name, { type: compressed.type || 'image/jpeg' });
-      }
-    } catch (compressionError) {
-      console.warn('Compression skipped:', compressionError);
-    }
-    
-    try {
-      const objectUrl = URL.createObjectURL(fileToUse);
-      setFile(fileToUse);
-      setPreview(objectUrl);
-    } catch (urlError) {
-      console.error('Failed to create object URL:', urlError);
-      setError('Erro ao carregar imagem. Tente outra foto.');
-    }
+    setFile(selectedFile);
+    setPreview(URL.createObjectURL(selectedFile));
   };
 
   const handleAnalyze = async () => {
@@ -262,10 +223,6 @@ export default function HomePage() {
                 src={preview} 
                 alt="Preview" 
                 className="w-full"
-                onError={() => {
-                  setError('Erro ao carregar imagem. Tente outra foto.');
-                  clearImage();
-                }}
               />
               <button
                 onClick={clearImage}
