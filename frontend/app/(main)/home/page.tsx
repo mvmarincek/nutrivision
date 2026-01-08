@@ -73,28 +73,29 @@ export default function HomePage() {
 
     setError('');
 
-    if (!selectedFile.type.startsWith('image/')) {
+    if (!selectedFile.type.startsWith('image/') && !selectedFile.name.toLowerCase().endsWith('.heic') && !selectedFile.name.toLowerCase().endsWith('.heif')) {
       setError('Por favor, selecione uma imagem.');
       return;
     }
 
     try {
-      let fileToUse: File = selectedFile;
+      const options = {
+        maxSizeMB: 1.5,
+        maxWidthOrHeight: 1920,
+        useWebWorker: false,
+        fileType: 'image/jpeg' as const,
+        initialQuality: 0.85
+      };
       
-      if (selectedFile.size > 2 * 1024 * 1024) {
-        try {
-          const options = {
-            maxSizeMB: 2,
-            maxWidthOrHeight: 2048,
-            useWebWorker: false,
-            fileType: selectedFile.type as string
-          };
-          const compressed = await imageCompression(selectedFile, options);
-          fileToUse = new File([compressed], selectedFile.name, { type: compressed.type });
-        } catch (compressionErr) {
-          console.warn('Compression failed, using original:', compressionErr);
-        }
+      let compressed: Blob;
+      try {
+        compressed = await imageCompression(selectedFile, options);
+      } catch (compressionErr) {
+        console.warn('Compression failed, trying with original:', compressionErr);
+        compressed = selectedFile;
       }
+      
+      const fileToUse = new File([compressed], selectedFile.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' });
       
       setFile(fileToUse);
       const objectUrl = URL.createObjectURL(fileToUse);
@@ -280,8 +281,7 @@ export default function HomePage() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
-              capture="environment"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*"
               onChange={handleFileSelect}
               className="hidden"
             />
