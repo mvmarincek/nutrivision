@@ -46,45 +46,58 @@ export default function HomePage() {
   useEffect(() => {
     setMotivationalMessage(motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)]);
     setTip(tips[Math.floor(Math.random() * tips.length)]);
+    setPreview(null);
+    setFile(null);
+    setError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
   const clearImage = () => {
+    if (preview) {
+      URL.revokeObjectURL(preview);
+    }
     setPreview(null);
     setFile(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    
+    if (preview) {
+      URL.revokeObjectURL(preview);
+    }
+    setPreview(null);
+    setFile(null);
+    setError('');
+    
     try {
-      const f = e.target.files?.[0];
-      if (!f) return;
-      
-      setError('');
-      
       const fileName = f.name.toLowerCase();
       const isHeic = f.type === 'image/heic' || f.type === 'image/heif' || 
                      fileName.endsWith('.heic') || fileName.endsWith('.heif');
+      
+      let finalFile = f;
       
       if (isHeic) {
         const heic2any = (await import('heic2any')).default;
         const converted = await heic2any({ blob: f, toType: 'image/jpeg', quality: 0.92 });
         const blob = Array.isArray(converted) ? converted[0] : converted;
-        const jpegFile = new File([blob], f.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' });
-        setFile(jpegFile);
-        setPreview(URL.createObjectURL(jpegFile));
-      } else {
-        setFile(f);
-        setPreview(URL.createObjectURL(f));
+        finalFile = new File([blob], fileName.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' });
       }
+      
+      const url = URL.createObjectURL(finalFile);
+      setFile(finalFile);
+      setPreview(url);
     } catch (err) {
-      const f = e.target.files?.[0];
       logClientError(err instanceof Error ? err : new Error(String(err)), { 
-        name: f?.name || 'unknown', 
-        type: f?.type || 'unknown', 
-        size: f?.size || 0 
+        name: f.name, 
+        type: f.type, 
+        size: f.size 
       });
       setError('Formato de imagem não suportado. Tire uma foto diretamente ou use: JPG, PNG, GIF, WebP ou HEIC.');
       setShowErrorPopup(true);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
