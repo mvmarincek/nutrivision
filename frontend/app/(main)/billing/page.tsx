@@ -74,6 +74,15 @@ export default function BillingPage() {
 
   const packageOrder = ['12', '36', '60', '120'];
 
+  const defaultPackages: Record<string, CreditPackage> = {
+    '12': { credits: 12, price: 490 },
+    '36': { credits: 36, price: 1290 },
+    '60': { credits: 60, price: 1990 },
+    '120': { credits: 120, price: 3490 }
+  };
+
+  const displayPackages = Object.keys(packages).length > 0 ? packages : defaultPackages;
+
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Créditos e Assinatura</h1>
@@ -112,16 +121,16 @@ export default function BillingPage() {
       </div>
 
       <h2 className="text-lg font-semibold mb-4">Comprar Créditos</h2>
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-2 gap-4 mb-8">
         {packageOrder.map((pkgId) => {
-          const pkg = packages[pkgId];
+          const pkg = displayPackages[pkgId];
           if (!pkg) return null;
           const isPopular = pkgId === '36';
           
           return (
             <div
               key={pkgId}
-              className={`bg-white rounded-xl shadow-md p-6 relative ${
+              className={`bg-white rounded-xl shadow-md p-4 relative ${
                 isPopular ? 'border-2 border-primary-500' : ''
               }`}
             >
@@ -130,20 +139,20 @@ export default function BillingPage() {
                   Popular
                 </span>
               )}
-              <div className="text-center mb-4">
-                <p className="text-3xl font-bold">{pkg.credits}</p>
-                <p className="text-gray-600">créditos</p>
+              <div className="text-center mb-3">
+                <p className="text-2xl font-bold">{pkg.credits}</p>
+                <p className="text-gray-600 text-sm">créditos</p>
               </div>
-              <p className="text-center text-2xl font-semibold text-primary-600 mb-4">
+              <p className="text-center text-xl font-semibold text-primary-600 mb-1">
                 {formatPrice(pkg.price)}
               </p>
-              <p className="text-center text-sm text-gray-500 mb-4">
-                {formatPrice(Math.round(pkg.price / pkg.credits * 100) / 100)}/crédito
+              <p className="text-center text-xs text-gray-500 mb-3">
+                {pkg.credits / 12} análise(s) completa(s)
               </p>
               <button
                 onClick={() => handleBuyCredits(pkgId)}
                 disabled={purchasing === pkgId}
-                className="w-full bg-primary-500 text-white py-3 rounded-lg font-semibold hover:bg-primary-600 disabled:opacity-50"
+                className="w-full bg-primary-500 text-white py-2 rounded-lg font-semibold hover:bg-primary-600 disabled:opacity-50 text-sm"
               >
                 {purchasing === pkgId ? 'Processando...' : 'Comprar'}
               </button>
