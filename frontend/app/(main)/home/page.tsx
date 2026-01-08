@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { mealsApi } from '@/lib/api';
+import { mealsApi, logClientError } from '@/lib/api';
 import { Upload, UtensilsCrossed, Cake, Coffee, Target, Heart, Crown, Zap, Sparkles, ArrowRight } from 'lucide-react';
 import AdBanner from '@/components/AdBanner';
 import PageAds from '@/components/PageAds';
@@ -78,7 +78,8 @@ export default function HomePage() {
         setFile(f);
         setPreview(URL.createObjectURL(f));
       }
-    } catch {
+    } catch (err) {
+      logClientError(err instanceof Error ? err : new Error(String(err)), { name: f.name, type: f.type, size: f.size });
       setError('Formato de imagem não suportado. Tire uma foto diretamente ou use: JPG, PNG, GIF, WebP ou HEIC.');
       setShowErrorPopup(true);
     }

@@ -3,11 +3,27 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
 import os
+import logging
 
 from app.db.database import init_db, async_session
 from app.core.config import settings
 from app.api.routes import auth, profile, meals, jobs, billing, credits, feedback
+
+logger = logging.getLogger(__name__)
+
+class ClientError(BaseModel):
+    error_message: str
+    error_stack: Optional[str] = None
+    file_name: Optional[str] = None
+    file_type: Optional[str] = None
+    file_size: Optional[int] = None
+    user_agent: str
+    url: str
+    timestamp: Optional[str] = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,6 +63,20 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+@app.post("/log-error")
+async def log_client_error(error: ClientError):
+    logger.error(f"""
+=== CLIENT ERROR ===
+Time: {error.timestamp or datetime.utcnow().isoformat()}
+URL: {error.url}
+User-Agent: {error.user_agent}
+File: {error.file_name} | Type: {error.file_type} | Size: {error.file_size}
+Error: {error.error_message}
+Stack: {error.error_stack}
+====================
+""")
+    return {"logged": True}
 
 @app.get("/run-migration")
 async def run_migration():

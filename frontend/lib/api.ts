@@ -1,5 +1,24 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://nutrivision-api-dcr0.onrender.com';
 
+export async function logClientError(error: Error, fileInfo?: { name?: string; type?: string; size?: number }) {
+  try {
+    await fetch(`${API_URL}/log-error`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        error_message: error.message,
+        error_stack: error.stack,
+        file_name: fileInfo?.name,
+        file_type: fileInfo?.type,
+        file_size: fileInfo?.size,
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+        url: typeof window !== 'undefined' ? window.location.href : 'unknown',
+        timestamp: new Date().toISOString()
+      })
+    });
+  } catch {}
+}
+
 interface ApiOptions {
   method?: string;
   body?: any;
