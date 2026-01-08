@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { mealsApi } from '@/lib/api';
-import { Upload, UtensilsCrossed, Cake, Coffee, Sparkles, Target, Zap, ArrowRight, Heart, Crown } from 'lucide-react';
+import { Upload, UtensilsCrossed, Cake, Coffee, Sparkles, Target, Zap, ArrowRight, Heart, Crown, Camera } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
 import AdBanner from '@/components/AdBanner';
 import PageAds from '@/components/PageAds';
 
@@ -39,6 +40,7 @@ export default function HomePage() {
   const [motivationalMessage, setMotivationalMessage] = useState('');
   const [tip, setTip] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const { user, token } = useAuth();
   const router = useRouter();
 
@@ -64,14 +66,43 @@ export default function HomePage() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
+    }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGallerySelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
     setError('');
     setFile(selectedFile);
     setPreview(URL.createObjectURL(selectedFile));
+  };
+
+  const handleCameraCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+    setError('');
+
+    try {
+      if (selectedFile.size > 2 * 1024 * 1024) {
+        const options = {
+          maxSizeMB: 1.5,
+          maxWidthOrHeight: 1920,
+          useWebWorker: false
+        };
+        const compressed = await imageCompression(selectedFile, options);
+        const compressedFile = new File([compressed], selectedFile.name, { type: compressed.type || 'image/jpeg' });
+        setFile(compressedFile);
+        setPreview(URL.createObjectURL(compressedFile));
+      } else {
+        setFile(selectedFile);
+        setPreview(URL.createObjectURL(selectedFile));
+      }
+    } catch {
+      setFile(selectedFile);
+      setPreview(URL.createObjectURL(selectedFile));
+    }
   };
 
   const handleAnalyze = async () => {
@@ -239,21 +270,38 @@ export default function HomePage() {
           <div className="mb-6">
             <div className="bg-gradient-to-br from-green-50 to-teal-50 border-2 border-dashed border-green-200 rounded-2xl p-8 text-center">
               <p className="text-gray-600 mb-4">
-                📸 Tire uma foto do seu alimento e anexe aqui
+                Tire uma foto ou selecione da galeria
               </p>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-2 gradient-fresh text-white px-6 py-3 rounded-full font-medium hover:shadow-lg hover:shadow-green-200 transition-all"
-              >
-                <Upload className="w-5 h-5" />
-                Selecionar Imagem
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="inline-flex items-center justify-center gap-2 gradient-fresh text-white px-6 py-3 rounded-full font-medium hover:shadow-lg hover:shadow-green-200 transition-all"
+                >
+                  <Camera className="w-5 h-5" />
+                  Tirar Foto
+                </button>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center justify-center gap-2 bg-white border-2 border-green-400 text-green-600 px-6 py-3 rounded-full font-medium hover:bg-green-50 transition-all"
+                >
+                  <Upload className="w-5 h-5" />
+                  Galeria
+                </button>
+              </div>
             </div>
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleCameraCapture}
+              className="hidden"
+            />
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*"
-              onChange={handleFileSelect}
+              accept="image/*"
+              onChange={handleGallerySelect}
               className="hidden"
             />
           </div>
