@@ -162,7 +162,7 @@ export interface BillingStatus {
   plan: string;
   credit_balance: number;
   pro_analyses_remaining: number;
-  stripe_customer_id: string | null;
+  has_subscription: boolean;
 }
 
 export interface CreditPackage {
@@ -252,6 +252,32 @@ export interface PaymentStatusResponse {
   confirmed: boolean;
 }
 
+export interface CardPaymentRequest {
+  package: string;
+  card_holder_name: string;
+  card_number: string;
+  expiry_month: string;
+  expiry_year: string;
+  cvv: string;
+  holder_cpf: string;
+  holder_phone: string;
+  postal_code: string;
+  address_number: string;
+}
+
+export interface ProSubscriptionRequest {
+  billing_type: 'PIX' | 'CREDIT_CARD' | 'BOLETO';
+  card_holder_name?: string;
+  card_number?: string;
+  expiry_month?: string;
+  expiry_year?: string;
+  cvv?: string;
+  holder_cpf?: string;
+  holder_phone?: string;
+  postal_code?: string;
+  address_number?: string;
+}
+
 export const billingApi = {
   getStatus: (token: string) =>
     api<BillingStatus>('/billing/status', { token }),
@@ -261,6 +287,15 @@ export const billingApi = {
   
   createPixPayment: (token: string, packageId: string) =>
     api<PixPaymentResponse>('/billing/create-pix-payment', { method: 'POST', body: { package: packageId }, token }),
+  
+  createCardPayment: (token: string, data: CardPaymentRequest) =>
+    api<{ status: string; credits_added?: number; new_balance?: number; payment_id?: string }>('/billing/create-card-payment', { method: 'POST', body: data, token }),
+  
+  createProSubscription: (token: string, data: ProSubscriptionRequest) =>
+    api<{ status: string; message?: string; payment_id?: string; pix_code?: string; pix_qr_code_base64?: string; boleto_url?: string }>('/billing/create-pro-subscription', { method: 'POST', body: data, token }),
+  
+  cancelSubscription: (token: string) =>
+    api<{ status: string; message: string }>('/billing/cancel-subscription', { method: 'POST', token }),
   
   getPaymentStatus: (token: string, paymentId: string) =>
     api<PaymentStatusResponse>(`/billing/payment-status/${paymentId}`, { token })
