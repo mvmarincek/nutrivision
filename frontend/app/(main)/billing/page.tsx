@@ -167,11 +167,7 @@ export default function BillingPage() {
               </li>
               <li className="flex items-center">
                 <span className="mr-2">-</span>
-                Sem anuncios
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2">-</span>
-                Acesso a todos os recursos premium
+                Nao precisa comprar creditos adicionais
               </li>
             </ul>
             <div className="flex items-center justify-between">
