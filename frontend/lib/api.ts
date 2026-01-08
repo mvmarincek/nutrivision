@@ -57,7 +57,6 @@ export interface Profile {
   objetivo: string | null;
   restricoes: string[];
   alergias: string[];
-  avatar_url: string | null;
   created_at: string;
 }
 
@@ -201,13 +200,7 @@ export const profileApi = {
     api<Profile>('/profile', { token }),
   
   update: (token: string, data: { objetivo?: string; restricoes?: string[]; alergias?: string[] }) =>
-    api<Profile>('/profile', { method: 'POST', body: data, token }),
-  
-  uploadAvatar: (token: string, file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    return api<Profile>('/profile/avatar', { method: 'POST', body: formData, token, isFormData: true });
-  }
+    api<Profile>('/profile', { method: 'POST', body: data, token })
 };
 
 export const mealsApi = {

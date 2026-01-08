@@ -46,7 +46,7 @@ function ResultContent() {
     };
 
     fetchMeal();
-  }, [token, mealId, refreshUser]);
+  }, [token, mealId]);
 
   if (loading) {
     return (

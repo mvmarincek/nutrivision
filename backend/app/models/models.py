@@ -56,7 +56,6 @@ class Profile(Base):
     objetivo = Column(String(50), nullable=True)
     restricoes = Column(JSON, default=list)
     alergias = Column(JSON, default=list)
-    avatar_url = Column(String(500), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     user = relationship("User", back_populates="profile")

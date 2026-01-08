@@ -30,7 +30,7 @@ export default function BillingPage() {
     };
 
     fetchData();
-  }, [token, refreshUser]);
+  }, [token]);
 
   const handleBuyCredits = async (packageId: string) => {
     if (!token) return;
