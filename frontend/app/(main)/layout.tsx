@@ -45,7 +45,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen bg-gradient-to-b from-green-50/50 to-white pb-24">
       <header className="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-10 border-b border-green-100">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/home" className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl gradient-fresh flex items-center justify-center">
               <Salad className="w-5 h-5 text-white" />
             </div>
