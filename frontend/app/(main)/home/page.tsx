@@ -55,18 +55,17 @@ export default function HomePage() {
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    
-    setError('');
-    
     try {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      
+      setError('');
+      
       const fileName = f.name.toLowerCase();
       const isHeic = f.type === 'image/heic' || f.type === 'image/heif' || 
                      fileName.endsWith('.heic') || fileName.endsWith('.heif');
       
       if (isHeic) {
-        // HEIC conversion
         const heic2any = (await import('heic2any')).default;
         const converted = await heic2any({ blob: f, toType: 'image/jpeg', quality: 0.92 });
         const blob = Array.isArray(converted) ? converted[0] : converted;
@@ -74,12 +73,16 @@ export default function HomePage() {
         setFile(jpegFile);
         setPreview(URL.createObjectURL(jpegFile));
       } else {
-        // Direct use for all other formats
         setFile(f);
         setPreview(URL.createObjectURL(f));
       }
     } catch (err) {
-      logClientError(err instanceof Error ? err : new Error(String(err)), { name: f.name, type: f.type, size: f.size });
+      const f = e.target.files?.[0];
+      logClientError(err instanceof Error ? err : new Error(String(err)), { 
+        name: f?.name || 'unknown', 
+        type: f?.type || 'unknown', 
+        size: f?.size || 0 
+      });
       setError('Formato de imagem não suportado. Tire uma foto diretamente ou use: JPG, PNG, GIF, WebP ou HEIC.');
       setShowErrorPopup(true);
     }
