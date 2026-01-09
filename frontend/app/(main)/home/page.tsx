@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
 import { mealsApi } from '@/lib/api';
 import { normalizeImageOrientation } from '@/lib/image-utils';
-import { Upload, UtensilsCrossed, Cake, Coffee, Target, Heart, Crown, Zap, Sparkles, ArrowRight, X, FileText, Scale, Droplet, ChevronDown, ChevronUp } from 'lucide-react';
+import { Upload, UtensilsCrossed, Cake, Coffee, Target, Heart, Crown, Zap, Sparkles, ArrowRight, X, FileText, Scale, Droplet } from 'lucide-react';
 import PageAds from '@/components/PageAds';
 
 type Phase = 'idle' | 'loading_image' | 'uploading';
@@ -40,7 +40,6 @@ export default function HomePage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [motivationalMessage, setMotivationalMessage] = useState('');
   const [tip, setTip] = useState('');
-  const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [userNotes, setUserNotes] = useState('');
   const [weightGrams, setWeightGrams] = useState('');
   const [volumeMl, setVolumeMl] = useState('');
@@ -92,7 +91,6 @@ export default function HomePage() {
     setUserNotes('');
     setWeightGrams('');
     setVolumeMl('');
-    setShowOptionalFields(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -331,61 +329,55 @@ export default function HomePage() {
         </div>
 
         <div className="mb-6">
-          <button
-            onClick={() => setShowOptionalFields(!showOptionalFields)}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            {showOptionalFields ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            <span className="font-medium">Informacoes adicionais (opcional)</span>
-          </button>
-          
-          {showOptionalFields && (
-            <div className="mt-4 space-y-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+          <div className="space-y-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+            <div>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <FileText className="w-4 h-4 text-gray-400" />
+                Observacoes (opcional)
+              </label>
+              <textarea
+                value={userNotes}
+                onChange={(e) => setUserNotes(e.target.value)}
+                placeholder={mealType === 'bebida' 
+                  ? "Ex: caipirinha, mojito, suco de laranja natural..." 
+                  : mealType === 'sobremesa'
+                  ? "Ex: pudim de leite, brownie, sorvete de chocolate..."
+                  : "Ex: arroz integral, frango grelhado sem pele..."}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none resize-none text-sm"
+                rows={2}
+              />
+            </div>
+            
+            {mealType === 'bebida' ? (
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <FileText className="w-4 h-4 text-gray-400" />
-                  Observacoes
+                  <Droplet className="w-4 h-4 text-blue-400" />
+                  Volume maximo do copo (ml) - opcional
                 </label>
-                <textarea
-                  value={userNotes}
-                  onChange={(e) => setUserNotes(e.target.value)}
-                  placeholder="Ex: arroz integral, frango grelhado sem pele..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none resize-none text-sm"
-                  rows={2}
+                <input
+                  type="number"
+                  value={volumeMl}
+                  onChange={(e) => setVolumeMl(e.target.value)}
+                  placeholder="Ex: 250"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none text-sm"
                 />
               </div>
-              
-              {mealType === 'bebida' ? (
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                    <Droplet className="w-4 h-4 text-blue-400" />
-                    Volume maximo do copo (ml)
-                  </label>
-                  <input
-                    type="number"
-                    value={volumeMl}
-                    onChange={(e) => setVolumeMl(e.target.value)}
-                    placeholder="Ex: 300"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none text-sm"
-                  />
-                </div>
-              ) : (
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                    <Scale className="w-4 h-4 text-amber-400" />
-                    Peso aproximado (gramas)
-                  </label>
-                  <input
-                    type="number"
-                    value={weightGrams}
-                    onChange={(e) => setWeightGrams(e.target.value)}
-                    placeholder="Ex: 250"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none text-sm"
-                  />
-                </div>
-              )}
-            </div>
-          )}
+            ) : (
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <Scale className="w-4 h-4 text-amber-400" />
+                  Peso aproximado (gramas) - opcional
+                </label>
+                <input
+                  type="number"
+                  value={weightGrams}
+                  onChange={(e) => setWeightGrams(e.target.value)}
+                  placeholder="Ex: 600"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none text-sm"
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="mb-6">
