@@ -97,58 +97,64 @@ export default function HistoryPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {meals.map((meal) => {
+          {meals.map((meal, index) => {
             const status = getStatusLabel(meal.status);
             return (
-              <div
-                key={meal.id}
-                className="bg-white rounded-xl shadow-md overflow-hidden flex"
-              >
-                <div
-                  className="relative w-24 h-24 flex-shrink-0 cursor-pointer"
-                  onClick={() => meal.status === 'completed' && router.push(`/result?mealId=${meal.id}`)}
-                >
-                  <Image
-                    src={`${apiUrl}${meal.image_url}`}
-                    alt="Refeição"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex-1 p-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-medium">{getMealTypeLabel(meal.meal_type)}</p>
-                      <p className="text-sm text-gray-500 flex items-center mt-1">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        {formatDate(meal.created_at)}
-                      </p>
-                    </div>
-                    <span className={`text-xs px-2 py-1 rounded ${status.color}`}>
-                      {status.label}
-                    </span>
+              <div key={meal.id}>
+                {index > 0 && index % 3 === 0 && (
+                  <div className="mb-4">
+                    <PageAds position="inline" />
                   </div>
-                  <div className="flex items-center justify-between mt-2">
-                    {meal.calorias_central && (
-                      <p className="text-sm text-primary-600 font-medium">
-                        {meal.calorias_central.toFixed(0)} kcal
-                      </p>
-                    )}
-                    <div className="flex gap-2">
-                      {meal.status === 'completed' && (
-                        <button
-                          onClick={() => router.push(`/result?mealId=${meal.id}`)}
-                          className="text-sm text-primary-600 hover:underline"
-                        >
-                          Ver detalhes
-                        </button>
+                )}
+                <div
+                  className="bg-white rounded-xl shadow-md overflow-hidden flex"
+                >
+                  <div
+                    className="relative w-24 h-24 flex-shrink-0 cursor-pointer"
+                    onClick={() => meal.status === 'completed' && router.push(`/result?mealId=${meal.id}`)}
+                  >
+                    <Image
+                      src={`${apiUrl}${meal.image_url}`}
+                      alt="Refeição"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-medium">{getMealTypeLabel(meal.meal_type)}</p>
+                        <p className="text-sm text-gray-500 flex items-center mt-1">
+                          <Calendar className="w-4 h-4 mr-1" />
+                          {formatDate(meal.created_at)}
+                        </p>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded ${status.color}`}>
+                        {status.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      {meal.calorias_central && (
+                        <p className="text-sm text-primary-600 font-medium">
+                          {meal.calorias_central.toFixed(0)} kcal
+                        </p>
                       )}
-                      <button
-                        onClick={() => handleDelete(meal.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex gap-2">
+                        {meal.status === 'completed' && (
+                          <button
+                            onClick={() => router.push(`/result?mealId=${meal.id}`)}
+                            className="text-sm text-primary-600 hover:underline"
+                          >
+                            Ver detalhes
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(meal.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
