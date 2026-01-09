@@ -46,6 +46,7 @@ export default function BillingPage() {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [pixData, setPixData] = useState<PixPaymentData | null>(null);
   const [pixCopied, setPixCopied] = useState(false);
+  const [pixCpf, setPixCpf] = useState('');
   const [checkingPayment, setCheckingPayment] = useState(false);
   const [showCardForm, setShowCardForm] = useState(false);
   const [cardForm, setCardForm] = useState<CardFormData>(initialCardForm);
@@ -120,12 +121,31 @@ export default function BillingPage() {
     setCardForm(initialCardForm);
   };
 
+  const formatCpf = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+    if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+  };
+
   const handlePixPayment = async () => {
     if (!selectedPackage) return;
+    
+    const cpfDigits = pixCpf.replace(/\D/g, '');
+    if (cpfDigits.length !== 11) {
+      showWarning(
+        'Por favor, informe um CPF válido com 11 dígitos.',
+        'CPF obrigatório',
+        { label: 'Entendi', onClick: () => clearFeedback() }
+      );
+      return;
+    }
+    
     setPurchasing(selectedPackage);
 
     try {
-      const result = await billingApi.createPixPayment(selectedPackage);
+      const result = await billingApi.createPixPayment(selectedPackage, cpfDigits);
       setPixData(result);
     } catch (err) {
       console.error(err);
@@ -624,6 +644,19 @@ export default function BillingPage() {
 
             {!showCardForm ? (
               <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    CPF (obrigatorio para PIX)
+                  </label>
+                  <input
+                    type="text"
+                    value={pixCpf}
+                    onChange={(e) => setPixCpf(formatCpf(e.target.value))}
+                    placeholder="000.000.000-00"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+                
                 <button
                   onClick={handlePixPayment}
                   disabled={purchasing === selectedPackage}
@@ -632,6 +665,12 @@ export default function BillingPage() {
                   <QrCode className="w-5 h-5" />
                   {purchasing === selectedPackage ? 'Gerando PIX...' : 'Pagar com PIX'}
                 </button>
+                
+                <div className="relative flex items-center my-2">
+                  <div className="flex-grow border-t border-gray-200"></div>
+                  <span className="px-3 text-xs text-gray-400">ou</span>
+                  <div className="flex-grow border-t border-gray-200"></div>
+                </div>
                 
                 <button
                   onClick={() => setShowCardForm(true)}

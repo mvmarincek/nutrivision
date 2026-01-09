@@ -444,8 +444,8 @@ export const billingApi = {
   getPackages: () =>
     api<Record<string, CreditPackage>>('/billing/packages', { skipAuth: true }),
   
-  createPixPayment: (packageId: string) =>
-    api<PixPaymentResponse>('/billing/create-pix-payment', { method: 'POST', body: { package: packageId } }),
+  createPixPayment: (packageId: string, cpf: string) =>
+    api<PixPaymentResponse>('/billing/create-pix-payment', { method: 'POST', body: { package: packageId, cpf } }),
   
   createCardPayment: (data: CardPaymentRequest) =>
     api<{ status: string; credits_added?: number; new_balance?: number; payment_id?: string }>('/billing/create-card-payment', { method: 'POST', body: data }),

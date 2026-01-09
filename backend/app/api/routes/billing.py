@@ -16,6 +16,7 @@ router = APIRouter(prefix="/billing", tags=["billing"])
 
 class CreatePixPaymentRequest(BaseModel):
     package: str
+    cpf: str
 
 class CreateCardPaymentRequest(BaseModel):
     package: str
@@ -73,11 +74,15 @@ async def get_billing_status(current_user: User = Depends(get_current_user)):
 
 async def get_or_create_customer(user: User, db: AsyncSession, cpf: Optional[str] = None):
     if user.asaas_customer_id:
+        if cpf:
+            await asaas_service.update_customer(user.asaas_customer_id, cpf)
         return user.asaas_customer_id
     
     customer = await asaas_service.get_customer_by_email(user.email)
     if not customer:
         customer = await asaas_service.create_customer(user.email, cpf=cpf)
+    elif cpf:
+        await asaas_service.update_customer(customer["id"], cpf)
     
     user.asaas_customer_id = customer["id"]
     await db.commit()
@@ -97,7 +102,7 @@ async def create_pix_payment(
     credits = package["credits"]
     
     try:
-        customer_id = await get_or_create_customer(current_user, db)
+        customer_id = await get_or_create_customer(current_user, db, cpf=request.cpf)
         
         external_reference = json.dumps({
             "user_id": current_user.id,
