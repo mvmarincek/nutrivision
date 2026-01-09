@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth';
 import { mealsApi } from '@/lib/api';
 import { normalizeImageOrientation } from '@/lib/image-utils';
 import { Upload, UtensilsCrossed, Cake, Coffee, Target, Heart, Crown, Zap, Sparkles, ArrowRight, X } from 'lucide-react';
+import PageAds from '@/components/PageAds';
 
 type Phase = 'idle' | 'loading_image' | 'uploading' | 'error';
 
@@ -347,6 +348,8 @@ export default function HomePage() {
           <span>{tip}</span>
         </p>
       </div>
+
+      <PageAds position="bottom" />
     </div>
   );
 }
