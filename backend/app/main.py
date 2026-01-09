@@ -92,6 +92,9 @@ async def run_migration():
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS asaas_customer_id VARCHAR(255)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS asaas_subscription_id VARCHAR(255)",
         "ALTER TABLE users DROP COLUMN IF EXISTS stripe_customer_id",
+        "ALTER TABLE meals ADD COLUMN IF NOT EXISTS user_notes TEXT",
+        "ALTER TABLE meals ADD COLUMN IF NOT EXISTS weight_grams FLOAT",
+        "ALTER TABLE meals ADD COLUMN IF NOT EXISTS volume_ml FLOAT",
     ]
     
     results = []
