@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { useFeedback } from '@/lib/feedback';
 import { mealsApi } from '@/lib/api';
 import { normalizeImageOrientation } from '@/lib/image-utils';
 import { Upload, UtensilsCrossed, Cake, Coffee, Target, Heart, Crown, Zap, Sparkles, ArrowRight, X } from 'lucide-react';
 import PageAds from '@/components/PageAds';
 
-type Phase = 'idle' | 'loading_image' | 'uploading' | 'error';
+type Phase = 'idle' | 'loading_image' | 'uploading';
 
 const mealTypes = [
   { id: 'prato', label: 'Prato', icon: UtensilsCrossed, color: 'from-green-400 to-teal-400' },
@@ -33,7 +34,6 @@ const tips = [
 
 export default function HomePage() {
   const [phase, setPhase] = useState<Phase>('idle');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mealType, setMealType] = useState('prato');
   const [mode, setMode] = useState<'simple' | 'full'>('simple');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -42,6 +42,7 @@ export default function HomePage() {
   const [tip, setTip] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
+  const { showError, showWarning, clearFeedback } = useFeedback();
   const router = useRouter();
 
   useEffect(() => {
@@ -54,7 +55,7 @@ export default function HomePage() {
     if (!file) return;
 
     setPhase('loading_image');
-    setErrorMessage(null);
+    clearFeedback();
     setImageFile(null);
     setImagePreview(null);
 
@@ -64,8 +65,18 @@ export default function HomePage() {
       setImagePreview(previewBase64);
       setPhase('idle');
     } catch {
-      setPhase('error');
-      setErrorMessage('Não foi possível processar a imagem. Tente outra foto.');
+      setPhase('idle');
+      showError(
+        'Não foi possível processar a imagem. O formato pode não ser suportado. Tente outra foto.',
+        'Erro ao processar imagem',
+        {
+          label: 'Tentar outra foto',
+          onClick: () => {
+            clearFeedback();
+            fileInputRef.current?.click();
+          }
+        }
+      );
     }
   };
 
@@ -73,7 +84,7 @@ export default function HomePage() {
     setImageFile(null);
     setImagePreview(null);
     setPhase('idle');
-    setErrorMessage(null);
+    clearFeedback();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -86,46 +97,69 @@ export default function HomePage() {
     const cost = mode === 'full' ? 12 : 5;
     
     if (!isFreeSimple && user && user.credit_balance < cost && user.pro_analyses_remaining <= 0) {
-      setPhase('error');
-      setErrorMessage(`Créditos insuficientes. Você precisa de ${cost} créditos.`);
+      showWarning(
+        `Você precisa de ${cost} créditos para esta análise, mas possui apenas ${user.credit_balance}. Compre mais créditos para continuar.`,
+        'Créditos insuficientes',
+        {
+          label: 'Comprar créditos',
+          onClick: () => {
+            clearFeedback();
+            router.push('/credits');
+          }
+        }
+      );
       return;
     }
 
     setPhase('uploading');
-    setErrorMessage(null);
+    clearFeedback();
 
     try {
       const uploadResult = await mealsApi.upload(imageFile, mealType);
       const analyzeResult = await mealsApi.analyze(uploadResult.meal_id, mode);
       router.push(`/processing?jobId=${analyzeResult.job_id}&mealId=${uploadResult.meal_id}`);
     } catch (err: any) {
-      setPhase('error');
-      setErrorMessage(err.message || 'Erro ao iniciar análise');
+      setPhase('idle');
+      const errorMessage = err.message || 'Erro ao iniciar análise';
+      
+      if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('conexão') || errorMessage.toLowerCase().includes('fetch')) {
+        showError(
+          'Não foi possível conectar ao servidor. Verifique sua conexão com a internet e tente novamente.',
+          'Erro de conexão',
+          {
+            label: 'Tentar novamente',
+            onClick: () => {
+              clearFeedback();
+              handleAnalyze();
+            }
+          }
+        );
+      } else if (errorMessage.toLowerCase().includes('crédito') || errorMessage.toLowerCase().includes('credit') || errorMessage.toLowerCase().includes('402')) {
+        showWarning(
+          'Você não possui créditos suficientes para esta análise. Compre mais créditos para continuar.',
+          'Créditos insuficientes',
+          {
+            label: 'Comprar créditos',
+            onClick: () => {
+              clearFeedback();
+              router.push('/credits');
+            }
+          }
+        );
+      } else {
+        showError(
+          errorMessage,
+          'Erro ao iniciar análise',
+          {
+            label: 'Tentar novamente',
+            onClick: () => clearFeedback()
+          }
+        );
+      }
     }
   };
 
   const cost = mode === 'full' ? 12 : 5;
-
-  if (phase === 'error') {
-    return (
-      <div className="max-w-lg mx-auto">
-        <div className="bg-white rounded-3xl shadow-xl p-8 text-center border border-red-100">
-          <div className="text-5xl mb-4">😕</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Algo deu errado</h2>
-          <p className="text-gray-600 mb-6">{errorMessage || 'Ocorreu um erro inesperado.'}</p>
-          <button
-            onClick={() => {
-              setPhase('idle');
-              setErrorMessage(null);
-            }}
-            className="w-full gradient-fresh text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
-          >
-            Tentar Novamente
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   if (phase === 'loading_image') {
     return (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
+import { useFeedback } from '@/lib/feedback';
 import { billingApi, BillingStatus, CreditPackage } from '@/lib/api';
 import { CreditCard, Star, Zap, QrCode, Copy, Check, X, Crown, FileText, Loader2 } from 'lucide-react';
 
@@ -55,6 +56,7 @@ export default function BillingPage() {
   const [processingPro, setProcessingPro] = useState(false);
   const [cancelingSubscription, setCancelingSubscription] = useState(false);
   const { user, refreshUser } = useAuth();
+  const { showError, showSuccess, showWarning, clearFeedback } = useFeedback();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,7 +94,10 @@ export default function BillingPage() {
             setSelectedPackage(null);
             setShowProModal(false);
             setProPaymentMethod(null);
-            alert(pixData ? 'Pagamento confirmado! Seus creditos foram adicionados.' : 'Pagamento confirmado! Sua assinatura PRO foi ativada.');
+            showSuccess(
+              pixData ? 'Pagamento confirmado! Seus créditos foram adicionados.' : 'Pagamento confirmado! Sua assinatura PRO foi ativada.',
+              'Pagamento confirmado'
+            );
           }
         } catch (err) {
           console.error(err);
@@ -123,7 +128,11 @@ export default function BillingPage() {
       setPixData(result);
     } catch (err) {
       console.error(err);
-      alert('Erro ao gerar pagamento PIX');
+      showError(
+        'Não foi possível gerar o código PIX. Tente novamente.',
+        'Erro ao gerar PIX',
+        { label: 'Entendi', onClick: () => clearFeedback() }
+      );
     } finally {
       setPurchasing(null);
     }
@@ -135,7 +144,11 @@ export default function BillingPage() {
     if (!cardForm.card_holder_name || !cardForm.card_number || !cardForm.expiry_month || 
         !cardForm.expiry_year || !cardForm.cvv || !cardForm.holder_cpf || 
         !cardForm.holder_phone || !cardForm.postal_code || !cardForm.address_number) {
-      alert('Preencha todos os campos');
+      showWarning(
+        'Por favor, preencha todos os campos obrigatórios do cartão.',
+        'Campos incompletos',
+        { label: 'Entendi', onClick: () => clearFeedback() }
+      );
       return;
     }
 
@@ -151,10 +164,17 @@ export default function BillingPage() {
       setSelectedPackage(null);
       setShowCardForm(false);
       setCardForm(initialCardForm);
-      alert('Pagamento aprovado! Seus creditos foram adicionados.');
+      showSuccess(
+        'Pagamento aprovado! Seus créditos foram adicionados à sua conta.',
+        'Pagamento confirmado'
+      );
     } catch (err: any) {
       console.error(err);
-      alert(err?.message || 'Erro ao processar pagamento com cartao');
+      showError(
+        err?.message || 'Não foi possível processar o pagamento com cartão. Verifique os dados e tente novamente.',
+        'Erro no pagamento',
+        { label: 'Entendi', onClick: () => clearFeedback() }
+      );
     } finally {
       setProcessingCard(false);
     }
@@ -165,7 +185,11 @@ export default function BillingPage() {
       if (!cardForm.card_holder_name || !cardForm.card_number || !cardForm.expiry_month || 
           !cardForm.expiry_year || !cardForm.cvv || !cardForm.holder_cpf || 
           !cardForm.holder_phone || !cardForm.postal_code || !cardForm.address_number) {
-        alert('Preencha todos os campos do cartao');
+        showWarning(
+          'Por favor, preencha todos os campos obrigatórios do cartão.',
+          'Campos incompletos',
+          { label: 'Entendi', onClick: () => clearFeedback() }
+        );
         return;
       }
     }
@@ -189,7 +213,10 @@ export default function BillingPage() {
         setShowProModal(false);
         setProPaymentMethod(null);
         setCardForm(initialCardForm);
-        alert('Assinatura PRO ativada com sucesso!');
+        showSuccess(
+          'Sua assinatura PRO foi ativada com sucesso! Aproveite os benefícios exclusivos.',
+          'Assinatura PRO ativada'
+        );
       } else if (result.pix_code && result.payment_id && result.pix_qr_code_base64) {
         setProPixData({
           payment_id: result.payment_id,
@@ -203,25 +230,53 @@ export default function BillingPage() {
       }
     } catch (err: any) {
       console.error(err);
-      alert(err?.message || 'Erro ao criar assinatura');
+      showError(
+        err?.message || 'Não foi possível criar a assinatura. Tente novamente.',
+        'Erro na assinatura',
+        { label: 'Entendi', onClick: () => clearFeedback() }
+      );
     } finally {
       setProcessingPro(false);
     }
   };
 
-  const handleCancelSubscription = async () => {
-    if (!confirm('Tem certeza que deseja cancelar sua assinatura PRO?')) return;
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
 
+  const handleCancelSubscription = async () => {
+    if (!confirmingCancel) {
+      showWarning(
+        'Ao cancelar sua assinatura PRO, você perderá acesso aos benefícios exclusivos ao final do período atual. Tem certeza?',
+        'Cancelar assinatura?',
+        {
+          label: 'Sim, cancelar',
+          onClick: () => {
+            clearFeedback();
+            setConfirmingCancel(true);
+            handleCancelSubscription();
+          }
+        }
+      );
+      return;
+    }
+    
+    setConfirmingCancel(false);
     setCancelingSubscription(true);
     try {
       await billingApi.cancelSubscription();
       await refreshUser();
       const newStatus = await billingApi.getStatus();
       setBillingStatus(newStatus);
-      alert('Assinatura cancelada com sucesso.');
+      showSuccess(
+        'Sua assinatura foi cancelada. Você ainda terá acesso até o final do período pago.',
+        'Assinatura cancelada'
+      );
     } catch (err: any) {
       console.error(err);
-      alert(err?.message || 'Erro ao cancelar assinatura');
+      showError(
+        err?.message || 'Não foi possível cancelar a assinatura. Tente novamente.',
+        'Erro ao cancelar',
+        { label: 'Entendi', onClick: () => clearFeedback() }
+      );
     } finally {
       setCancelingSubscription(false);
     }

@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
+import { useFeedback } from '@/lib/feedback';
 import { Salad, Gift, Mail, CheckCircle } from 'lucide-react';
 
 function RegisterContent() {
@@ -11,30 +12,58 @@ function RegisterContent() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
   const { register } = useAuth();
+  const { showError, showWarning, clearFeedback } = useFeedback();
   const router = useRouter();
   const searchParams = useSearchParams();
   const referralCode = searchParams.get('ref');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    clearFeedback();
 
     if (!acceptedTerms) {
-      setError('Voce precisa aceitar os Termos de Uso e Politica de Privacidade');
+      showWarning(
+        'Para criar sua conta, você precisa aceitar os Termos de Uso e a Política de Privacidade.',
+        'Aceite os termos',
+        {
+          label: 'Entendi',
+          onClick: () => clearFeedback()
+        }
+      );
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('As senhas não coincidem');
+      showError(
+        'As senhas digitadas não são iguais. Por favor, verifique e tente novamente.',
+        'Senhas não coincidem',
+        {
+          label: 'Corrigir',
+          onClick: () => {
+            clearFeedback();
+            setConfirmPassword('');
+          }
+        }
+      );
       return;
     }
 
     if (password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres');
+      showError(
+        'Por segurança, sua senha precisa ter pelo menos 6 caracteres.',
+        'Senha muito curta',
+        {
+          label: 'Corrigir',
+          onClick: () => {
+            clearFeedback();
+            setPassword('');
+            setConfirmPassword('');
+          }
+        }
+      );
       return;
     }
 
@@ -44,9 +73,42 @@ function RegisterContent() {
       await register(email, password, referralCode || undefined);
       setRegistered(true);
     } catch (err: any) {
-      setError(err.message || 'Erro ao criar conta');
-    } finally {
       setLoading(false);
+      const errorMessage = err.message || 'Erro ao criar conta';
+      
+      if (errorMessage.toLowerCase().includes('email') && (errorMessage.toLowerCase().includes('exist') || errorMessage.toLowerCase().includes('já') || errorMessage.toLowerCase().includes('already'))) {
+        showError(
+          'Já existe uma conta cadastrada com este email. Tente fazer login ou use outro email.',
+          'Email já cadastrado',
+          {
+            label: 'Ir para login',
+            onClick: () => {
+              clearFeedback();
+              router.push('/login');
+            }
+          }
+        );
+      } else if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('conexão') || errorMessage.toLowerCase().includes('fetch')) {
+        showError(
+          'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.',
+          'Erro de conexão',
+          {
+            label: 'Tentar novamente',
+            onClick: () => {
+              clearFeedback();
+            }
+          }
+        );
+      } else {
+        showError(
+          errorMessage,
+          'Erro ao criar conta',
+          {
+            label: 'Tentar novamente',
+            onClick: () => clearFeedback()
+          }
+        );
+      }
     }
   };
 
@@ -123,12 +185,6 @@ function RegisterContent() {
         )}
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8">
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
-              {error}
-            </div>
-          )}
-
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
@@ -138,6 +194,7 @@ function RegisterContent() {
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="seu@email.com"
               required
+              disabled={loading}
             />
           </div>
 
@@ -150,6 +207,7 @@ function RegisterContent() {
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="Mínimo 6 caracteres"
               required
+              disabled={loading}
             />
           </div>
 
@@ -162,6 +220,7 @@ function RegisterContent() {
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="Digite a senha novamente"
               required
+              disabled={loading}
             />
           </div>
 
@@ -172,6 +231,7 @@ function RegisterContent() {
                 checked={acceptedTerms}
                 onChange={(e) => setAcceptedTerms(e.target.checked)}
                 className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                disabled={loading}
               />
               <span className="text-sm text-gray-600">
                 Li e aceito os{' '}

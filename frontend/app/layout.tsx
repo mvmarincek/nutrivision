@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth';
+import { FeedbackProvider } from '@/lib/feedback';
+import FeedbackModal from '@/components/FeedbackModal';
 import Script from 'next/script';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -34,9 +36,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="google-adsense-account" content={ADSENSE_CLIENT_ID} />
       </head>
       <body className={inter.className}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <FeedbackProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+          <FeedbackModal />
+        </FeedbackProvider>
         <Script
           id="adsense-script"
           async

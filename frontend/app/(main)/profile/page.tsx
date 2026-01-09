@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { useFeedback } from '@/lib/feedback';
 import { profileApi, feedbackApi } from '@/lib/api';
 import { Save, User, ArrowRight, Salad, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera } from 'lucide-react';
 import PageAds from '@/components/PageAds';
@@ -33,13 +34,13 @@ export default function ProfilePage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
   const [sugestao, setSugestao] = useState('');
   const [enviandoSugestao, setEnviandoSugestao] = useState(false);
   const [sugestaoEnviada, setSugestaoEnviada] = useState(false);
   const [linkCopiado, setLinkCopiado] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user, refreshUser } = useAuth();
+  const { showError, showSuccess, clearFeedback } = useFeedback();
   const router = useRouter();
 
   const referralLink = user?.referral_code 
@@ -59,8 +60,13 @@ export default function ProfilePage() {
     try {
       const profile = await profileApi.uploadAvatar(file);
       setAvatarUrl(profile.avatar_url);
-    } catch (err) {
-      console.error('Erro ao enviar foto:', err);
+      showSuccess('Foto de perfil atualizada com sucesso!', 'Foto atualizada');
+    } catch (err: any) {
+      showError(
+        'Não foi possível enviar a foto. Tente novamente.',
+        'Erro ao enviar foto',
+        { label: 'Entendi', onClick: () => clearFeedback() }
+      );
     } finally {
       setUploadingAvatar(false);
     }
@@ -82,9 +88,13 @@ export default function ProfilePage() {
       await feedbackApi.send(sugestao);
       setSugestaoEnviada(true);
       setSugestao('');
-      setTimeout(() => setSugestaoEnviada(false), 3000);
+      showSuccess('Obrigado pelo seu feedback! Sua sugestão foi enviada.', 'Sugestão enviada');
     } catch (err) {
-      console.error(err);
+      showError(
+        'Não foi possível enviar sua sugestão. Tente novamente mais tarde.',
+        'Erro ao enviar',
+        { label: 'Entendi', onClick: () => clearFeedback() }
+      );
     } finally {
       setEnviandoSugestao(false);
     }
@@ -118,7 +128,7 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     setSaving(true);
-    setError('');
+    clearFeedback();
 
     try {
       await profileApi.update({
@@ -126,9 +136,24 @@ export default function ProfilePage() {
         restricoes,
         alergias: alergias.split(',').map(a => a.trim()).filter(Boolean)
       });
-      router.push('/home');
+      showSuccess(
+        'Seu perfil foi salvo com sucesso!',
+        'Perfil atualizado',
+        {
+          label: 'Continuar',
+          onClick: () => {
+            clearFeedback();
+            router.push('/home');
+          }
+        }
+      );
     } catch (err: any) {
-      setError(err.message || 'Erro ao salvar perfil');
+      showError(
+        err.message || 'Não foi possível salvar o perfil. Tente novamente.',
+        'Erro ao salvar',
+        { label: 'Tentar novamente', onClick: () => clearFeedback() }
+      );
+    } finally {
       setSaving(false);
     }
   };
@@ -195,13 +220,6 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
-
-        {error && (
-          <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl mb-6 text-sm flex items-start gap-3">
-            <span className="text-lg">😕</span>
-            <span>{error}</span>
-          </div>
-        )}
 
         <div className="mb-6">
           <label className="block text-sm font-semibold text-gray-700 mb-3">

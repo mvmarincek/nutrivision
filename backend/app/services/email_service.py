@@ -2,7 +2,24 @@ import resend
 import os
 
 ADMIN_EMAIL = "mvmarincek@gmail.com"
+SUPPORT_EMAIL = "suporte@ai8hub.com"
+APP_URL = "https://nutrivision.ai8hub.com"
 resend.api_key = os.getenv("RESEND_API_KEY", "")
+
+def get_email_footer():
+    return f"""
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 20px;">
+            <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0 0 10px 0;">
+                Cuide da sua saude, uma refeicao de cada vez.<br>
+                Equipe Nutri-Vision
+            </p>
+            <p style="color: #94a3b8; font-size: 11px; text-align: center; margin: 0;">
+                Duvidas? Entre em contato: <a href="mailto:{SUPPORT_EMAIL}" style="color: #22c55e;">{SUPPORT_EMAIL}</a><br>
+                <a href="{APP_URL}/privacy" style="color: #94a3b8;">Politica de Privacidade</a> | 
+                <a href="{APP_URL}/terms" style="color: #94a3b8;">Termos de Uso</a>
+            </p>
+        </div>
+    """
 
 def send_email(to: str, subject: str, html_content: str):
     if not resend.api_key:
@@ -64,10 +81,7 @@ def send_welcome_email(user_email: str):
             </a>
         </div>
         
-        <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">
-            Cuide da sua saude, uma refeicao de cada vez.<br>
-            Equipe Nutri-Vision
-        </p>
+        {get_email_footer()}
     </body>
     </html>
     """
@@ -100,9 +114,7 @@ def send_password_reset_email(user_email: str, reset_token: str):
             </p>
         </div>
         
-        <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">
-            Equipe Nutri-Vision
-        </p>
+        {get_email_footer()}
     </body>
     </html>
     """
@@ -166,10 +178,7 @@ def send_referral_activated_email(referrer_email: str, referred_email: str, cred
             </a>
         </div>
         
-        <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">
-            Continue indicando amigos e ganhe mais creditos!<br>
-            Equipe Nutri-Vision
-        </p>
+        {get_email_footer()}
     </body>
     </html>
     """
@@ -212,10 +221,7 @@ def send_upgraded_to_pro_email(user_email: str):
             </a>
         </div>
         
-        <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">
-            Obrigado por assinar o Nutri-Vision PRO!<br>
-            Equipe Nutri-Vision
-        </p>
+        {get_email_footer()}
     </body>
     </html>
     """
@@ -254,10 +260,7 @@ def send_credits_purchased_email(user_email: str, credits_purchased: int, new_ba
             </a>
         </div>
         
-        <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">
-            Obrigado por sua compra!<br>
-            Equipe Nutri-Vision
-        </p>
+        {get_email_footer()}
     </body>
     </html>
     """
@@ -295,9 +298,7 @@ def send_subscription_cancelled_email(user_email: str):
             </a>
         </div>
         
-        <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">
-            Equipe Nutri-Vision
-        </p>
+        {get_email_footer()}
     </body>
     </html>
     """
@@ -334,9 +335,7 @@ def send_email_verification(user_email: str, verification_token: str):
             </p>
         </div>
         
-        <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">
-            Equipe Nutri-Vision
-        </p>
+        {get_email_footer()}
     </body>
     </html>
     """
@@ -373,10 +372,7 @@ def send_email_verified_success(user_email: str):
             </a>
         </div>
         
-        <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">
-            Cuide da sua saude, uma refeicao de cada vez.<br>
-            Equipe Nutri-Vision
-        </p>
+        {get_email_footer()}
     </body>
     </html>
     """

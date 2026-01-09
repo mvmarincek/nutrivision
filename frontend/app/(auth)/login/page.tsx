@@ -4,28 +4,76 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
+import { useFeedback } from '@/lib/feedback';
 import { Salad } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { showError, clearFeedback } = useFeedback();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    clearFeedback();
     setLoading(true);
 
     try {
       await login(email, password);
       router.push('/home');
     } catch (err: any) {
-      setError(err.message || 'Erro ao fazer login');
-    } finally {
       setLoading(false);
+      const errorMessage = err.message || 'Erro ao fazer login';
+      
+      if (errorMessage.toLowerCase().includes('senha') || errorMessage.toLowerCase().includes('password') || errorMessage.toLowerCase().includes('incorrect') || errorMessage.toLowerCase().includes('invalid')) {
+        showError(
+          'A senha informada está incorreta. Verifique e tente novamente.',
+          'Senha incorreta',
+          {
+            label: 'Tentar novamente',
+            onClick: () => {
+              clearFeedback();
+              setPassword('');
+            }
+          }
+        );
+      } else if (errorMessage.toLowerCase().includes('email') || errorMessage.toLowerCase().includes('user') || errorMessage.toLowerCase().includes('not found')) {
+        showError(
+          'Não encontramos uma conta com este email. Verifique o email ou crie uma nova conta.',
+          'Email não encontrado',
+          {
+            label: 'Tentar novamente',
+            onClick: () => {
+              clearFeedback();
+            }
+          }
+        );
+      } else if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('conexão') || errorMessage.toLowerCase().includes('fetch')) {
+        showError(
+          'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.',
+          'Erro de conexão',
+          {
+            label: 'Tentar novamente',
+            onClick: () => {
+              clearFeedback();
+              handleSubmit(e);
+            }
+          }
+        );
+      } else {
+        showError(
+          errorMessage,
+          'Erro ao fazer login',
+          {
+            label: 'Tentar novamente',
+            onClick: () => {
+              clearFeedback();
+            }
+          }
+        );
+      }
     }
   };
 
@@ -45,12 +93,6 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8">
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
-              {error}
-            </div>
-          )}
-
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
@@ -60,6 +102,7 @@ export default function LoginPage() {
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="seu@email.com"
               required
+              disabled={loading}
             />
           </div>
 
@@ -72,6 +115,7 @@ export default function LoginPage() {
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="Sua senha"
               required
+              disabled={loading}
             />
             <div className="text-right mt-1">
               <Link href="/forgot-password" className="text-sm text-green-600 hover:underline">

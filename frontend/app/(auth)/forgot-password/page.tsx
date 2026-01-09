@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api';
+import { useFeedback } from '@/lib/feedback';
 import { Salad, ArrowLeft, Mail, UserPlus } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
@@ -11,12 +12,12 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [notFound, setNotFound] = useState(false);
-  const [error, setError] = useState('');
+  const { showError, showSuccess, clearFeedback } = useFeedback();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    clearFeedback();
     setNotFound(false);
     setLoading(true);
 
@@ -28,7 +29,28 @@ export default function ForgotPasswordPage() {
         setSent(true);
       }
     } catch (err: any) {
-      setError(err.message || 'Erro ao enviar email');
+      setLoading(false);
+      const errorMessage = err.message || 'Erro ao enviar email';
+      
+      if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('conexão') || errorMessage.toLowerCase().includes('fetch')) {
+        showError(
+          'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.',
+          'Erro de conexão',
+          {
+            label: 'Tentar novamente',
+            onClick: () => clearFeedback()
+          }
+        );
+      } else {
+        showError(
+          errorMessage,
+          'Erro ao enviar email',
+          {
+            label: 'Tentar novamente',
+            onClick: () => clearFeedback()
+          }
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -96,9 +118,12 @@ export default function ForgotPasswordPage() {
             </div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">Email enviado!</h2>
             <p className="text-gray-600 mb-6">
-              Se o email <strong>{email}</strong> estiver cadastrado, você receberá as instruções para redefinir sua senha.
+              Enviamos um link de recuperação para <strong>{email}</strong>. Verifique sua caixa de entrada e a pasta de spam.
             </p>
-            <Link href="/login" className="text-green-600 hover:underline font-medium">
+            <Link 
+              href="/login" 
+              className="inline-block w-full gradient-fresh text-white py-3 rounded-lg font-semibold hover:shadow-lg text-center"
+            >
               Voltar para o login
             </Link>
           </div>
@@ -127,12 +152,6 @@ export default function ForgotPasswordPage() {
             <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
           </Link>
 
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
-              {error}
-            </div>
-          )}
-
           <p className="text-gray-600 mb-4">
             Digite seu email e enviaremos instruções para redefinir sua senha.
           </p>
@@ -146,6 +165,7 @@ export default function ForgotPasswordPage() {
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               placeholder="seu@email.com"
               required
+              disabled={loading}
             />
           </div>
 
