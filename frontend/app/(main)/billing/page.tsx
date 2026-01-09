@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
 import { billingApi, BillingStatus, CreditPackage } from '@/lib/api';
@@ -367,20 +367,24 @@ export default function BillingPage() {
   const displayPackages = Object.keys(packages).length > 0 ? packages : defaultPackages;
   const isPro = billingStatus?.plan === 'pro';
 
-  const CardFormFields = ({ forSubscription = false }: { forSubscription?: boolean }) => (
+  const updateCardField = useCallback((field: keyof CardFormData, value: string) => {
+    setCardForm(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const cardFormFields = (forSubscription = false) => (
     <div className="space-y-3">
       <input
         type="text"
         placeholder="Nome no cartao"
         value={cardForm.card_holder_name}
-        onChange={(e) => setCardForm({ ...cardForm, card_holder_name: e.target.value.toUpperCase() })}
+        onChange={(e) => updateCardField('card_holder_name', e.target.value.toUpperCase())}
         className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
       />
       <input
         type="text"
         placeholder="Numero do cartao"
         value={cardForm.card_number}
-        onChange={(e) => setCardForm({ ...cardForm, card_number: formatCardNumber(e.target.value) })}
+        onChange={(e) => updateCardField('card_number', formatCardNumber(e.target.value))}
         className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
       />
       <div className="grid grid-cols-3 gap-3">
@@ -388,21 +392,21 @@ export default function BillingPage() {
           type="text"
           placeholder="Mes (MM)"
           value={cardForm.expiry_month}
-          onChange={(e) => setCardForm({ ...cardForm, expiry_month: e.target.value.replace(/\D/g, '').slice(0, 2) })}
+          onChange={(e) => updateCardField('expiry_month', e.target.value.replace(/\D/g, '').slice(0, 2))}
           className="px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
         />
         <input
           type="text"
           placeholder="Ano (YYYY)"
           value={cardForm.expiry_year}
-          onChange={(e) => setCardForm({ ...cardForm, expiry_year: e.target.value.replace(/\D/g, '').slice(0, 4) })}
+          onChange={(e) => updateCardField('expiry_year', e.target.value.replace(/\D/g, '').slice(0, 4))}
           className="px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
         />
         <input
           type="text"
           placeholder="CVV"
           value={cardForm.cvv}
-          onChange={(e) => setCardForm({ ...cardForm, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) })}
+          onChange={(e) => updateCardField('cvv', e.target.value.replace(/\D/g, '').slice(0, 4))}
           className="px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
         />
       </div>
@@ -410,14 +414,14 @@ export default function BillingPage() {
         type="text"
         placeholder="CPF (somente numeros)"
         value={cardForm.holder_cpf}
-        onChange={(e) => setCardForm({ ...cardForm, holder_cpf: formatCPF(e.target.value) })}
+        onChange={(e) => updateCardField('holder_cpf', formatCPF(e.target.value))}
         className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
       />
       <input
         type="text"
         placeholder="Telefone (somente numeros)"
         value={cardForm.holder_phone}
-        onChange={(e) => setCardForm({ ...cardForm, holder_phone: formatPhone(e.target.value) })}
+        onChange={(e) => updateCardField('holder_phone', formatPhone(e.target.value))}
         className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
       />
       <div className="grid grid-cols-2 gap-3">
@@ -425,14 +429,14 @@ export default function BillingPage() {
           type="text"
           placeholder="CEP"
           value={cardForm.postal_code}
-          onChange={(e) => setCardForm({ ...cardForm, postal_code: formatCEP(e.target.value) })}
+          onChange={(e) => updateCardField('postal_code', formatCEP(e.target.value))}
           className="px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
         />
         <input
           type="text"
           placeholder="Numero"
           value={cardForm.address_number}
-          onChange={(e) => setCardForm({ ...cardForm, address_number: e.target.value })}
+          onChange={(e) => updateCardField('address_number', e.target.value)}
           className="px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
         />
       </div>
@@ -692,7 +696,7 @@ export default function BillingPage() {
                 >
                   ← Voltar
                 </button>
-                <CardFormFields />
+                {cardFormFields(false)}
               </>
             )}
           </div>
@@ -771,7 +775,7 @@ export default function BillingPage() {
                 >
                   ← Voltar
                 </button>
-                <CardFormFields forSubscription />
+                {cardFormFields(true)}
               </>
             )}
 
