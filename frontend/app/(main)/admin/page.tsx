@@ -21,7 +21,7 @@ function formatDate(dateStr: string | null) {
 
 export default function AdminPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { showError, showSuccess, clearFeedback } = useFeedback();
   
   const [stats, setStats] = useState<AdminStats | null>(null);
