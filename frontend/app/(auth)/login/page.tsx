@@ -28,9 +28,11 @@ function clearGlobalError() {
   globalErrorModal.listeners.forEach(fn => fn());
 }
 
-function subscribeToGlobalError(fn: () => void) {
+function subscribeToGlobalError(fn: () => void): () => void {
   globalErrorModal.listeners.add(fn);
-  return () => globalErrorModal.listeners.delete(fn);
+  return () => {
+    globalErrorModal.listeners.delete(fn);
+  };
 }
 
 function useGlobalErrorModal() {
