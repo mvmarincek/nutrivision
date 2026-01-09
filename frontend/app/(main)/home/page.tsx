@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
 import { mealsApi } from '@/lib/api';
 import { normalizeImageOrientation } from '@/lib/image-utils';
-import { Upload, UtensilsCrossed, Cake, Coffee, Target, Heart, Crown, Zap, Sparkles, ArrowRight, X, FileText, Scale, Droplet } from 'lucide-react';
+import { Upload, UtensilsCrossed, Cake, Coffee, Target, Heart, Crown, Zap, Sparkles, ArrowRight, X, FileText, Scale, Droplet, Check, Ban, CreditCard } from 'lucide-react';
 import PageAds from '@/components/PageAds';
 
 type Phase = 'idle' | 'loading_image' | 'uploading';
@@ -25,13 +25,6 @@ const motivationalMessages = [
   "Sua jornada de bem-estar começa com pequenas escolhas diárias."
 ];
 
-const tips = [
-  "Dica: Pratos coloridos geralmente são mais nutritivos!",
-  "Sabia? Mastigar devagar melhora a digestão e saciedade.",
-  "Lembre-se: Hidratação é fundamental para o metabolismo.",
-  "Fato: Proteínas ajudam a manter a saciedade por mais tempo."
-];
-
 export default function HomePage() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [mealType, setMealType] = useState('prato');
@@ -39,7 +32,6 @@ export default function HomePage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [motivationalMessage, setMotivationalMessage] = useState('');
-  const [tip, setTip] = useState('');
   const [userNotes, setUserNotes] = useState('');
   const [weightGrams, setWeightGrams] = useState('');
   const [volumeMl, setVolumeMl] = useState('');
@@ -50,7 +42,6 @@ export default function HomePage() {
 
   useEffect(() => {
     setMotivationalMessage(motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)]);
-    setTip(tips[Math.floor(Math.random() * tips.length)]);
   }, []);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -274,55 +265,66 @@ export default function HomePage() {
           <label className="block text-sm font-semibold text-gray-700 mb-3">
             Tipo de análise
           </label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3">
             <button
               onClick={() => setMode('simple')}
-              className={`p-4 rounded-2xl border-2 text-left transition-all ${
+              className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${
                 mode === 'simple'
                   ? 'border-green-400 bg-green-50'
                   : 'border-gray-100 hover:border-gray-200'
               }`}
             >
-              <div className="flex items-center gap-2 mb-2">
-                <Zap className={`w-5 h-5 ${mode === 'simple' ? 'text-yellow-500' : 'text-gray-400'}`} />
-                <span className={`font-semibold ${mode === 'simple' ? 'text-green-700' : 'text-gray-700'}`}>
-                  Rápida
-                </span>
+              <div className="flex items-center gap-3">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  mode === 'simple' ? 'bg-gradient-to-br from-yellow-400 to-orange-400' : 'bg-gray-100'
+                }`}>
+                  <Zap className={`w-6 h-6 ${mode === 'simple' ? 'text-white' : 'text-gray-400'}`} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className={`font-bold text-base ${mode === 'simple' ? 'text-green-700' : 'text-gray-700'}`}>
+                      Análise Rápida
+                    </span>
+                    {user?.plan === 'free' ? (
+                      <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        GRÁTIS
+                      </span>
+                    ) : (
+                      <span className="bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full">
+                        5 créditos
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">Calorias, macros e observações nutricionais</p>
+                </div>
               </div>
-              <p className="text-xs text-gray-500">Calorias e macros</p>
-              {user?.plan === 'free' ? (
-                <div className="mt-2 inline-flex items-center gap-1 bg-green-500 text-white text-xs font-medium px-2 py-1 rounded-full">
-                  Grátis
-                </div>
-              ) : (
-                <div className="mt-2 inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full">
-                  <Sparkles className="w-3 h-3" />
-                  5 créditos
-                </div>
-              )}
             </button>
+            
             <button
               onClick={() => setMode('full')}
-              className={`p-4 rounded-2xl border-2 text-left transition-all relative ${
+              className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${
                 mode === 'full'
                   ? 'border-purple-400 bg-purple-50'
                   : 'border-gray-100 hover:border-gray-200'
               }`}
             >
-              <div className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Crown className="w-3 h-3" />
-                PRO
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                <Target className={`w-5 h-5 ${mode === 'full' ? 'text-purple-500' : 'text-gray-400'}`} />
-                <span className={`font-semibold ${mode === 'full' ? 'text-purple-700' : 'text-gray-700'}`}>
-                  Completa
-                </span>
-              </div>
-              <p className="text-xs text-gray-500">+ Sugestão visual</p>
-              <div className="mt-2 inline-flex items-center gap-1 bg-purple-100 text-purple-700 text-xs font-medium px-2 py-1 rounded-full">
-                <Sparkles className="w-3 h-3" />
-                12 créditos
+              <div className="flex items-center gap-3">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  mode === 'full' ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-gray-100'
+                }`}>
+                  <Target className={`w-6 h-6 ${mode === 'full' ? 'text-white' : 'text-gray-400'}`} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className={`font-bold text-base ${mode === 'full' ? 'text-purple-700' : 'text-gray-700'}`}>
+                      Análise Completa
+                    </span>
+                    <span className="bg-purple-100 text-purple-700 text-xs font-medium px-2 py-1 rounded-full">
+                      12 créditos
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">Calorias, macros, observações + sugestão visual balanceada</p>
+                </div>
               </div>
             </button>
           </div>
@@ -441,14 +443,55 @@ export default function HomePage() {
             : `Custo: ${cost} créditos • Saldo: ${user?.credit_balance} créditos`
           }
         </p>
+
+        {user?.plan !== 'pro' && (
+          <button
+            onClick={() => router.push('/credits')}
+            className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+          >
+            <CreditCard className="w-5 h-5" />
+            Comprar mais créditos
+          </button>
+        )}
       </div>
 
-      <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-100">
-        <p className="text-sm text-amber-800 flex items-start gap-2">
-          <span className="text-lg">💡</span>
-          <span>{tip}</span>
-        </p>
-      </div>
+      {user?.plan !== 'pro' && (
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-5 border border-purple-100">
+          <div className="flex items-center gap-2 mb-4">
+            <Crown className="w-6 h-6 text-purple-500" />
+            <h3 className="font-bold text-lg text-purple-800">Seja PRO</h3>
+          </div>
+          
+          <div className="space-y-3 mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                <Ban className="w-4 h-4 text-green-600" />
+              </div>
+              <span className="text-sm text-gray-700">Sem propagandas no app</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                <Check className="w-4 h-4 text-green-600" />
+              </div>
+              <span className="text-sm text-gray-700">Sem necessidade de comprar créditos</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-4 h-4 text-green-600" />
+              </div>
+              <span className="text-sm text-gray-700">Análises ilimitadas todos os meses</span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => router.push('/subscribe')}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-purple-200 transition-all"
+          >
+            <Crown className="w-5 h-5" />
+            Assinar agora
+          </button>
+        </div>
+      )}
 
       <PageAds position="bottom" />
     </div>
