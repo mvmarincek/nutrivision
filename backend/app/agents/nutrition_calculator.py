@@ -21,8 +21,8 @@ class NutritionCalculatorAgent:
         for porcao in porcoes:
             item_nome = porcao.get("item", "")
             peso_central = porcao.get("peso_g_ml_central", 0)
-            peso_min = porcao.get("faixa_min", peso_central * 0.8)
-            peso_max = porcao.get("faixa_max", peso_central * 1.2)
+            peso_min = porcao.get("faixa_min", peso_central * 0.9)
+            peso_max = porcao.get("faixa_max", peso_central * 1.1)
             confianca = porcao.get("confianca", "medio")
             confiancas.append(confianca)
             
