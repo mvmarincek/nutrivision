@@ -13,8 +13,11 @@ interface AdSenseAdProps {
   className?: string;
 }
 
-export default function AdSenseAd({ slot = '5278243728', className = '' }: AdSenseAdProps) {
+const AD_SLOTS = ['5278243728', '7180344729'];
+
+export default function AdSenseAd({ slot, className = '' }: AdSenseAdProps) {
   const [adLoaded, setAdLoaded] = useState(false);
+  const [selectedSlot] = useState(() => slot || AD_SLOTS[Math.floor(Math.random() * AD_SLOTS.length)]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -42,7 +45,7 @@ export default function AdSenseAd({ slot = '5278243728', className = '' }: AdSen
         className="adsbygoogle"
         style={{ display: 'block' }}
         data-ad-client="ca-pub-3364979853180818"
-        data-ad-slot={slot}
+        data-ad-slot={selectedSlot}
         data-ad-format="auto"
         data-full-width-responsive="true"
       />
