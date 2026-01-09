@@ -10,9 +10,15 @@ class ImageGenerationManager:
             return None
         
         try:
-            full_prompt = f"""Create a SQUARE image of appetizing food: {prompt}
+            full_prompt = f"""REALISTIC food photography of a real dish: {prompt}
 
-Style: Professional food photography, natural lighting, top-down view, white background."""
+IMPORTANT RULES:
+- Show ONLY real, existing foods that are commonly eaten
+- Do NOT invent or hallucinate fictional foods
+- Do NOT create surreal or impossible food combinations
+- The dish must look like something from a real restaurant or home kitchen
+
+Style: Professional food photography, natural daylight, shallow depth of field, top-down 45-degree angle view, on a clean white ceramic plate, minimal garnish, photorealistic, high resolution."""
 
             response = await self.client.images.generate(
                 model="dall-e-2",

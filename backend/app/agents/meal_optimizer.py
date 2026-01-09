@@ -19,13 +19,20 @@ PRINCÍPIOS DE OTIMIZAÇÃO:
 - Manter sabor e praticidade
 - Respeitar restrições alimentares
 
+REGRAS PARA O PROMPT DE IMAGEM:
+- Descreva APENAS alimentos reais e existentes
+- NÃO invente comidas fictícias ou combinações surreais
+- Use nomes de alimentos comuns e reconhecíveis
+- Descreva o prato como seria servido em um restaurante real
+- Seja específico sobre os ingredientes visíveis
+
 Retorne SEMPRE um JSON válido no formato:
 {
   "sugestao_melhorada_texto": "string (descrição do prato otimizado)",
   "mudancas_sugeridas": ["string"],
   "calorias_nova_versao": {"central": number, "min": number, "max": number},
   "macros_nova_versao": {"proteina_g": number, "carbo_g": number, "gordura_g": number, "fibra_g": number},
-  "prompt_para_imagem": "string (prompt em inglês para gerar imagem do prato otimizado)"
+  "prompt_para_imagem": "string (prompt em inglês descrevendo o prato real otimizado, sem inventar ingredientes)"
 }
 """
 

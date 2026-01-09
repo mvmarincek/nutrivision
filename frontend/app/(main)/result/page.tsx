@@ -132,6 +132,8 @@ function ResultContent() {
         </div>
 
         <div className="p-6">
+          <PageAds position="inline" />
+          
           <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-2xl p-6 mb-6 border border-green-100">
             <div className="text-center mb-4">
               <div className="inline-flex items-center gap-2 mb-2">

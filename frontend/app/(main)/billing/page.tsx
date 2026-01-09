@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
 import { billingApi, BillingStatus, CreditPackage } from '@/lib/api';
 import { CreditCard, Star, Zap, QrCode, Copy, Check, X, Crown, FileText, Loader2 } from 'lucide-react';
+import PageAds from '@/components/PageAds';
 
 interface PixPaymentData {
   payment_id: string;
@@ -492,6 +493,8 @@ export default function BillingPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
+      <PageAds position="top" />
+      
       <h1 className="text-2xl font-bold mb-6">Creditos</h1>
 
       <div className="bg-white rounded-xl shadow-md p-6 mb-6">
@@ -515,7 +518,7 @@ export default function BillingPage() {
           <div className="flex gap-4">
             <div className="flex items-center">
               <Zap className="w-4 h-4 text-green-500 mr-1" />
-              <span className="text-sm font-medium text-green-600">Simples: {isPro ? 'Gratis' : '1 credito'}</span>
+              <span className="text-sm font-medium text-green-600">Simples: Gratis</span>
             </div>
             <div className="flex items-center">
               <Star className="w-4 h-4 text-yellow-500 mr-1" />
