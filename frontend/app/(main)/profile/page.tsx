@@ -221,6 +221,8 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        <PageAds position="inline" />
+
         <div className="mb-6">
           <label className="block text-sm font-semibold text-gray-700 mb-3">
             Objetivo Nutricional
