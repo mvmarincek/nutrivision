@@ -1,35 +1,120 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
-import { Salad } from 'lucide-react';
-import { AlertCircle } from 'lucide-react';
+import { Salad, AlertCircle } from 'lucide-react';
 
-interface ErrorModal {
-  open: boolean;
-  title: string;
-  message: string;
+let globalErrorModal = {
+  open: false,
+  title: '',
+  message: '',
+  listeners: new Set<() => void>()
+};
+
+function setGlobalError(title: string, message: string) {
+  globalErrorModal.open = true;
+  globalErrorModal.title = title;
+  globalErrorModal.message = message;
+  globalErrorModal.listeners.forEach(fn => fn());
+}
+
+function clearGlobalError() {
+  globalErrorModal.open = false;
+  globalErrorModal.title = '';
+  globalErrorModal.message = '';
+  globalErrorModal.listeners.forEach(fn => fn());
+}
+
+function subscribeToGlobalError(fn: () => void) {
+  globalErrorModal.listeners.add(fn);
+  return () => globalErrorModal.listeners.delete(fn);
+}
+
+function useGlobalErrorModal() {
+  const [, forceUpdate] = useState(0);
+  
+  useEffect(() => {
+    return subscribeToGlobalError(() => forceUpdate(n => n + 1));
+  }, []);
+  
+  return {
+    open: globalErrorModal.open,
+    title: globalErrorModal.title,
+    message: globalErrorModal.message
+  };
+}
+
+function ErrorModal() {
+  const { open, title, message } = useGlobalErrorModal();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !open) {
+    return null;
+  }
+
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div 
+        className="w-full max-w-md rounded-2xl shadow-2xl overflow-hidden bg-red-50 border-red-200 border-2"
+        role="alertdialog"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 p-2 rounded-full bg-red-100">
+              <AlertCircle className="w-6 h-6 text-red-500" />
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-semibold text-red-800 mb-1">
+                {title}
+              </h3>
+              <p className="text-sm text-red-700 leading-relaxed">
+                {message}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-end">
+            <button
+              type="button"
+              onClick={() => clearGlobalError()}
+              className="px-6 py-2 rounded-xl font-medium text-sm bg-red-600 hover:bg-red-700 text-white"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
 }
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errorModal, setErrorModal] = useState<ErrorModal>({ open: false, title: '', message: '' });
   const { login } = useAuth();
   const router = useRouter();
-  const formRef = useRef<HTMLFormElement>(null);
+  const errorState = useGlobalErrorModal();
 
-  const handleCloseErrorModal = () => {
-    setErrorModal({ open: false, title: '', message: '' });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (errorModal.open) {
+    if (globalErrorModal.open) {
       return;
     }
     
@@ -59,13 +144,9 @@ export default function LoginPage() {
         message = 'Sua sessão expirou. Faça login novamente.';
       }
       
-      setErrorModal({
-        open: true,
-        title,
-        message
-      });
+      setGlobalError(title, message);
     }
-  };
+  }, [email, password, login, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center p-4">
@@ -82,7 +163,7 @@ export default function LoginPage() {
           <p className="text-gray-600 mt-2">Entre na sua conta</p>
         </div>
 
-        <form ref={formRef} onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8">
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8">
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
@@ -92,7 +173,7 @@ export default function LoginPage() {
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="seu@email.com"
               required
-              disabled={loading || errorModal.open}
+              disabled={loading || errorState.open}
             />
           </div>
 
@@ -105,7 +186,7 @@ export default function LoginPage() {
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="Sua senha"
               required
-              disabled={loading || errorModal.open}
+              disabled={loading || errorState.open}
             />
             <div className="text-right mt-1">
               <Link href="/forgot-password" className="text-sm text-green-600 hover:underline">
@@ -116,7 +197,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading || errorModal.open}
+            disabled={loading || errorState.open}
             className="w-full bg-primary-500 text-white py-3 rounded-lg font-semibold hover:bg-primary-600 disabled:opacity-50"
           >
             {loading ? 'Entrando...' : 'Entrar'}
@@ -131,54 +212,7 @@ export default function LoginPage() {
         </form>
       </div>
 
-      {errorModal.open && (
-        <div 
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-        >
-          <div 
-            className="w-full max-w-md rounded-2xl shadow-2xl overflow-hidden bg-red-50 border-red-200 border-2"
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="error-modal-title"
-            aria-describedby="error-modal-message"
-          >
-            <div className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 p-2 rounded-full bg-red-50">
-                  <AlertCircle className="w-6 h-6 text-red-500" />
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <h3 
-                    id="error-modal-title"
-                    className="text-lg font-semibold text-red-800 mb-1"
-                  >
-                    {errorModal.title}
-                  </h3>
-                  
-                  <p 
-                    id="error-modal-message"
-                    className="text-sm text-red-700 leading-relaxed"
-                  >
-                    {errorModal.message}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-6 flex justify-end">
-                <button
-                  onClick={handleCloseErrorModal}
-                  className="px-6 py-2 rounded-xl font-medium text-sm transition-colors duration-200 bg-red-600 hover:bg-red-700 text-white"
-                  autoFocus
-                >
-                  Tentar novamente
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ErrorModal />
     </div>
   );
 }
