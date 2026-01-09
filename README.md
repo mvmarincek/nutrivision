@@ -1,98 +1,110 @@
 # Nutri-Vision Web
 
-## Configuração do Projeto
+SaaS de análise nutricional de refeições por IA. Fotografe sua refeição e receba análise completa de calorias, macronutrientes e sugestões de melhoria.
 
-### Backend (FastAPI + Agno)
+## URLs de Produção
 
-1. Entre na pasta backend:
+- **App:** https://nutrivision.ai8hub.com
+- **API:** https://nutrivision-api-dcr0.onrender.com
+- **Docs:** https://nutrivision-api-dcr0.onrender.com/docs
+
+## Stack
+
+- **Backend:** Python 3.11, FastAPI, SQLAlchemy, PostgreSQL, OpenAI GPT-4o/DALL-E 3
+- **Frontend:** Next.js 14, React 18, TypeScript, Tailwind CSS
+- **Pagamentos:** ASAAS (PIX, Cartão, Boleto)
+- **Monetização:** Google AdSense (usuários FREE)
+
+## Configuração Local
+
+### Backend
+
 ```bash
 cd backend
-```
-
-2. Crie um ambiente virtual:
-```bash
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-```
-
-3. Instale as dependências:
-```bash
+venv\Scripts\activate  # Windows
 pip install -r requirements.txt
-```
-
-4. Configure as variáveis de ambiente:
-```bash
-cp .env.example .env
-# Edite .env com suas chaves
-```
-
-5. Execute o servidor:
-```bash
+# Configurar .env com as variáveis necessárias
 uvicorn app.main:app --reload
 ```
 
-### Frontend (Next.js)
+### Frontend
 
-1. Entre na pasta frontend:
 ```bash
 cd frontend
-```
-
-2. Instale as dependências:
-```bash
 npm install
-```
-
-3. Configure as variáveis de ambiente:
-```bash
-cp .env.local.example .env.local
-```
-
-4. Execute o servidor de desenvolvimento:
-```bash
+# Configurar .env.local
 npm run dev
 ```
 
-### Variáveis de Ambiente Necessárias
+## Variáveis de Ambiente
 
-**Backend (.env):**
-- `DATABASE_URL`: URL do banco de dados (SQLite ou PostgreSQL)
-- `SECRET_KEY`: Chave secreta para JWT
-- `OPENAI_API_KEY`: Chave da API OpenAI
-- `STRIPE_SECRET_KEY`: Chave secreta do Stripe
-- `STRIPE_WEBHOOK_SECRET`: Secret do webhook Stripe
-- `FRONTEND_URL`: URL do frontend
+### Backend (.env)
+```env
+DATABASE_URL=postgresql://user:pass@host/db
+SECRET_KEY=chave-secreta-jwt
+OPENAI_API_KEY=sk-xxx
+ASAAS_API_KEY=xxx
+ASAAS_ENVIRONMENT=production
+FRONTEND_URL=https://nutrivision.ai8hub.com
+BACKEND_URL=https://nutrivision-api-dcr0.onrender.com
+RESEND_API_KEY=re_xxx
+```
 
-**Frontend (.env.local):**
-- `NEXT_PUBLIC_API_URL`: URL do backend
+### Frontend (.env.local)
+```env
+NEXT_PUBLIC_API_URL=https://nutrivision-api-dcr0.onrender.com
+NEXT_PUBLIC_ADSENSE_CLIENT_ID=ca-pub-xxx
+```
 
-### Deploy
+## Deploy
 
-**Backend (Render):**
-1. Conecte seu repositório
-2. Configure as variáveis de ambiente
-3. Deploy automático via Procfile
+### Backend (Render)
+1. Conectar repositório GitHub
+2. Configurar variáveis de ambiente
+3. Runtime: Python 3.11 (via runtime.txt)
+4. **Após deploy:** Acessar `/run-migration` para criar tabelas
 
-**Frontend (Vercel):**
-1. Conecte seu repositório
-2. Configure NEXT_PUBLIC_API_URL
-3. Deploy automático
+### Frontend (Vercel)
+1. Conectar repositório GitHub
+2. Root Directory: `frontend`
+3. Configurar variáveis de ambiente
 
-### Custos de Créditos
+## Funcionalidades
 
-- Análise simples: 5 créditos
-- Análise completa (com imagem): 12 créditos
+### Tipos de Análise
+- **Rápida (Grátis):** Calorias, macros e observações
+- **Completa (12 créditos):** + Sugestão visual balanceada com imagem gerada por IA
 
-### Pacotes de Créditos
+### Tipos de Refeição
+- **Prato:** Analisa apenas a comida (ignora bebidas/sobremesas)
+- **Sobremesa:** Analisa apenas a sobremesa
+- **Bebida:** Analisa apenas a bebida
 
-- 50 créditos: R$ 9,90
-- 100 créditos: R$ 17,90
-- 300 créditos: R$ 44,90
-- 1000 créditos: R$ 129,90
+### Campos Opcionais
+- **Observações:** Descrição dos ingredientes
+- **Peso (g):** Para pratos e sobremesas
+- **Volume (ml):** Para bebidas
 
-### Assinatura Pro
+### Monetização
+- **Pacotes de Créditos:** 12, 36, 60 ou 120 créditos
+- **Assinatura PRO:** R$ 49,90/mês (sem ads, análises ilimitadas)
+- **AdSense:** Propagandas para usuários FREE
 
-- R$ 49,90/mês
-- 30 análises completas incluídas
-"# Deploy trigger"  
+### Sistema de Indicação
+- Código único por usuário
+- 12 créditos para quem indica
+
+## Documentação Completa
+
+Ver [DOCUMENTATION.md](./DOCUMENTATION.md) para documentação técnica detalhada.
+
+## Usuário de Teste
+
+```bash
+curl -X POST https://nutrivision-api-dcr0.onrender.com/auth/create-test-user
+```
+
+- Email: `teste@nutrivision.com`
+- Senha: `teste123`
+- Créditos: 100.000
