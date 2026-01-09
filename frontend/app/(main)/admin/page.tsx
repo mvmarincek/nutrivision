@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/lib/auth';
 import { adminApi, AdminStats, AdminUser, AdminPayment, UserDetails } from '@/lib/api';
-import { useFeedback } from '@/contexts/FeedbackContext';
+import { useFeedback } from '@/lib/feedback';
 import { 
   Users, CreditCard, TrendingUp, Activity, Search, ChevronLeft, ChevronRight,
   Crown, Shield, Plus, Eye, X, Calendar, Mail, Phone, Hash
