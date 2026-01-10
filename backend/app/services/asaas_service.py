@@ -131,14 +131,15 @@ class AsaasService:
         external_reference: str,
         cycle: str = "MONTHLY",
         card_data: Optional[Dict[str, Any]] = None,
-        card_holder_info: Optional[Dict[str, Any]] = None
+        card_holder_info: Optional[Dict[str, Any]] = None,
+        next_due_days: int = 30
     ) -> Dict[str, Any]:
         async with httpx.AsyncClient() as client:
             payload = {
                 "customer": customer_id,
                 "billingType": billing_type,
                 "value": value,
-                "nextDueDate": self._get_due_date(),
+                "nextDueDate": self._get_due_date(next_due_days),
                 "description": description,
                 "externalReference": external_reference,
                 "cycle": cycle
@@ -205,9 +206,9 @@ class AsaasService:
         payment = await self.get_payment(payment_id)
         return payment.get("bankSlipUrl", "")
     
-    def _get_due_date(self) -> str:
+    def _get_due_date(self, days: int = 1) -> str:
         from datetime import datetime, timedelta
-        due_date = datetime.now() + timedelta(days=1)
+        due_date = datetime.now() + timedelta(days=days)
         return due_date.strftime("%Y-%m-%d")
 
 asaas_service = AsaasService()

@@ -584,7 +584,7 @@ export default function BillingPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">{isPro ? 'Meu Plano' : 'Creditos'}</h1>
+      <h1 className="text-2xl font-bold mb-6">{isPro ? 'Meu Plano' : 'Créditos'}</h1>
 
       {isPro && billingStatus?.has_subscription && (
         <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl shadow-lg p-6 mb-6 text-white">
@@ -593,42 +593,42 @@ export default function BillingPage() {
               <Crown className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold">Voce e PRO!</h2>
-              <p className="text-sm text-white/90">Aproveite todos os beneficios exclusivos</p>
+              <h2 className="text-2xl font-bold">Você é PRO!</h2>
+              <p className="text-sm text-white/90">Aproveite todos os benefícios exclusivos</p>
             </div>
           </div>
           
           <div className="bg-white/10 rounded-xl p-4 mb-4">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm">Analises completas restantes</span>
-              <span className="font-bold text-lg">{billingStatus.pro_analyses_remaining}/60</span>
+              <span className="text-sm">Análises completas restantes</span>
+              <span className="font-bold text-lg">{billingStatus.pro_analyses_remaining}/90</span>
             </div>
             <div className="w-full bg-white/20 rounded-full h-2">
               <div 
                 className="bg-white rounded-full h-2 transition-all" 
-                style={{ width: `${(billingStatus.pro_analyses_remaining / 60) * 100}%` }}
+                style={{ width: `${(billingStatus.pro_analyses_remaining / 90) * 100}%` }}
               />
             </div>
-            <p className="text-xs text-white/70 mt-2">Renova todo mes automaticamente</p>
+            <p className="text-xs text-white/70 mt-2">Renova todo mês automaticamente</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-white/10 rounded-xl p-3 text-center">
               <Zap className="w-5 h-5 mx-auto mb-1" />
-              <p className="text-xs">Analises simples</p>
+              <p className="text-xs">Análises simples</p>
               <p className="font-bold">Ilimitadas</p>
             </div>
             <div className="bg-white/10 rounded-xl p-3 text-center">
               <Star className="w-5 h-5 mx-auto mb-1" />
               <p className="text-xs">Suporte</p>
-              <p className="font-bold">Prioritario</p>
+              <p className="font-bold">Prioritário</p>
             </div>
           </div>
           
           <button
             onClick={handleCancelSubscription}
             disabled={cancelingSubscription}
-            className="w-full py-3 rounded-xl bg-white/10 text-white/80 text-sm font-medium hover:bg-white/20 transition-all disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-red-600/80 text-white text-sm font-medium hover:bg-red-700 transition-all disabled:opacity-50"
           >
             {cancelingSubscription ? 'Cancelando...' : 'Cancelar assinatura'}
           </button>
@@ -639,10 +639,10 @@ export default function BillingPage() {
         <div className="bg-gray-100 rounded-xl p-6 mb-6 opacity-60">
           <div className="flex items-center gap-2 mb-4">
             <Check className="w-5 h-5 text-green-500" />
-            <p className="text-gray-600 font-medium">Como assinante PRO, voce nao precisa comprar creditos!</p>
+            <p className="text-gray-600 font-medium">Como assinante PRO, você não precisa comprar créditos!</p>
           </div>
           <p className="text-sm text-gray-500">
-            Suas analises simples sao ilimitadas e voce tem 60 analises completas por mes incluidas no seu plano.
+            Suas análises simples são ilimitadas e você tem 90 análises completas por mês incluídas no seu plano.
           </p>
         </div>
       )}
