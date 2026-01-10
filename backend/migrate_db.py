@@ -55,6 +55,8 @@ async def migrate():
             )""",
             "CREATE INDEX IF NOT EXISTS ix_payments_asaas_payment_id ON payments(asaas_payment_id)",
             "CREATE INDEX IF NOT EXISTS ix_payments_user_id ON payments(user_id)",
+            "ALTER TABLE payments ALTER COLUMN pix_qr_code_url TYPE TEXT",
+            "ALTER TABLE payments ALTER COLUMN boleto_url TYPE TEXT",
             "ALTER TABLE credit_transactions ADD COLUMN IF NOT EXISTS balance_after INTEGER",
             "ALTER TABLE credit_transactions ADD COLUMN IF NOT EXISTS transaction_type VARCHAR(50)",
             "UPDATE users SET is_admin = TRUE WHERE email = 'mvmarincek@gmail.com'",
