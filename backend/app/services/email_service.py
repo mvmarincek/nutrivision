@@ -23,20 +23,22 @@ def get_email_footer():
 
 def send_email(to: str, subject: str, html_content: str):
     if not resend.api_key:
-        print(f"[EMAIL] Para: {to}")
-        print(f"[EMAIL] Assunto: {subject}")
+        print(f"[EMAIL] RESEND_API_KEY not configured!")
+        print(f"[EMAIL] Would send to: {to}")
+        print(f"[EMAIL] Subject: {subject}")
         return False
     
     try:
-        resend.Emails.send({
+        result = resend.Emails.send({
             "from": "Nutri-Vision <nutrivision-noreply@ai8hub.com>",
             "to": to,
             "subject": subject,
             "html": html_content
         })
+        print(f"[EMAIL] Sent successfully to {to}: {result}")
         return True
     except Exception as e:
-        print(f"Erro ao enviar email: {e}")
+        print(f"[EMAIL] Error sending to {to}: {e}")
         return False
 
 def send_welcome_email(user_email: str):

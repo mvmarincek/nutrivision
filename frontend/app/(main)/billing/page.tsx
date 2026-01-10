@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
 import { billingApi, BillingStatus, CreditPackage } from '@/lib/api';
-import { CreditCard, Star, Zap, QrCode, Copy, Check, X, Crown, FileText, Loader2 } from 'lucide-react';
+import { CreditCard, Star, Zap, QrCode, Copy, Check, X, Crown, Loader2 } from 'lucide-react';
 import PageAds from '@/components/PageAds';
 
 interface PixPaymentData {
@@ -52,9 +52,8 @@ export default function BillingPage() {
   const [cardForm, setCardForm] = useState<CardFormData>(initialCardForm);
   const [processingCard, setProcessingCard] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
-  const [proPaymentMethod, setProPaymentMethod] = useState<'PIX' | 'CREDIT_CARD' | 'BOLETO' | null>(null);
+  const [proPaymentMethod, setProPaymentMethod] = useState<'PIX' | 'CREDIT_CARD' | null>(null);
   const [proPixData, setProPixData] = useState<PixPaymentData | null>(null);
-  const [proBoletoUrl, setProBoletoUrl] = useState<string | null>(null);
   const [processingPro, setProcessingPro] = useState(false);
   const [cancelingSubscription, setCancelingSubscription] = useState(false);
   const [testingPayment, setTestingPayment] = useState(false);
@@ -202,7 +201,7 @@ export default function BillingPage() {
     }
   };
 
-  const handleProSubscription = async (billingType: 'PIX' | 'CREDIT_CARD' | 'BOLETO') => {
+  const handleProSubscription = async (billingType: 'PIX' | 'CREDIT_CARD') => {
     if (billingType === 'CREDIT_CARD') {
       if (!cardForm.card_holder_name || !cardForm.card_number || !cardForm.expiry_month || 
           !cardForm.expiry_year || !cardForm.cvv || !cardForm.holder_cpf || 
@@ -222,8 +221,6 @@ export default function BillingPage() {
       
       if (billingType === 'CREDIT_CARD') {
         Object.assign(request, cardForm);
-      } else if (billingType === 'BOLETO') {
-        request.holder_cpf = cardForm.holder_cpf;
       }
 
       const result = await billingApi.createProSubscription(request);
@@ -246,9 +243,6 @@ export default function BillingPage() {
           pix_qr_code_base64: result.pix_qr_code_base64,
           value: 49.90
         });
-      } else if (result.boleto_url) {
-        setProBoletoUrl(result.boleto_url);
-        window.open(result.boleto_url, '_blank');
       }
     } catch (err: any) {
       console.error(err);
@@ -339,7 +333,6 @@ export default function BillingPage() {
     setShowProModal(false);
     setProPaymentMethod(null);
     setProPixData(null);
-    setProBoletoUrl(null);
     setCardForm(initialCardForm);
   };
 
@@ -839,7 +832,7 @@ export default function BillingPage() {
               R$ 49,90<span className="text-base font-normal text-gray-500">/mes</span>
             </p>
 
-            {!proPaymentMethod && !proPixData && !proBoletoUrl && (
+            {!proPaymentMethod && !proPixData && (
               <div className="space-y-3">
                 <button
                   onClick={() => setProPaymentMethod('PIX')}
@@ -855,19 +848,11 @@ export default function BillingPage() {
                   className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all"
                 >
                   <CreditCard className="w-5 h-5" />
-                  Assinar com Cartao
-                </button>
-
-                <button
-                  onClick={() => setProPaymentMethod('BOLETO')}
-                  className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-gray-600 to-gray-800 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all"
-                >
-                  <FileText className="w-5 h-5" />
-                  Assinar com Boleto
+                  Assinar com Cartão
                 </button>
 
                 <p className="text-center text-xs text-gray-400">
-                  Cobranca mensal automatica. Cancele quando quiser.
+                  Cobrança mensal automática. Cancele quando quiser.
                 </p>
               </div>
             )}
@@ -943,63 +928,8 @@ export default function BillingPage() {
               </>
             )}
 
-            {proPaymentMethod === 'BOLETO' && !proBoletoUrl && (
-              <>
-                <button
-                  onClick={() => setProPaymentMethod(null)}
-                  className="text-sm text-gray-500 hover:text-gray-700 mb-4"
-                >
-                  ← Voltar
-                </button>
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="CPF (somente numeros)"
-                    value={cardForm.holder_cpf}
-                    onChange={(e) => setCardForm({ ...cardForm, holder_cpf: formatCPF(e.target.value) })}
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                  <button
-                    onClick={() => handleProSubscription('BOLETO')}
-                    disabled={processingPro || !cardForm.holder_cpf}
-                    className="w-full bg-gradient-to-r from-gray-600 to-gray-800 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {processingPro ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Gerando boleto...
-                      </>
-                    ) : (
-                      <>
-                        <FileText className="w-5 h-5" />
-                        Gerar Boleto
-                      </>
-                    )}
-                  </button>
-                </div>
-              </>
-            )}
-
             {proPixData && (
               <PixDisplay data={proPixData} onCopy={() => handleCopyPix(proPixData.pix_code)} checking={checkingPayment} />
-            )}
-
-            {proBoletoUrl && (
-              <div className="text-center">
-                <p className="text-green-600 font-semibold mb-4">Boleto gerado com sucesso!</p>
-                <a
-                  href={proBoletoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-gray-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-700 transition-all"
-                >
-                  <FileText className="w-5 h-5" />
-                  Abrir Boleto
-                </a>
-                <p className="text-xs text-gray-500 mt-4">
-                  Apos o pagamento, sua assinatura sera ativada em ate 3 dias uteis.
-                </p>
-              </div>
             )}
           </div>
         </div>

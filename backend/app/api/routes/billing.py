@@ -240,7 +240,7 @@ async def create_pro_subscription(
     if current_user.plan == "pro":
         raise HTTPException(status_code=400, detail="Voce ja e assinante PRO")
     
-    if request.billing_type not in ["PIX", "CREDIT_CARD", "BOLETO"]:
+    if request.billing_type not in ["PIX", "CREDIT_CARD"]:
         raise HTTPException(status_code=400, detail="Tipo de pagamento invalido")
     
     try:
@@ -286,53 +286,6 @@ async def create_pro_subscription(
                 "message": "Pague o PIX para ativar sua assinatura PRO"
             }
         
-        if request.billing_type == "BOLETO":
-            payment = await asaas_service.create_pix_payment(
-                customer_id=customer_id,
-                value=49.90,
-                description="Nutri-Vision PRO - Primeira mensalidade",
-                external_reference=external_reference
-            )
-            payment["billingType"] = "BOLETO"
-            
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{asaas_service.base_url}/payments",
-                    headers=asaas_service.headers,
-                    json={
-                        "customer": customer_id,
-                        "billingType": "BOLETO",
-                        "value": 49.90,
-                        "dueDate": asaas_service._get_due_date(),
-                        "description": "Nutri-Vision PRO - Primeira mensalidade",
-                        "externalReference": external_reference
-                    }
-                )
-                response.raise_for_status()
-                payment = response.json()
-            
-            payment_id = payment.get("id")
-            boleto_url = payment.get("bankSlipUrl", "")
-            
-            db_payment = Payment(
-                user_id=current_user.id,
-                asaas_payment_id=payment_id,
-                payment_type="pro_subscription",
-                billing_type="BOLETO",
-                amount=49.90,
-                status="pending",
-                boleto_url=boleto_url
-            )
-            db.add(db_payment)
-            await db.commit()
-            
-            return {
-                "status": "pending",
-                "payment_id": payment_id,
-                "boleto_url": boleto_url,
-                "message": "Pague o boleto para ativar sua assinatura PRO"
-            }
-        
         if request.billing_type == "CREDIT_CARD":
             card_data = {
                 "holderName": request.card_holder_name,
@@ -357,20 +310,17 @@ async def create_pro_subscription(
                 description="Nutri-Vision PRO - Assinatura Mensal",
                 external_reference=external_reference,
                 card_data=card_data,
-                card_holder_info=card_holder_info
+                card_holder_info=card_holder_info,
+                next_due_days=1
             )
             
             current_user.asaas_subscription_id = subscription["id"]
-            
-            if subscription.get("status") == "ACTIVE":
-                current_user.plan = "pro"
-                current_user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
-                await db.commit()
-                send_upgraded_to_pro_email(current_user.email)
-                return {"status": "active", "message": "Assinatura PRO ativada com sucesso!"}
-            
+            current_user.plan = "pro"
+            current_user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
+            current_user.pro_started_at = datetime.utcnow()
             await db.commit()
-            return {"status": "pending", "subscription_id": subscription["id"]}
+            send_upgraded_to_pro_email(current_user.email)
+            return {"status": "active", "message": "Assinatura PRO ativada com sucesso!"}
         
         return {"status": "error", "message": "Tipo de pagamento nao suportado"}
     
