@@ -65,6 +65,37 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+@app.get("/test-email/{email}")
+async def test_email(email: str):
+    import resend
+    import os
+    
+    api_key = os.getenv("RESEND_API_KEY", "")
+    result = {
+        "api_key_configured": bool(api_key),
+        "api_key_prefix": api_key[:10] + "..." if api_key else "NOT SET"
+    }
+    
+    if not api_key:
+        result["error"] = "RESEND_API_KEY not configured"
+        return result
+    
+    try:
+        resend.api_key = api_key
+        response = resend.Emails.send({
+            "from": "Nutri-Vision <nutrivision-noreply@ai8hub.com>",
+            "to": email,
+            "subject": "Teste Nutri-Vision - Email funcionando!",
+            "html": "<h1>Teste OK!</h1><p>Se voce recebeu este email, o Resend esta funcionando corretamente.</p>"
+        })
+        result["status"] = "sent"
+        result["resend_response"] = str(response)
+    except Exception as e:
+        result["status"] = "error"
+        result["error"] = str(e)
+    
+    return result
+
 @app.post("/log-error")
 async def log_client_error(error: ClientError):
     logger.error(f"""
