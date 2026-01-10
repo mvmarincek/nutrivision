@@ -57,6 +57,7 @@ export default function BillingPage() {
   const [proBoletoUrl, setProBoletoUrl] = useState<string | null>(null);
   const [processingPro, setProcessingPro] = useState(false);
   const [cancelingSubscription, setCancelingSubscription] = useState(false);
+  const [testingPayment, setTestingPayment] = useState(false);
   const { user, refreshUser } = useAuth();
   const { showError, showSuccess, showWarning, clearFeedback } = useFeedback();
 
@@ -309,6 +310,27 @@ export default function BillingPage() {
     setTimeout(() => setPixCopied(false), 2000);
   };
 
+  const handleTestConfirmPayment = async (paymentId: string) => {
+    setTestingPayment(true);
+    try {
+      const result = await billingApi.testConfirmPayment(paymentId);
+      await refreshUser();
+      const newStatus = await billingApi.getStatus();
+      setBillingStatus(newStatus);
+      setPixData(null);
+      setProPixData(null);
+      setSelectedPackage(null);
+      setShowProModal(false);
+      setProPaymentMethod(null);
+      showSuccess(result.message, 'Teste de Pagamento');
+    } catch (err: any) {
+      console.error(err);
+      showError(err?.message || 'Erro ao simular pagamento', 'Erro', { label: 'Entendi', onClick: () => clearFeedback() });
+    } finally {
+      setTestingPayment(false);
+    }
+  };
+
   const handleCloseModal = () => {
     setSelectedPackage(null);
     setPixData(null);
@@ -538,6 +560,24 @@ export default function BillingPage() {
             Aguardando pagamento... A pagina atualizara automaticamente.
           </p>
         )}
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-dashed border-gray-200">
+        <p className="text-xs text-gray-400 text-center mb-2">Modo de teste (apenas para desenvolvimento)</p>
+        <button
+          onClick={() => handleTestConfirmPayment(data.payment_id)}
+          disabled={testingPayment}
+          className="w-full bg-purple-600 text-white py-2 rounded-lg font-medium hover:bg-purple-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {testingPayment ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Simulando...
+            </>
+          ) : (
+            'Simular Pagamento Confirmado'
+          )}
+        </button>
       </div>
     </>
   );

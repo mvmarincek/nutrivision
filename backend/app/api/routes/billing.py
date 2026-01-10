@@ -610,3 +610,95 @@ async def debug_pix_payment(
         result["success"] = False
     
     return result
+
+@router.post("/test-confirm-payment/{payment_id}")
+async def test_confirm_payment(
+    payment_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    result = await db.execute(
+        select(Payment).where(Payment.asaas_payment_id == payment_id)
+    )
+    db_payment = result.scalar_one_or_none()
+    
+    if not db_payment:
+        raise HTTPException(status_code=404, detail="Pagamento nao encontrado")
+    
+    if db_payment.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Pagamento nao pertence a este usuario")
+    
+    if db_payment.status == "confirmed":
+        raise HTTPException(status_code=400, detail="Pagamento ja confirmado")
+    
+    db_payment.status = "confirmed"
+    db_payment.paid_at = datetime.utcnow()
+    
+    if db_payment.payment_type == "pro_subscription":
+        current_user.plan = "pro"
+        current_user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
+        current_user.pro_started_at = datetime.utcnow()
+        
+        if not current_user.asaas_subscription_id and current_user.asaas_customer_id:
+            try:
+                subscription = await asaas_service.create_subscription(
+                    customer_id=current_user.asaas_customer_id,
+                    value=49.90,
+                    billing_type="PIX",
+                    description="Nutri-Vision PRO - Assinatura Mensal",
+                    external_reference=json.dumps({
+                        "user_id": current_user.id,
+                        "type": "pro_subscription"
+                    })
+                )
+                current_user.asaas_subscription_id = subscription.get("id")
+                logger.info(f"[test] Created subscription {subscription.get('id')} for user {current_user.id}")
+            except Exception as e:
+                logger.error(f"[test] Failed to create subscription: {e}")
+        
+        await db.commit()
+        send_upgraded_to_pro_email(current_user.email)
+        
+        return {
+            "status": "success",
+            "message": "Pagamento confirmado! Voce agora e PRO!",
+            "plan": "pro",
+            "pro_analyses_remaining": current_user.pro_analyses_remaining,
+            "subscription_id": current_user.asaas_subscription_id
+        }
+    
+    elif db_payment.payment_type == "credits":
+        credits = 10
+        if db_payment.amount == 9.90:
+            credits = 10
+        elif db_payment.amount == 24.90:
+            credits = 30
+        elif db_payment.amount == 39.90:
+            credits = 50
+        
+        current_user.credit_balance += credits
+        
+        transaction = CreditTransaction(
+            user_id=current_user.id,
+            credits_added=credits,
+            balance_after=current_user.credit_balance,
+            transaction_type="purchase",
+            description=f"Compra de {credits} creditos (teste) - {payment_id}"
+        )
+        db.add(transaction)
+        await db.commit()
+        
+        send_credits_purchased_email(current_user.email, credits, current_user.credit_balance)
+        
+        return {
+            "status": "success",
+            "message": f"Pagamento confirmado! {credits} creditos adicionados!",
+            "credits_added": credits,
+            "new_balance": current_user.credit_balance
+        }
+    
+    await db.commit()
+    return {"status": "success", "message": "Pagamento confirmado"}

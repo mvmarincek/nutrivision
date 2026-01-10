@@ -461,7 +461,10 @@ export const billingApi = {
     api<{ status: string; message: string }>('/billing/cancel-subscription', { method: 'POST' }),
   
   getPaymentStatus: (paymentId: string) =>
-    api<PaymentStatusResponse>(`/billing/payment-status/${paymentId}`)
+    api<PaymentStatusResponse>(`/billing/payment-status/${paymentId}`),
+  
+  testConfirmPayment: (paymentId: string) =>
+    api<{ status: string; message: string; plan?: string; credits_added?: number; new_balance?: number; subscription_id?: string }>(`/billing/test-confirm-payment/${paymentId}`, { method: 'POST' })
 };
 
 export const creditsApi = {
