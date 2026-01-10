@@ -264,24 +264,7 @@ export default function BillingPage() {
 
   const [confirmingCancel, setConfirmingCancel] = useState(false);
 
-  const handleCancelSubscription = async () => {
-    if (!confirmingCancel) {
-      showWarning(
-        'Ao cancelar sua assinatura PRO, você perderá acesso aos benefícios exclusivos ao final do período atual. Tem certeza?',
-        'Cancelar assinatura?',
-        {
-          label: 'Sim, cancelar',
-          onClick: () => {
-            clearFeedback();
-            setConfirmingCancel(true);
-            handleCancelSubscription();
-          }
-        }
-      );
-      return;
-    }
-    
-    setConfirmingCancel(false);
+  const executeCancelSubscription = async () => {
     setCancelingSubscription(true);
     try {
       await billingApi.cancelSubscription();
@@ -302,6 +285,20 @@ export default function BillingPage() {
     } finally {
       setCancelingSubscription(false);
     }
+  };
+
+  const handleCancelSubscription = () => {
+    showWarning(
+      'Ao cancelar sua assinatura PRO, você perderá acesso aos benefícios exclusivos ao final do período atual. Tem certeza?',
+      'Cancelar assinatura?',
+      {
+        label: 'Sim, cancelar',
+        onClick: () => {
+          clearFeedback();
+          executeCancelSubscription();
+        }
+      }
+    );
   };
 
   const handleCopyPix = (code: string) => {
