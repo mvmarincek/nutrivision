@@ -273,8 +273,7 @@ async def create_pro_subscription(
                 billing_type="PIX",
                 amount=49.90,
                 status="pending",
-                pix_code=pix_data.get("payload", ""),
-                pix_qr_code_url=pix_data.get("encodedImage", "")
+                pix_code=pix_data.get("payload", "")[:500] if pix_data.get("payload") else None
             )
             db.add(db_payment)
             await db.commit()
