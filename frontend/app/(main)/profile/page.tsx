@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
-import { profileApi, feedbackApi } from '@/lib/api';
-import { Save, User, ArrowRight, Salad, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera } from 'lucide-react';
+import { profileApi, feedbackApi, billingApi } from '@/lib/api';
+import { Save, User, ArrowRight, Salad, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera, Crown, Loader2 } from 'lucide-react';
 import PageAds from '@/components/PageAds';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -38,6 +38,8 @@ export default function ProfilePage() {
   const [enviandoSugestao, setEnviandoSugestao] = useState(false);
   const [sugestaoEnviada, setSugestaoEnviada] = useState(false);
   const [linkCopiado, setLinkCopiado] = useState(false);
+  const [cancelingSubscription, setCancelingSubscription] = useState(false);
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user, refreshUser } = useAuth();
   const { showError, showSuccess, clearFeedback } = useFeedback();
@@ -77,6 +79,32 @@ export default function ProfilePage() {
       navigator.clipboard.writeText(referralLink);
       setLinkCopiado(true);
       setTimeout(() => setLinkCopiado(false), 2000);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!confirmingCancel) {
+      setConfirmingCancel(true);
+      return;
+    }
+    
+    setCancelingSubscription(true);
+    try {
+      await billingApi.cancelSubscription();
+      await refreshUser();
+      setConfirmingCancel(false);
+      showSuccess(
+        'Sua assinatura foi cancelada. Você voltou para o plano Free.',
+        'Assinatura cancelada'
+      );
+    } catch (err: any) {
+      showError(
+        err?.message || 'Não foi possível cancelar a assinatura. Tente novamente.',
+        'Erro ao cancelar',
+        { label: 'Entendi', onClick: () => clearFeedback() }
+      );
+    } finally {
+      setCancelingSubscription(false);
     }
   };
 
@@ -306,6 +334,57 @@ export default function ProfilePage() {
       <p className="text-sm text-gray-500 text-center mb-6">
         Essas informações ajudam a personalizar suas análises nutricionais.
       </p>
+
+      {user?.plan === 'pro' && (
+        <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-3xl shadow-xl p-6 mb-6 text-white">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
+              <Crown className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg">Assinatura PRO Ativa</h3>
+              <p className="text-sm text-white/80">Analises ilimitadas e beneficios exclusivos</p>
+            </div>
+          </div>
+          
+          {confirmingCancel ? (
+            <div className="bg-white/10 rounded-2xl p-4">
+              <p className="text-sm mb-4">
+                Tem certeza? Ao cancelar, voce perdera acesso aos beneficios PRO e voltara ao plano Free.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmingCancel(false)}
+                  className="flex-1 py-2 rounded-xl bg-white/20 font-medium hover:bg-white/30 transition-all"
+                >
+                  Manter PRO
+                </button>
+                <button
+                  onClick={handleCancelSubscription}
+                  disabled={cancelingSubscription}
+                  className="flex-1 py-2 rounded-xl bg-red-500 font-medium hover:bg-red-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {cancelingSubscription ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Cancelando...
+                    </>
+                  ) : (
+                    'Confirmar cancelamento'
+                  )}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={handleCancelSubscription}
+              className="w-full py-3 rounded-2xl bg-white/10 text-white font-medium hover:bg-white/20 transition-all"
+            >
+              Cancelar assinatura
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="bg-white rounded-3xl shadow-xl p-6 border border-amber-100">
         <div className="flex items-center gap-3 mb-4">

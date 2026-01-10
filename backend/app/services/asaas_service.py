@@ -174,6 +174,15 @@ class AsaasService:
             response.raise_for_status()
             return response.json()
     
+    async def get_subscription_payments(self, subscription_id: str) -> Dict[str, Any]:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.base_url}/subscriptions/{subscription_id}/payments",
+                headers=self.headers
+            )
+            response.raise_for_status()
+            return response.json()
+    
     async def get_pix_qr_code(self, payment_id: str) -> Dict[str, Any]:
         async with httpx.AsyncClient() as client:
             response = await client.get(

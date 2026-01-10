@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
-import { Home, History, Sparkles, User, LogOut, Salad } from 'lucide-react';
+import { Home, History, Sparkles, User, LogOut, Salad, Crown } from 'lucide-react';
 import Footer from '@/components/Footer';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -66,6 +66,12 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             </Link>
           )}
           <div className="flex items-center gap-4">
+            {user.plan === 'pro' && (
+              <div className="flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-orange-500 px-3 py-1.5 rounded-full">
+                <Crown className="w-4 h-4 text-white" />
+                <span className="text-sm font-medium text-white">PRO</span>
+              </div>
+            )}
             <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full">
               <Sparkles className="w-4 h-4 text-yellow-500" />
               <span className="text-sm font-medium text-green-700">

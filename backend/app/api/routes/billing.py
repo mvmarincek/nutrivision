@@ -4,13 +4,14 @@ from sqlalchemy import select
 from pydantic import BaseModel
 from typing import Optional
 import json
+import httpx
 
 from app.db.database import get_db
 from app.models.models import User, CreditTransaction, Payment
 from app.core.security import get_current_user
 from app.core.config import settings
 from app.services.asaas_service import asaas_service
-from app.services.email_service import send_credits_purchased_email, send_upgraded_to_pro_email
+from app.services.email_service import send_credits_purchased_email, send_upgraded_to_pro_email, send_subscription_cancelled_email
 from datetime import datetime
 
 router = APIRouter(prefix="/billing", tags=["billing"])
@@ -254,8 +255,84 @@ async def create_pro_subscription(
             "type": "pro_subscription"
         })
         
-        card_data = None
-        card_holder_info = None
+        if request.billing_type == "PIX":
+            payment = await asaas_service.create_pix_payment(
+                customer_id=customer_id,
+                value=49.90,
+                description="Nutri-Vision PRO - Primeira mensalidade",
+                external_reference=external_reference
+            )
+            
+            payment_id = payment.get("id")
+            pix_data = await asaas_service.get_pix_qr_code(payment_id)
+            
+            db_payment = Payment(
+                user_id=current_user.id,
+                asaas_payment_id=payment_id,
+                payment_type="pro_subscription",
+                billing_type="PIX",
+                amount=49.90,
+                status="pending",
+                pix_code=pix_data.get("payload", ""),
+                pix_qr_code_url=pix_data.get("encodedImage", "")
+            )
+            db.add(db_payment)
+            await db.commit()
+            
+            return {
+                "status": "pending",
+                "payment_id": payment_id,
+                "pix_code": pix_data.get("payload", ""),
+                "pix_qr_code_base64": pix_data.get("encodedImage", ""),
+                "message": "Pague o PIX para ativar sua assinatura PRO"
+            }
+        
+        if request.billing_type == "BOLETO":
+            payment = await asaas_service.create_pix_payment(
+                customer_id=customer_id,
+                value=49.90,
+                description="Nutri-Vision PRO - Primeira mensalidade",
+                external_reference=external_reference
+            )
+            payment["billingType"] = "BOLETO"
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{asaas_service.base_url}/payments",
+                    headers=asaas_service.headers,
+                    json={
+                        "customer": customer_id,
+                        "billingType": "BOLETO",
+                        "value": 49.90,
+                        "dueDate": asaas_service._get_due_date(),
+                        "description": "Nutri-Vision PRO - Primeira mensalidade",
+                        "externalReference": external_reference
+                    }
+                )
+                response.raise_for_status()
+                payment = response.json()
+            
+            payment_id = payment.get("id")
+            boleto_url = payment.get("bankSlipUrl", "")
+            
+            db_payment = Payment(
+                user_id=current_user.id,
+                asaas_payment_id=payment_id,
+                payment_type="pro_subscription",
+                billing_type="BOLETO",
+                amount=49.90,
+                status="pending",
+                boleto_url=boleto_url
+            )
+            db.add(db_payment)
+            await db.commit()
+            
+            return {
+                "status": "pending",
+                "payment_id": payment_id,
+                "boleto_url": boleto_url,
+                "message": "Pague o boleto para ativar sua assinatura PRO"
+            }
         
         if request.billing_type == "CREDIT_CARD":
             card_data = {
@@ -273,54 +350,30 @@ async def create_pro_subscription(
                 "addressNumber": request.address_number,
                 "phone": request.holder_phone
             }
-        
-        subscription = await asaas_service.create_subscription(
-            customer_id=customer_id,
-            value=49.90,
-            billing_type=request.billing_type,
-            description="Nutri-Vision PRO - Assinatura Mensal",
-            external_reference=external_reference,
-            card_data=card_data,
-            card_holder_info=card_holder_info
-        )
-        
-        current_user.asaas_subscription_id = subscription["id"]
-        
-        if request.billing_type == "CREDIT_CARD" and subscription.get("status") == "ACTIVE":
-            current_user.plan = "pro"
-            current_user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
+            
+            subscription = await asaas_service.create_subscription(
+                customer_id=customer_id,
+                value=49.90,
+                billing_type="CREDIT_CARD",
+                description="Nutri-Vision PRO - Assinatura Mensal",
+                external_reference=external_reference,
+                card_data=card_data,
+                card_holder_info=card_holder_info
+            )
+            
+            current_user.asaas_subscription_id = subscription["id"]
+            
+            if subscription.get("status") == "ACTIVE":
+                current_user.plan = "pro"
+                current_user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
+                await db.commit()
+                send_upgraded_to_pro_email(current_user.email)
+                return {"status": "active", "message": "Assinatura PRO ativada com sucesso!"}
+            
             await db.commit()
-            send_upgraded_to_pro_email(current_user.email)
-            return {"status": "active", "message": "Assinatura PRO ativada com sucesso!"}
+            return {"status": "pending", "subscription_id": subscription["id"]}
         
-        await db.commit()
-        
-        if request.billing_type == "PIX":
-            payments = subscription.get("payments", [])
-            if payments:
-                first_payment_id = payments[0].get("id") if isinstance(payments[0], dict) else payments[0]
-                pix_data = await asaas_service.get_pix_qr_code(first_payment_id)
-                return {
-                    "status": "pending",
-                    "payment_id": first_payment_id,
-                    "pix_code": pix_data.get("payload", ""),
-                    "pix_qr_code_base64": pix_data.get("encodedImage", ""),
-                    "message": "Pague o PIX para ativar sua assinatura"
-                }
-        
-        if request.billing_type == "BOLETO":
-            payments = subscription.get("payments", [])
-            if payments:
-                first_payment_id = payments[0].get("id") if isinstance(payments[0], dict) else payments[0]
-                boleto_url = await asaas_service.get_boleto_url(first_payment_id)
-                return {
-                    "status": "pending",
-                    "payment_id": first_payment_id,
-                    "boleto_url": boleto_url,
-                    "message": "Pague o boleto para ativar sua assinatura"
-                }
-        
-        return {"status": "pending", "subscription_id": subscription["id"]}
+        return {"status": "error", "message": "Tipo de pagamento nao suportado"}
     
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erro ao criar assinatura: {str(e)}")
@@ -335,9 +388,13 @@ async def cancel_subscription(
     
     try:
         await asaas_service.cancel_subscription(current_user.asaas_subscription_id)
+        user_email = current_user.email
         current_user.asaas_subscription_id = None
         current_user.plan = "free"
+        current_user.pro_analyses_remaining = 0
         await db.commit()
+        
+        send_subscription_cancelled_email(user_email)
         
         return {"status": "cancelled", "message": "Assinatura cancelada com sucesso"}
     
@@ -435,6 +492,27 @@ async def asaas_webhook(
                                 user.plan = "pro"
                                 user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
                                 user.pro_started_at = datetime.utcnow()
+                                
+                                if not user.asaas_subscription_id and user.asaas_customer_id:
+                                    try:
+                                        from datetime import timedelta
+                                        next_month = datetime.utcnow() + timedelta(days=30)
+                                        
+                                        subscription = await asaas_service.create_subscription(
+                                            customer_id=user.asaas_customer_id,
+                                            value=49.90,
+                                            billing_type="PIX",
+                                            description="Nutri-Vision PRO - Assinatura Mensal",
+                                            external_reference=json.dumps({
+                                                "user_id": user.id,
+                                                "type": "pro_subscription"
+                                            })
+                                        )
+                                        user.asaas_subscription_id = subscription.get("id")
+                                        logger.info(f"[webhook] Created recurring subscription for user_id={user_id}")
+                                    except Exception as sub_error:
+                                        logger.error(f"[webhook] Failed to create subscription: {sub_error}")
+                                
                                 await db.commit()
                                 logger.info(f"[webhook] PRO activated for user_id={user_id}")
                                 send_upgraded_to_pro_email(user.email)

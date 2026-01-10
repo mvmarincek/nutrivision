@@ -544,122 +544,163 @@ export default function BillingPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Creditos</h1>
+      <h1 className="text-2xl font-bold mb-6">{isPro ? 'Meu Plano' : 'Creditos'}</h1>
 
-      <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-sm text-gray-600">Seu saldo</p>
-            <p className="text-3xl font-bold text-green-600">{billingStatus?.credit_balance || 0}</p>
-            <p className="text-sm text-gray-500">creditos</p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-600">Plano atual</p>
-            <p className={`font-semibold capitalize ${isPro ? 'text-yellow-600' : ''}`}>
-              {isPro && <Crown className="w-4 h-4 inline mr-1" />}
-              {billingStatus?.plan || 'Free'}
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-lg p-4">
-          <p className="text-sm text-gray-600 mb-2">Custo por analise:</p>
-          <div className="flex gap-4">
-            <div className="flex items-center">
-              <Zap className="w-4 h-4 text-green-500 mr-1" />
-              <span className="text-sm font-medium text-green-600">Simples: Gratis</span>
-            </div>
-            <div className="flex items-center">
-              <Star className="w-4 h-4 text-yellow-500 mr-1" />
-              <span className="text-sm">Completa: 12 creditos</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <PageAds position="inline" />
-
-      {!isPro && (
+      {isPro && billingStatus?.has_subscription && (
         <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl shadow-lg p-6 mb-6 text-white">
-          <div className="flex items-center gap-3 mb-3">
-            <Crown className="w-8 h-8" />
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
+              <Crown className="w-8 h-8 text-white" />
+            </div>
             <div>
-              <h2 className="text-xl font-bold">Plano PRO</h2>
-              <p className="text-sm opacity-90">Analises simples ilimitadas</p>
+              <h2 className="text-2xl font-bold">Voce e PRO!</h2>
+              <p className="text-sm text-white/90">Aproveite todos os beneficios exclusivos</p>
             </div>
           </div>
-          <p className="text-3xl font-bold mb-2">R$ 49,90<span className="text-lg font-normal">/mes</span></p>
-          <ul className="text-sm mb-4 space-y-1">
-            <li>- Analises simples ilimitadas</li>
-            <li>- 60 analises completas por mes</li>
-            <li>- Suporte prioritario</li>
-          </ul>
+          
+          <div className="bg-white/10 rounded-xl p-4 mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm">Analises completas restantes</span>
+              <span className="font-bold text-lg">{billingStatus.pro_analyses_remaining}/60</span>
+            </div>
+            <div className="w-full bg-white/20 rounded-full h-2">
+              <div 
+                className="bg-white rounded-full h-2 transition-all" 
+                style={{ width: `${(billingStatus.pro_analyses_remaining / 60) * 100}%` }}
+              />
+            </div>
+            <p className="text-xs text-white/70 mt-2">Renova todo mes automaticamente</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-white/10 rounded-xl p-3 text-center">
+              <Zap className="w-5 h-5 mx-auto mb-1" />
+              <p className="text-xs">Analises simples</p>
+              <p className="font-bold">Ilimitadas</p>
+            </div>
+            <div className="bg-white/10 rounded-xl p-3 text-center">
+              <Star className="w-5 h-5 mx-auto mb-1" />
+              <p className="text-xs">Suporte</p>
+              <p className="font-bold">Prioritario</p>
+            </div>
+          </div>
+          
           <button
-            onClick={() => setShowProModal(true)}
-            className="w-full bg-white text-orange-600 py-3 rounded-xl font-bold hover:bg-orange-50 transition-all"
+            onClick={handleCancelSubscription}
+            disabled={cancelingSubscription}
+            className="w-full py-3 rounded-xl bg-white/10 text-white/80 text-sm font-medium hover:bg-white/20 transition-all disabled:opacity-50"
           >
-            Assinar PRO
+            {cancelingSubscription ? 'Cancelando...' : 'Cancelar assinatura'}
           </button>
         </div>
       )}
 
-      {isPro && billingStatus?.has_subscription && (
-        <div className="bg-white rounded-xl shadow-md p-6 mb-6 border-2 border-yellow-400">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Crown className="w-6 h-6 text-yellow-500" />
-              <div>
-                <p className="font-semibold">Assinatura PRO ativa</p>
-                <p className="text-sm text-gray-500">Analises restantes este mes: {billingStatus.pro_analyses_remaining}</p>
-              </div>
-            </div>
-            <button
-              onClick={handleCancelSubscription}
-              disabled={cancelingSubscription}
-              className="text-red-500 hover:text-red-700 text-sm font-medium disabled:opacity-50"
-            >
-              {cancelingSubscription ? 'Cancelando...' : 'Cancelar assinatura'}
-            </button>
+      {isPro && (
+        <div className="bg-gray-100 rounded-xl p-6 mb-6 opacity-60">
+          <div className="flex items-center gap-2 mb-4">
+            <Check className="w-5 h-5 text-green-500" />
+            <p className="text-gray-600 font-medium">Como assinante PRO, voce nao precisa comprar creditos!</p>
           </div>
+          <p className="text-sm text-gray-500">
+            Suas analises simples sao ilimitadas e voce tem 60 analises completas por mes incluidas no seu plano.
+          </p>
         </div>
       )}
 
-      <h2 className="text-lg font-semibold mb-4">Comprar Creditos</h2>
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        {packageOrder.map((pkgId) => {
-          const pkg = displayPackages[pkgId];
-          if (!pkg) return null;
-          const isPopular = pkgId === '36';
-          
-          return (
-            <button
-              key={pkgId}
-              onClick={() => handleSelectPackage(pkgId)}
-              className={`bg-white rounded-xl shadow-md p-4 relative text-left transition-all hover:shadow-lg ${
-                isPopular ? 'border-2 border-green-500' : 'border border-gray-200'
-              } ${selectedPackage === pkgId ? 'ring-2 ring-green-400' : ''}`}
-            >
-              {isPopular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs px-3 py-1 rounded-full">
-                  Popular
-                </span>
-              )}
-              <div className="text-center mb-3">
-                <p className="text-2xl font-bold">{pkg.credits}</p>
-                <p className="text-gray-600 text-sm">creditos</p>
+      {!isPro && (
+        <>
+          <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm text-gray-600">Seu saldo</p>
+                <p className="text-3xl font-bold text-green-600">{billingStatus?.credit_balance || 0}</p>
+                <p className="text-sm text-gray-500">creditos</p>
               </div>
-              <p className="text-center text-xl font-semibold text-green-600 mb-1">
-                {formatPrice(pkg.price)}
-              </p>
-              <p className="text-center text-xs text-gray-500">
-                {Math.floor(pkg.credits / 12)} analise(s) completa(s)
-              </p>
-            </button>
-          );
-        })}
-      </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-600">Plano atual</p>
+                <p className="font-semibold capitalize">
+                  {billingStatus?.plan || 'Free'}
+                </p>
+              </div>
+            </div>
 
-      {selectedPackage && !pixData && (
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-sm text-gray-600 mb-2">Custo por analise:</p>
+              <div className="flex gap-4">
+                <div className="flex items-center">
+                  <Zap className="w-4 h-4 text-green-500 mr-1" />
+                  <span className="text-sm font-medium text-green-600">Simples: Gratis</span>
+                </div>
+                <div className="flex items-center">
+                  <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                  <span className="text-sm">Completa: 12 creditos</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <PageAds position="inline" />
+
+          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl shadow-lg p-6 mb-6 text-white">
+            <div className="flex items-center gap-3 mb-3">
+              <Crown className="w-8 h-8" />
+              <div>
+                <h2 className="text-xl font-bold">Plano PRO</h2>
+                <p className="text-sm opacity-90">Analises simples ilimitadas</p>
+              </div>
+            </div>
+            <p className="text-3xl font-bold mb-2">R$ 49,90<span className="text-lg font-normal">/mes</span></p>
+            <ul className="text-sm mb-4 space-y-1">
+              <li>- Analises simples ilimitadas</li>
+              <li>- 60 analises completas por mes</li>
+              <li>- Suporte prioritario</li>
+            </ul>
+            <button
+              onClick={() => setShowProModal(true)}
+              className="w-full bg-white text-orange-600 py-3 rounded-xl font-bold hover:bg-orange-50 transition-all"
+            >
+              Assinar PRO
+            </button>
+          </div>
+
+          <h2 className="text-lg font-semibold mb-4">Comprar Creditos</h2>
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            {packageOrder.map((pkgId) => {
+              const pkg = displayPackages[pkgId];
+              if (!pkg) return null;
+              const isPopular = pkgId === '36';
+              
+              return (
+                <button
+                  key={pkgId}
+                  onClick={() => handleSelectPackage(pkgId)}
+                  className={`bg-white rounded-xl shadow-md p-4 relative text-left transition-all hover:shadow-lg ${
+                    isPopular ? 'border-2 border-green-500' : 'border border-gray-200'
+                  } ${selectedPackage === pkgId ? 'ring-2 ring-green-400' : ''}`}
+                >
+                  {isPopular && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs px-3 py-1 rounded-full">
+                      Popular
+                    </span>
+                  )}
+                  <div className="text-center mb-3">
+                    <p className="text-2xl font-bold">{pkg.credits}</p>
+                    <p className="text-gray-600 text-sm">creditos</p>
+                  </div>
+                  <p className="text-center text-xl font-semibold text-green-600 mb-1">
+                    {formatPrice(pkg.price)}
+                  </p>
+                  <p className="text-center text-xs text-gray-500">
+                    {Math.floor(pkg.credits / 12)} analise(s) completa(s)
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {!isPro && selectedPackage && !pixData && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
@@ -730,7 +771,7 @@ export default function BillingPage() {
         </div>
       )}
 
-      {pixData && (
+      {!isPro && pixData && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full">
             <div className="flex justify-between items-center mb-4">
@@ -825,6 +866,7 @@ export default function BillingPage() {
                       setProcessingPro(true);
                       try {
                         const result = await billingApi.createProSubscription({ billing_type: 'PIX', holder_cpf: cpfDigits });
+                        console.log('PIX subscription result:', result);
                         if (result.pix_code && result.payment_id && result.pix_qr_code_base64) {
                           setProPixData({
                             payment_id: result.payment_id,
@@ -832,6 +874,8 @@ export default function BillingPage() {
                             pix_qr_code_base64: result.pix_qr_code_base64,
                             value: 49.90
                           });
+                        } else if (result.status === 'pending' && !result.pix_code) {
+                          showError('O PIX ainda está sendo gerado. Aguarde alguns segundos e tente novamente.', 'Aguarde', { label: 'Entendi', onClick: () => clearFeedback() });
                         }
                       } catch (err: any) {
                         console.error(err);
