@@ -626,14 +626,38 @@ export default function BillingPage() {
       )}
 
       {isPro && (
-        <div className="bg-gray-100 rounded-xl p-6 mb-6 opacity-60">
-          <div className="flex items-center gap-2 mb-4">
-            <Check className="w-5 h-5 text-green-500" />
-            <p className="text-gray-600 font-medium">Como assinante PRO, você não precisa comprar créditos!</p>
+        <div className="bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-2xl p-6 mb-6 border border-yellow-200 shadow-lg">
+          <div className="flex items-center gap-4 mb-5">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg">
+              <Crown className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">Assinante PRO</h3>
+              <p className="text-sm text-gray-600">Aproveite todos os benefícios exclusivos</p>
+            </div>
           </div>
-          <p className="text-sm text-gray-500">
-            Suas análises simples são ilimitadas e você tem 90 análises completas por mês incluídas no seu plano.
-          </p>
+          
+          <div className="grid grid-cols-2 gap-4 mb-5">
+            <div className="bg-white/80 rounded-xl p-4 border border-yellow-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="w-5 h-5 text-green-500" />
+                <span className="font-semibold text-gray-800">Análises Simples</span>
+              </div>
+              <p className="text-2xl font-bold text-green-600">Ilimitadas</p>
+            </div>
+            <div className="bg-white/80 rounded-xl p-4 border border-yellow-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Star className="w-5 h-5 text-yellow-500" />
+                <span className="font-semibold text-gray-800">Análises PRO</span>
+              </div>
+              <p className="text-2xl font-bold text-orange-600">{billingStatus?.pro_analyses_remaining || 90}<span className="text-sm font-normal text-gray-500">/mês</span></p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2 p-3 bg-green-50 rounded-xl border border-green-100">
+            <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+            <p className="text-sm text-green-800">Você não precisa comprar créditos! Tudo está incluído no seu plano.</p>
+          </div>
         </div>
       )}
 
