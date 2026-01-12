@@ -32,7 +32,7 @@ export default function HomePage() {
   const [volumeMl, setVolumeMl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const analyzeButtonRef = useRef<HTMLButtonElement>(null);
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { showError, showWarning, clearFeedback } = useFeedback();
   const router = useRouter();
 
@@ -218,12 +218,17 @@ export default function HomePage() {
                   <Crown className="w-5 h-5" />
                   <span className="font-semibold">Analises PRO restantes</span>
                 </div>
-                <span className="font-bold text-lg">{Math.min(user.pro_analyses_remaining, 90)}/90</span>
+                <button 
+                  onClick={() => refreshUser()}
+                  className="font-bold text-lg bg-white/20 px-3 py-1 rounded-lg hover:bg-white/30 transition-all"
+                >
+                  {user.pro_analyses_remaining}/90
+                </button>
               </div>
               <div className="w-full bg-white/20 rounded-full h-2">
                 <div 
                   className="bg-white rounded-full h-2 transition-all" 
-                  style={{ width: `${Math.min((user.pro_analyses_remaining / 90) * 100, 100)}%` }}
+                  style={{ width: `${(user.pro_analyses_remaining / 90) * 100}%` }}
                 />
               </div>
             </div>
