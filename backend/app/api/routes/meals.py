@@ -268,6 +268,169 @@ async def list_meals(
     
     return response
 
+@router.get("/stats")
+async def get_meal_stats(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    now = datetime.utcnow()
+    today = now.date()
+    week_ago = today - timedelta(days=7)
+    month_ago = today - timedelta(days=30)
+    
+    total_meals = await db.scalar(
+        select(func.count(Meal.id))
+        .where(Meal.user_id == current_user.id, Meal.status == "completed")
+    ) or 0
+    
+    meals_this_week = await db.scalar(
+        select(func.count(Meal.id))
+        .where(
+            Meal.user_id == current_user.id,
+            Meal.status == "completed",
+            func.date(Meal.created_at) >= week_ago
+        )
+    ) or 0
+    
+    meals_this_month = await db.scalar(
+        select(func.count(Meal.id))
+        .where(
+            Meal.user_id == current_user.id,
+            Meal.status == "completed",
+            func.date(Meal.created_at) >= month_ago
+        )
+    ) or 0
+    
+    avg_result = await db.execute(
+        select(
+            func.avg(MealAnalysis.calorias_central),
+            func.avg(MealAnalysis.proteina_g),
+            func.avg(MealAnalysis.carbo_g),
+            func.avg(MealAnalysis.gordura_g),
+            func.avg(MealAnalysis.fibra_g)
+        )
+        .join(Meal, MealAnalysis.meal_id == Meal.id)
+        .where(Meal.user_id == current_user.id)
+    )
+    avg_row = avg_result.first()
+    
+    avg_calorias = round(avg_row[0] or 0, 0)
+    avg_proteina = round(avg_row[1] or 0, 1)
+    avg_carbo = round(avg_row[2] or 0, 1)
+    avg_gordura = round(avg_row[3] or 0, 1)
+    avg_fibra = round(avg_row[4] or 0, 1)
+    
+    week_avg_result = await db.execute(
+        select(
+            func.avg(MealAnalysis.calorias_central),
+            func.avg(MealAnalysis.proteina_g)
+        )
+        .join(Meal, MealAnalysis.meal_id == Meal.id)
+        .where(
+            Meal.user_id == current_user.id,
+            func.date(Meal.created_at) >= week_ago
+        )
+    )
+    week_avg_row = week_avg_result.first()
+    week_avg_calorias = round(week_avg_row[0] or 0, 0)
+    week_avg_proteina = round(week_avg_row[1] or 0, 1)
+    
+    streak_result = await db.execute(
+        select(func.date(Meal.created_at).label('day'))
+        .where(Meal.user_id == current_user.id, Meal.status == "completed")
+        .group_by(func.date(Meal.created_at))
+        .order_by(desc(func.date(Meal.created_at)))
+    )
+    days_with_meals = [row[0] for row in streak_result.all()]
+    
+    streak = 0
+    check_date = today
+    for day in days_with_meals:
+        if day == check_date:
+            streak += 1
+            check_date -= timedelta(days=1)
+        elif day == check_date - timedelta(days=1) and streak == 0:
+            streak += 1
+            check_date = day - timedelta(days=1)
+        elif day < check_date:
+            break
+    
+    type_result = await db.execute(
+        select(Meal.meal_type, func.count(Meal.id))
+        .where(Meal.user_id == current_user.id, Meal.status == "completed")
+        .group_by(Meal.meal_type)
+    )
+    meals_by_type = {row[0]: row[1] for row in type_result.all()}
+    
+    best_day_result = await db.execute(
+        select(
+            func.extract('dow', Meal.created_at).label('dow'),
+            func.count(Meal.id).label('cnt')
+        )
+        .where(Meal.user_id == current_user.id, Meal.status == "completed")
+        .group_by(func.extract('dow', Meal.created_at))
+        .order_by(desc('cnt'))
+        .limit(1)
+    )
+    best_day_row = best_day_result.first()
+    days_names = ['Domingo', 'Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta', 'Sabado']
+    best_day = days_names[int(best_day_row[0])] if best_day_row else None
+    
+    first_meal_result = await db.execute(
+        select(Meal.created_at)
+        .where(Meal.user_id == current_user.id)
+        .order_by(Meal.created_at)
+        .limit(1)
+    )
+    first_meal = first_meal_result.scalar()
+    days_using = (now - first_meal).days + 1 if first_meal else 0
+    
+    total_calorias = await db.scalar(
+        select(func.sum(MealAnalysis.calorias_central))
+        .join(Meal, MealAnalysis.meal_id == Meal.id)
+        .where(Meal.user_id == current_user.id)
+    ) or 0
+    
+    level = 1
+    title = "Iniciante"
+    if total_meals >= 100:
+        level = 5
+        title = "Mestre Nutri"
+    elif total_meals >= 50:
+        level = 4
+        title = "Expert"
+    elif total_meals >= 25:
+        level = 3
+        title = "Dedicado"
+    elif total_meals >= 10:
+        level = 2
+        title = "Comprometido"
+    
+    next_level_at = [10, 25, 50, 100, 999][level - 1]
+    progress_to_next = min(100, int((total_meals / next_level_at) * 100))
+    
+    return {
+        "total_meals": total_meals,
+        "meals_this_week": meals_this_week,
+        "meals_this_month": meals_this_month,
+        "streak": streak,
+        "avg_calorias": avg_calorias,
+        "avg_proteina": avg_proteina,
+        "avg_carbo": avg_carbo,
+        "avg_gordura": avg_gordura,
+        "avg_fibra": avg_fibra,
+        "week_avg_calorias": week_avg_calorias,
+        "week_avg_proteina": week_avg_proteina,
+        "meals_by_type": meals_by_type,
+        "best_day": best_day,
+        "days_using": days_using,
+        "total_calorias_tracked": round(total_calorias, 0),
+        "level": level,
+        "title": title,
+        "next_level_at": next_level_at,
+        "progress_to_next": progress_to_next
+    }
+
 @router.get("/{meal_id}", response_model=MealDetailResponse)
 async def get_meal(
     meal_id: int,
@@ -364,184 +527,3 @@ async def delete_meal(
     await db.commit()
     
     return {"message": "Refeição excluída com sucesso"}
-
-@router.get("/stats")
-async def get_meal_stats(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    now = datetime.utcnow()
-    today = now.date()
-    week_ago = today - timedelta(days=7)
-    month_ago = today - timedelta(days=30)
-    
-    total_meals = await db.scalar(
-        select(func.count(Meal.id))
-        .where(Meal.user_id == current_user.id, Meal.status == "completed")
-    ) or 0
-    
-    meals_this_week = await db.scalar(
-        select(func.count(Meal.id))
-        .where(
-            Meal.user_id == current_user.id,
-            Meal.status == "completed",
-            func.date(Meal.created_at) >= week_ago
-        )
-    ) or 0
-    
-    meals_this_month = await db.scalar(
-        select(func.count(Meal.id))
-        .where(
-            Meal.user_id == current_user.id,
-            Meal.status == "completed",
-            func.date(Meal.created_at) >= month_ago
-        )
-    ) or 0
-    
-    avg_result = await db.execute(
-        select(
-            func.avg(MealAnalysis.calorias_central),
-            func.avg(MealAnalysis.proteina_g),
-            func.avg(MealAnalysis.carbo_g),
-            func.avg(MealAnalysis.gordura_g),
-            func.avg(MealAnalysis.fibra_g)
-        )
-        .join(Meal, MealAnalysis.meal_id == Meal.id)
-        .where(Meal.user_id == current_user.id)
-    )
-    avg_row = avg_result.first()
-    
-    avg_calorias = round(avg_row[0] or 0, 0)
-    avg_proteina = round(avg_row[1] or 0, 1)
-    avg_carbo = round(avg_row[2] or 0, 1)
-    avg_gordura = round(avg_row[3] or 0, 1)
-    avg_fibra = round(avg_row[4] or 0, 1)
-    
-    week_avg_result = await db.execute(
-        select(
-            func.avg(MealAnalysis.calorias_central),
-            func.avg(MealAnalysis.proteina_g)
-        )
-        .join(Meal, MealAnalysis.meal_id == Meal.id)
-        .where(
-            Meal.user_id == current_user.id,
-            func.date(Meal.created_at) >= week_ago
-        )
-    )
-    week_avg_row = week_avg_result.first()
-    week_avg_calorias = round(week_avg_row[0] or 0, 0)
-    week_avg_proteina = round(week_avg_row[1] or 0, 1)
-    
-    streak_result = await db.execute(
-        select(func.date(Meal.created_at).label('day'))
-        .where(Meal.user_id == current_user.id, Meal.status == "completed")
-        .group_by(func.date(Meal.created_at))
-        .order_by(desc(func.date(Meal.created_at)))
-    )
-    days_with_meals = [row[0] for row in streak_result.all()]
-    
-    streak = 0
-    check_date = today
-    for i in range(len(days_with_meals)):
-        if days_with_meals[i] == check_date or days_with_meals[i] == check_date - timedelta(days=1):
-            if days_with_meals[i] == check_date:
-                streak += 1
-                check_date = check_date - timedelta(days=1)
-            elif i == 0 and days_with_meals[i] == check_date - timedelta(days=1):
-                streak += 1
-                check_date = days_with_meals[i] - timedelta(days=1)
-            elif days_with_meals[i] == check_date:
-                streak += 1
-                check_date = check_date - timedelta(days=1)
-            else:
-                break
-        else:
-            break
-    
-    streak = 0
-    check_date = today
-    for day in days_with_meals:
-        if day == check_date:
-            streak += 1
-            check_date -= timedelta(days=1)
-        elif day == check_date - timedelta(days=1) and streak == 0:
-            streak += 1
-            check_date = day - timedelta(days=1)
-        elif day < check_date:
-            break
-    
-    type_result = await db.execute(
-        select(Meal.meal_type, func.count(Meal.id))
-        .where(Meal.user_id == current_user.id, Meal.status == "completed")
-        .group_by(Meal.meal_type)
-    )
-    meals_by_type = {row[0]: row[1] for row in type_result.all()}
-    
-    best_day_result = await db.execute(
-        select(
-            func.extract('dow', Meal.created_at).label('dow'),
-            func.count(Meal.id).label('cnt')
-        )
-        .where(Meal.user_id == current_user.id, Meal.status == "completed")
-        .group_by(func.extract('dow', Meal.created_at))
-        .order_by(desc('cnt'))
-        .limit(1)
-    )
-    best_day_row = best_day_result.first()
-    days_names = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
-    best_day = days_names[int(best_day_row[0])] if best_day_row else None
-    
-    first_meal_result = await db.execute(
-        select(Meal.created_at)
-        .where(Meal.user_id == current_user.id)
-        .order_by(Meal.created_at)
-        .limit(1)
-    )
-    first_meal = first_meal_result.scalar()
-    days_using = (now - first_meal).days + 1 if first_meal else 0
-    
-    total_calorias = await db.scalar(
-        select(func.sum(MealAnalysis.calorias_central))
-        .join(Meal, MealAnalysis.meal_id == Meal.id)
-        .where(Meal.user_id == current_user.id)
-    ) or 0
-    
-    level = 1
-    title = "Iniciante"
-    if total_meals >= 100:
-        level = 5
-        title = "Mestre Nutri"
-    elif total_meals >= 50:
-        level = 4
-        title = "Expert"
-    elif total_meals >= 25:
-        level = 3
-        title = "Dedicado"
-    elif total_meals >= 10:
-        level = 2
-        title = "Comprometido"
-    
-    next_level_at = [10, 25, 50, 100, 999][level - 1]
-    progress_to_next = min(100, int((total_meals / next_level_at) * 100))
-    
-    return {
-        "total_meals": total_meals,
-        "meals_this_week": meals_this_week,
-        "meals_this_month": meals_this_month,
-        "streak": streak,
-        "avg_calorias": avg_calorias,
-        "avg_proteina": avg_proteina,
-        "avg_carbo": avg_carbo,
-        "avg_gordura": avg_gordura,
-        "avg_fibra": avg_fibra,
-        "week_avg_calorias": week_avg_calorias,
-        "week_avg_proteina": week_avg_proteina,
-        "meals_by_type": meals_by_type,
-        "best_day": best_day,
-        "days_using": days_using,
-        "total_calorias_tracked": round(total_calorias, 0),
-        "level": level,
-        "title": title,
-        "next_level_at": next_level_at,
-        "progress_to_next": progress_to_next
-    }
