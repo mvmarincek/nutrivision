@@ -207,6 +207,24 @@ export default function HomePage() {
         </div>
 
         <div className="p-6">
+          {user?.plan === 'pro' && (
+            <div className="mb-6 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 rounded-2xl p-4 text-white">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Crown className="w-5 h-5" />
+                  <span className="font-semibold">Analises PRO restantes</span>
+                </div>
+                <span className="font-bold text-lg">{user.pro_analyses_remaining}/90</span>
+              </div>
+              <div className="w-full bg-white/20 rounded-full h-2">
+                <div 
+                  className="bg-white rounded-full h-2 transition-all" 
+                  style={{ width: `${(user.pro_analyses_remaining / 90) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="mb-6">
             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2 text-lg">
               <div className="w-8 h-8 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-lg flex items-center justify-center">
