@@ -1,4 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
-  <rect width="192" height="192" rx="40" fill="#22c55e"/>
-  <text x="96" y="130" text-anchor="middle" font-size="100" font-family="Arial, sans-serif" fill="white" font-weight="bold">N</text>
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981"/>
+      <stop offset="50%" style="stop-color:#14b8a6"/>
+      <stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="40" fill="url(#bgGrad)"/>
+  <circle cx="96" cy="75" r="35" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="96" cy="75" r="25" fill="rgba(255,255,255,0.3)"/>
+  <text x="96" y="135" text-anchor="middle" font-size="90" font-family="Arial, sans-serif" fill="white" font-weight="bold">N</text>
+  <path d="M60 155 L80 145 L100 160 L120 140 L140 155" stroke="#fbbf24" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
