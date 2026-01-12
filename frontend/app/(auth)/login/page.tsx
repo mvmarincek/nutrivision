@@ -5,7 +5,8 @@ import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
-import { AlertCircle, Leaf, Mail, Lock, ArrowRight } from 'lucide-react';
+import { AlertCircle, Mail, Lock, ArrowRight } from 'lucide-react';
+import BowlLogo from '@/components/BowlLogo';
 
 let globalErrorModal = {
   open: false,
@@ -157,7 +158,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex flex-col items-center gap-3">
             <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center shadow-xl shadow-emerald-200/50">
-              <Leaf className="w-10 h-10 text-white" />
+              <BowlLogo className="w-10 h-10 text-white" />
             </div>
             <span className="text-3xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
               Nutri-Vision

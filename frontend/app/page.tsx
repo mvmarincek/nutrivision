@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { 
-  Sparkles, Heart, TrendingUp, Shield, Apple, Leaf, Flame, Star, ArrowRight, 
+  Sparkles, Heart, TrendingUp, Shield, Apple, Flame, Star, ArrowRight, 
   CheckCircle2, Camera, Brain, BarChart3, Zap, Crown, Infinity, Ban, ChefHat,
   Image as ImageIcon, Target, Award, Users, CreditCard
 } from 'lucide-react';
+import BowlLogo from '@/components/BowlLogo';
 
 export default function LandingPage() {
   return (
@@ -14,7 +15,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-200">
-              <Leaf className="w-5 h-5 text-white" />
+              <BowlLogo className="w-5 h-5 text-white" />
             </div>
             <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
               Nutri-Vision
@@ -259,7 +260,7 @@ export default function LandingPage() {
             
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-3 text-center border border-green-100">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 to-emerald-400 flex items-center justify-center mx-auto mb-2 shadow-md">
-                <Leaf className="w-5 h-5 text-white" />
+                <BowlLogo className="w-5 h-5 text-white" />
               </div>
               <h3 className="font-bold text-gray-900 text-xs">Fibras</h3>
             </div>
@@ -361,7 +362,7 @@ export default function LandingPage() {
           <div className="flex flex-col items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center">
-                <Leaf className="w-5 h-5 text-white" />
+                <BowlLogo className="w-5 h-5 text-white" />
               </div>
               <span className="text-lg font-bold">Nutri-Vision</span>
             </div>

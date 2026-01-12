@@ -4,8 +4,9 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
-import { Home, History, Sparkles, User, LogOut, Leaf, Crown } from 'lucide-react';
+import { Home, History, Sparkles, User, LogOut, Crown } from 'lucide-react';
 import Footer from '@/components/Footer';
+import BowlLogo from '@/components/BowlLogo';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, logout } = useAuth();
@@ -23,7 +24,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center animate-pulse shadow-xl shadow-emerald-200/50">
-            <Leaf className="w-8 h-8 text-white" />
+            <BowlLogo className="w-8 h-8 text-white" />
           </div>
           <p className="text-gray-500">Carregando...</p>
         </div>
@@ -49,7 +50,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           {pathname === '/home' ? (
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center shadow-md shadow-emerald-200/50">
-                <Leaf className="w-5 h-5 text-white" />
+                <BowlLogo className="w-5 h-5 text-white" />
               </div>
               <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
                 Nutri-Vision
@@ -58,7 +59,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           ) : (
             <Link href="/home" className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center shadow-md shadow-emerald-200/50">
-                <Leaf className="w-5 h-5 text-white" />
+                <BowlLogo className="w-5 h-5 text-white" />
               </div>
               <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
                 Nutri-Vision
