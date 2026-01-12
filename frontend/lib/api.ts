@@ -589,6 +589,9 @@ export const adminApi = {
   addCredits: (userId: number, credits: number, reason: string) =>
     api<{ success: boolean; new_balance: number }>(`/admin/users/${userId}/add-credits?credits=${credits}&reason=${encodeURIComponent(reason)}`, { method: 'POST' }),
   
+  deletePayment: (paymentId: number) =>
+    api<{ success: boolean; message: string }>(`/admin/payments/${paymentId}`, { method: 'DELETE' }),
+  
   toggleAdmin: (userId: number) =>
     api<{ success: boolean; is_admin: boolean }>(`/admin/users/${userId}/toggle-admin`, { method: 'POST' }),
   

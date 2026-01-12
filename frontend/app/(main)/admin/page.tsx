@@ -7,11 +7,11 @@ import { adminApi, AdminStats, AdminUser, AdminPayment, UserDetails } from '@/li
 import { useFeedback } from '@/lib/feedback';
 import { 
   Users, CreditCard, TrendingUp, Activity, Search, ChevronLeft, ChevronRight,
-  Crown, Shield, Plus, Eye, X, Calendar, Mail, Phone, Hash
+  Crown, Shield, Plus, Eye, X, Calendar, Mail, Phone, Hash, Trash2
 } from 'lucide-react';
 
 function formatPrice(cents: number) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents);
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
 }
 
 function formatDate(dateStr: string | null) {
@@ -109,6 +109,17 @@ export default function AdminPage() {
       loadPayments();
     }
   }, [paymentPage, paymentStatus]);
+
+  const handleDeletePayment = async (paymentId: number) => {
+    if (!confirm('Tem certeza que deseja excluir este pagamento?')) return;
+    try {
+      await adminApi.deletePayment(paymentId);
+      showSuccess('Pagamento excluido com sucesso!', 'Sucesso');
+      loadPayments();
+    } catch (err) {
+      showError('Erro ao excluir pagamento', 'Erro');
+    }
+  };
 
   const viewUserDetails = async (userId: number) => {
     try {
@@ -252,10 +263,10 @@ export default function AdminPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Receita Total</p>
-                <p className="text-2xl font-bold text-gray-900">{formatPrice(stats.revenue.total * 100)}</p>
+                <p className="text-2xl font-bold text-gray-900">{formatPrice(stats.revenue.total)}</p>
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-3">{formatPrice(stats.revenue.month * 100)} este mes</p>
+            <p className="text-xs text-gray-400 mt-3">{formatPrice(stats.revenue.month)} este mes</p>
           </div>
           
           <div className="bg-white rounded-2xl p-5 shadow-lg shadow-gray-100/50 border border-gray-100">
@@ -407,6 +418,7 @@ export default function AdminPage() {
                   <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Valor</th>
                   <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
                   <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Data</th>
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Acoes</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -417,7 +429,7 @@ export default function AdminPage() {
                     <td className="px-4 py-4">
                       <span className="text-xs text-gray-600">{p.billing_type} - {p.payment_type}</span>
                     </td>
-                    <td className="px-4 py-4 font-semibold text-gray-900">{formatPrice(p.amount * 100)}</td>
+                    <td className="px-4 py-4 font-semibold text-gray-900">{formatPrice(p.amount)}</td>
                     <td className="px-4 py-4">
                       <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
                         p.status === 'confirmed' ? 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700' : 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700'
@@ -426,6 +438,15 @@ export default function AdminPage() {
                       </span>
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">{formatDate(p.created_at)}</td>
+                    <td className="px-4 py-4">
+                      <button 
+                        onClick={() => handleDeletePayment(p.id)} 
+                        className="p-2 hover:bg-red-100 rounded-lg transition-colors" 
+                        title="Excluir pagamento"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

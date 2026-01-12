@@ -264,6 +264,23 @@ async def list_payments(
         "pages": (total + limit - 1) // limit if total else 1
     }
 
+@router.delete("/payments/{payment_id}")
+async def delete_payment(
+    payment_id: int,
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(Payment).where(Payment.id == payment_id))
+    payment = result.scalar_one_or_none()
+    
+    if not payment:
+        raise HTTPException(status_code=404, detail="Pagamento nao encontrado")
+    
+    await db.delete(payment)
+    await db.commit()
+    
+    return {"success": True, "message": "Pagamento excluido com sucesso"}
+
 @router.post("/users/{user_id}/add-credits")
 async def add_credits_to_user(
     user_id: int,
