@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
 import { profileApi, feedbackApi, billingApi, mealsApi, MealStats } from '@/lib/api';
-import { Save, User, ArrowRight, Salad, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera, Crown, Loader2, Flame, TrendingUp, Calendar, Trophy } from 'lucide-react';
+import { Save, User, ArrowRight, Leaf, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera, Crown, Loader2, Flame, TrendingUp, Calendar, Trophy } from 'lucide-react';
 import PageAds from '@/components/PageAds';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -196,7 +196,7 @@ export default function ProfilePage() {
       <div className="flex flex-col items-center justify-center py-16">
         <div className="relative">
           <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center animate-pulse shadow-xl shadow-emerald-200">
-            <Salad className="w-10 h-10 text-white" />
+            <Leaf className="w-10 h-10 text-white" />
           </div>
           <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full animate-bounce" />
         </div>

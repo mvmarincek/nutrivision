@@ -11,7 +11,7 @@ from app.models.models import User, CreditTransaction, Payment
 from app.core.security import get_current_user
 from app.core.config import settings
 from app.services.asaas_service import asaas_service
-from app.services.email_service import send_credits_purchased_email, send_upgraded_to_pro_email, send_subscription_cancelled_email, flush_email_logs
+from app.services.email_service import send_credits_purchased_email, send_upgraded_to_pro_email, send_subscription_cancelled_email, send_subscription_renewed_email, flush_email_logs
 from datetime import datetime
 
 router = APIRouter(prefix="/billing", tags=["billing"])
@@ -474,6 +474,8 @@ async def asaas_webhook(
                                 user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
                                 await db.commit()
                                 logger.info(f"[webhook] PRO renewed for user_id={user_id}")
+                                send_subscription_renewed_email(user.email, settings.PRO_MONTHLY_ANALYSES, user.id)
+                                await flush_email_logs(db)
                                 return {"status": "pro_renewed"}
                             
             except json.JSONDecodeError:

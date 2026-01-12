@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { mealsApi, MealDetail } from '@/lib/api';
-import { CheckCircle, AlertTriangle, Lightbulb, ArrowRight, Sparkles, Trophy, Heart, Flame, Salad, Zap, Target, TrendingUp, Leaf } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Lightbulb, ArrowRight, Sparkles, Trophy, Heart, Flame, Leaf, Zap, Target, TrendingUp, Leaf } from 'lucide-react';
 import Image from 'next/image';
 import PageAds from '@/components/PageAds';
 
@@ -52,7 +52,7 @@ function ResultContent() {
       <div className="flex flex-col items-center justify-center py-16">
         <div className="relative">
           <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center animate-pulse shadow-xl shadow-emerald-200">
-            <Salad className="w-10 h-10 text-white" />
+            <Leaf className="w-10 h-10 text-white" />
           </div>
           <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full animate-bounce" />
         </div>
@@ -402,7 +402,7 @@ export default function ResultPage() {
       <div className="flex flex-col items-center justify-center py-16">
         <div className="relative">
           <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center animate-pulse shadow-xl shadow-emerald-200">
-            <Salad className="w-10 h-10 text-white" />
+            <Leaf className="w-10 h-10 text-white" />
           </div>
         </div>
         <p className="text-emerald-700 font-medium mt-4">Carregando...</p>

@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { jobsApi, mealsApi, JobResponse } from '@/lib/api';
-import { Salad, ArrowRight } from 'lucide-react';
+import { Leaf, ArrowRight } from 'lucide-react';
 
 type Phase = 'processing' | 'waiting_user' | 'done' | 'error';
 
@@ -228,7 +228,7 @@ function ProcessingContent() {
     <div className="max-w-lg mx-auto">
       <div className="bg-white rounded-3xl shadow-2xl shadow-gray-200/50 p-8 text-center overflow-hidden">
         <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mx-auto mb-6 animate-pulse shadow-xl shadow-emerald-200">
-          <Salad className="w-10 h-10 text-white" />
+          <Leaf className="w-10 h-10 text-white" />
         </div>
         
         <h2 className="text-xl font-bold text-gray-900 mb-2">Analisando sua refeicao...</h2>
@@ -267,7 +267,7 @@ export default function ProcessingPage() {
       <div className="max-w-lg mx-auto">
         <div className="bg-white rounded-3xl shadow-2xl shadow-gray-200/50 p-8 text-center">
           <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mx-auto mb-6 animate-pulse">
-            <Salad className="w-10 h-10 text-gray-300" />
+            <Leaf className="w-10 h-10 text-gray-300" />
           </div>
           <p className="text-gray-500">Carregando...</p>
         </div>

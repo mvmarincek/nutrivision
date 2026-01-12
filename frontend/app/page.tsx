@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { 
-  Sparkles, Heart, TrendingUp, Shield, Apple, Salad, Flame, Star, ArrowRight, 
+  Sparkles, Heart, TrendingUp, Shield, Apple, Leaf, Flame, Star, ArrowRight, 
   CheckCircle2, Camera, Brain, BarChart3, Zap, Crown, Infinity, Ban, ChefHat,
   Image as ImageIcon, Leaf, Target, Award, Users, CreditCard
 } from 'lucide-react';
@@ -14,7 +14,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-200">
-              <Salad className="w-5 h-5 text-white" />
+              <Leaf className="w-5 h-5 text-white" />
             </div>
             <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
               Nutri-Vision
@@ -361,7 +361,7 @@ export default function LandingPage() {
           <div className="flex flex-col items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center">
-                <Salad className="w-5 h-5 text-white" />
+                <Leaf className="w-5 h-5 text-white" />
               </div>
               <span className="text-lg font-bold">Nutri-Vision</span>
             </div>
