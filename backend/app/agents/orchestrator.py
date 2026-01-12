@@ -10,6 +10,9 @@ from app.agents.meal_optimizer import MealOptimizerAgent
 from app.agents.image_generator import ImageGenerationManager
 from app.core.config import settings
 import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
 
 class NutriOrchestrator:
     def __init__(self, openai_api_key: str):
@@ -21,9 +24,11 @@ class NutriOrchestrator:
         self.image_generator = ImageGenerationManager(openai_api_key)
     
     async def validate_credits(self, user: User, mode: str) -> tuple[bool, str]:
+        logger.info(f"[validate_credits] user_id={user.id}, mode={mode}, plan={user.plan}, pro_remaining={user.pro_analyses_remaining}")
         if mode == "simple":
             return True, "free_unlimited"
         if user.plan == "pro" and user.pro_analyses_remaining > 0:
+            logger.info(f"[validate_credits] Using pro_quota for user_id={user.id}")
             return True, "pro_quota"
         cost = settings.CREDIT_COST_FULL
         if user.credit_balance >= cost:
@@ -31,12 +36,15 @@ class NutriOrchestrator:
         return False, f"Créditos insuficientes. Necessário: {cost}, Disponível: {user.credit_balance}"
     
     async def deduct_credits(self, db: AsyncSession, user: User, mode: str, source: str) -> int:
+        logger.info(f"[deduct_credits] user_id={user.id}, mode={mode}, source={source}, pro_remaining_before={user.pro_analyses_remaining}")
         if source == "free_unlimited":
             return 0
         if source == "pro_quota":
             user.pro_analyses_remaining -= 1
+            logger.info(f"[deduct_credits] Decremented pro_analyses_remaining to {user.pro_analyses_remaining}")
             await db.commit()
             await db.refresh(user)
+            logger.info(f"[deduct_credits] After refresh: pro_remaining={user.pro_analyses_remaining}")
             return 0
         cost = settings.CREDIT_COST_FULL
         user.credit_balance -= cost

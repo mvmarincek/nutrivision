@@ -57,7 +57,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 Nutrivision
               </span>
               {user.plan === 'pro' && (
-                <div className="flex items-center gap-1 bg-gradient-to-r from-violet-500 to-purple-500 px-2 py-1 rounded-full shadow-sm ml-1">
+                <div className="flex items-center gap-1 bg-gradient-to-r from-violet-500 to-purple-500 px-2 py-1 rounded-full shadow-sm ml-2">
                   <Crown className="w-3 h-3 text-white" />
                   <span className="text-xs font-medium text-white">PRO</span>
                 </div>
@@ -72,7 +72,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 Nutrivision
               </span>
               {user.plan === 'pro' && (
-                <div className="flex items-center gap-1 bg-gradient-to-r from-violet-500 to-purple-500 px-2 py-1 rounded-full shadow-sm ml-1">
+                <div className="flex items-center gap-1 bg-gradient-to-r from-violet-500 to-purple-500 px-2 py-1 rounded-full shadow-sm ml-2">
                   <Crown className="w-3 h-3 text-white" />
                   <span className="text-xs font-medium text-white">PRO</span>
                 </div>
