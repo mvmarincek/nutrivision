@@ -143,6 +143,7 @@ async def run_migration():
         "INSERT INTO email_settings (key, value, description) VALUES ('from_email', 'nutrivision-noreply@ai8hub.com', 'Email do remetente') ON CONFLICT (key) DO NOTHING",
         "INSERT INTO email_settings (key, value, description) VALUES ('welcome_credits', '36', 'Creditos de bonus para novos usuarios') ON CONFLICT (key) DO NOTHING",
         "INSERT INTO email_settings (key, value, description) VALUES ('referral_credits', '12', 'Creditos por indicacao') ON CONFLICT (key) DO NOTHING",
+        "ALTER TABLE meal_analysis DROP COLUMN IF EXISTS receita",
     ]
     
     results = []
