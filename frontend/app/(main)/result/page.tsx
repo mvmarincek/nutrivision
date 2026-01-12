@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { mealsApi, MealDetail } from '@/lib/api';
-import { CheckCircle, AlertTriangle, Lightbulb, ArrowRight, Sparkles, Trophy, Heart, Flame, Leaf, Zap, Target, TrendingUp, Leaf } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Lightbulb, ArrowRight, Sparkles, Trophy, Heart, Flame, Leaf, Zap, Target, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
 import PageAds from '@/components/PageAds';
 

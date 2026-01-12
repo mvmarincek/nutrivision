@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { 
   Sparkles, Heart, TrendingUp, Shield, Apple, Leaf, Flame, Star, ArrowRight, 
   CheckCircle2, Camera, Brain, BarChart3, Zap, Crown, Infinity, Ban, ChefHat,
-  Image as ImageIcon, Leaf, Target, Award, Users, CreditCard
+  Image as ImageIcon, Target, Award, Users, CreditCard
 } from 'lucide-react';
 
 export default function LandingPage() {
