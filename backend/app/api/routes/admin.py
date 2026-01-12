@@ -329,6 +329,26 @@ async def toggle_admin(
     
     return {"success": True, "is_admin": user.is_admin}
 
+@router.post("/users/{user_id}/reset-pro-analyses")
+async def reset_pro_analyses(
+    user_id: int,
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario nao encontrado")
+    
+    from app.core.config import get_settings
+    settings = get_settings()
+    
+    user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
+    await db.commit()
+    
+    return {"success": True, "pro_analyses_remaining": user.pro_analyses_remaining}
+
 @router.post("/users/{user_id}/set-pro")
 async def set_user_pro(
     user_id: int,

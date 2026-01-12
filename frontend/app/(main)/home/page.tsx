@@ -222,13 +222,13 @@ export default function HomePage() {
                   onClick={() => refreshUser()}
                   className="font-bold text-lg bg-white/20 px-3 py-1 rounded-lg hover:bg-white/30 transition-all"
                 >
-                  {user.pro_analyses_remaining}/90
+                  {Math.min(user.pro_analyses_remaining, 90)}/90
                 </button>
               </div>
               <div className="w-full bg-white/20 rounded-full h-2">
                 <div 
                   className="bg-white rounded-full h-2 transition-all" 
-                  style={{ width: `${(user.pro_analyses_remaining / 90) * 100}%` }}
+                  style={{ width: `${Math.min((user.pro_analyses_remaining / 90) * 100, 100)}%` }}
                 />
               </div>
             </div>

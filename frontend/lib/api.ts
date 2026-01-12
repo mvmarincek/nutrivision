@@ -599,5 +599,8 @@ export const adminApi = {
     api<{ success: boolean; plan: string; pro_expires_at: string }>(`/admin/users/${userId}/set-pro?months=${months}`, { method: 'POST' }),
   
   removeUserPro: (userId: number) =>
-    api<{ success: boolean; plan: string }>(`/admin/users/${userId}/remove-pro`, { method: 'POST' })
+    api<{ success: boolean; plan: string }>(`/admin/users/${userId}/remove-pro`, { method: 'POST' }),
+  
+  resetProAnalyses: (userId: number) =>
+    api<{ success: boolean; pro_analyses_remaining: number }>(`/admin/users/${userId}/reset-pro-analyses`, { method: 'POST' })
 };
