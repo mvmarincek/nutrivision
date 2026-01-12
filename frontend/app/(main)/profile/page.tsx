@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
-import { profileApi, feedbackApi, billingApi } from '@/lib/api';
-import { Save, User, ArrowRight, Salad, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera, Crown, Loader2 } from 'lucide-react';
+import { profileApi, feedbackApi, billingApi, mealsApi, MealStats } from '@/lib/api';
+import { Save, User, ArrowRight, Salad, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera, Crown, Loader2, Flame, TrendingUp, Calendar, Trophy } from 'lucide-react';
 import PageAds from '@/components/PageAds';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -40,6 +40,7 @@ export default function ProfilePage() {
   const [linkCopiado, setLinkCopiado] = useState(false);
   const [cancelingSubscription, setCancelingSubscription] = useState(false);
   const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [stats, setStats] = useState<MealStats | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user, refreshUser } = useAuth();
   const { showError, showSuccess, clearFeedback } = useFeedback();
@@ -132,11 +133,15 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
       try {
         await refreshUser();
-        const profile = await profileApi.get();
+        const [profile, statsData] = await Promise.all([
+          profileApi.get(),
+          mealsApi.getStats()
+        ]);
         setObjetivo(profile.objetivo || '');
         setRestricoes(profile.restricoes || []);
         setAlergias((profile.alergias || []).join(', '));
         setAvatarUrl(profile.avatar_url || null);
+        setStats(statsData);
       } catch (err) {
       } finally {
         setLoading(false);
@@ -246,6 +251,50 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
+
+        {stats && stats.total_meals > 0 && (
+          <div className="mb-6 p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl">
+            <div className="flex items-center gap-2 mb-4">
+              <Trophy className="w-5 h-5 text-amber-500" />
+              <h3 className="font-semibold text-gray-900">Suas Estatisticas</h3>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-white rounded-xl p-3 text-center shadow-sm">
+                <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mx-auto mb-2">
+                  <TrendingUp className="w-4 h-4 text-green-600" />
+                </div>
+                <p className="text-lg font-bold text-gray-900">{stats.total_meals}</p>
+                <p className="text-xs text-gray-500">analises</p>
+              </div>
+              <div className="bg-white rounded-xl p-3 text-center shadow-sm">
+                <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center mx-auto mb-2">
+                  <Flame className="w-4 h-4 text-orange-500" />
+                </div>
+                <p className="text-lg font-bold text-gray-900">{stats.streak}</p>
+                <p className="text-xs text-gray-500">dias seguidos</p>
+              </div>
+              <div className="bg-white rounded-xl p-3 text-center shadow-sm">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center mx-auto mb-2">
+                  <Calendar className="w-4 h-4 text-blue-500" />
+                </div>
+                <p className="text-lg font-bold text-gray-900">{stats.days_using}</p>
+                <p className="text-xs text-gray-500">dias usando</p>
+              </div>
+            </div>
+            <div className="mt-4 bg-white rounded-xl p-3 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Nivel: <span className="font-semibold text-gray-900">{stats.title}</span></span>
+                <span className="text-xs text-gray-500">{stats.total_meals}/{stats.next_level_at}</span>
+              </div>
+              <div className="bg-gray-100 rounded-full h-2">
+                <div 
+                  className="bg-gradient-to-r from-green-400 to-teal-500 rounded-full h-2 transition-all duration-500" 
+                  style={{ width: `${stats.progress_to_next}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         <PageAds position="inline" />
 

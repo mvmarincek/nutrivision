@@ -394,8 +394,33 @@ export const mealsApi = {
     api<MealDetail>(`/meals/${mealId}`),
   
   delete: (mealId: number) =>
-    api<{ message: string }>(`/meals/${mealId}`, { method: 'DELETE' })
+    api<{ message: string }>(`/meals/${mealId}`, { method: 'DELETE' }),
+  
+  getStats: () =>
+    api<MealStats>('/meals/stats')
 };
+
+export interface MealStats {
+  total_meals: number;
+  meals_this_week: number;
+  meals_this_month: number;
+  streak: number;
+  avg_calorias: number;
+  avg_proteina: number;
+  avg_carbo: number;
+  avg_gordura: number;
+  avg_fibra: number;
+  week_avg_calorias: number;
+  week_avg_proteina: number;
+  meals_by_type: Record<string, number>;
+  best_day: string | null;
+  days_using: number;
+  total_calorias_tracked: number;
+  level: number;
+  title: string;
+  next_level_at: number;
+  progress_to_next: number;
+}
 
 export const jobsApi = {
   get: (jobId: number) =>

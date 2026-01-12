@@ -3,22 +3,27 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { mealsApi, MealListItem } from '@/lib/api';
+import { mealsApi, MealListItem, MealStats } from '@/lib/api';
 import Image from 'next/image';
-import { Calendar, Trash2, Camera, TrendingUp, Award } from 'lucide-react';
+import { Calendar, Trash2, Camera, TrendingUp, Award, Flame, Target, Zap, Trophy, Star, ChevronRight } from 'lucide-react';
 import PageAds from '@/components/PageAds';
 
 export default function HistoryPage() {
   const [meals, setMeals] = useState<MealListItem[]>([]);
+  const [stats, setStats] = useState<MealStats | null>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    const fetchMeals = async () => {
+    const fetchData = async () => {
       try {
-        const result = await mealsApi.list();
-        setMeals(result);
+        const [mealsResult, statsResult] = await Promise.all([
+          mealsApi.list(),
+          mealsApi.getStats()
+        ]);
+        setMeals(mealsResult);
+        setStats(statsResult);
       } catch (err) {
         console.error(err);
       } finally {
@@ -26,7 +31,7 @@ export default function HistoryPage() {
       }
     };
 
-    fetchMeals();
+    fetchData();
   }, []);
 
   const handleDelete = async (mealId: number) => {
@@ -82,6 +87,83 @@ export default function HistoryPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Historico de Analises</h1>
+
+      {stats && stats.total_meals > 0 && (
+        <div className="mb-6">
+          <div className="bg-gradient-to-br from-green-500 via-teal-500 to-emerald-600 rounded-2xl p-5 text-white mb-4 shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                  <Trophy className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm opacity-90">Seu nivel</p>
+                  <p className="text-xl font-bold">{stats.title}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-3xl font-bold">{stats.total_meals}</p>
+                <p className="text-sm opacity-90">analises</p>
+              </div>
+            </div>
+            <div className="bg-white/20 rounded-full h-2 mb-2">
+              <div 
+                className="bg-white rounded-full h-2 transition-all duration-500" 
+                style={{ width: `${stats.progress_to_next}%` }}
+              />
+            </div>
+            <p className="text-xs opacity-80">
+              {stats.level < 5 ? `${stats.next_level_at - stats.total_meals} analises para o proximo nivel` : 'Nivel maximo alcancado!'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
+              <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center mx-auto mb-2">
+                <Flame className="w-4 h-4 text-orange-500" />
+              </div>
+              <p className="text-xl font-bold text-gray-900">{stats.streak}</p>
+              <p className="text-xs text-gray-500">dias seguidos</p>
+            </div>
+            <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
+              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center mx-auto mb-2">
+                <Zap className="w-4 h-4 text-blue-500" />
+              </div>
+              <p className="text-xl font-bold text-gray-900">{stats.meals_this_week}</p>
+              <p className="text-xs text-gray-500">esta semana</p>
+            </div>
+            <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
+              <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mx-auto mb-2">
+                <Target className="w-4 h-4 text-green-500" />
+              </div>
+              <p className="text-xl font-bold text-gray-900">{stats.week_avg_calorias}</p>
+              <p className="text-xs text-gray-500">kcal media</p>
+            </div>
+            <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
+              <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center mx-auto mb-2">
+                <Star className="w-4 h-4 text-purple-500" />
+              </div>
+              <p className="text-xl font-bold text-gray-900">{stats.week_avg_proteina}g</p>
+              <p className="text-xs text-gray-500">proteina</p>
+            </div>
+          </div>
+
+          {stats.best_day && (
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                  <Award className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Seu melhor dia</p>
+                  <p className="text-sm text-gray-600">{stats.best_day} e o dia que voce mais usa o app!</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </div>
+          )}
+        </div>
+      )}
 
       {meals.length === 0 ? (
         <div className="bg-white rounded-xl shadow-md p-8 text-center">
