@@ -80,12 +80,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             </Link>
           )}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-teal-50 px-3 py-1.5 rounded-full border border-emerald-100">
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              <span className="text-sm font-medium text-emerald-700">
-                {user.credit_balance} creditos
-              </span>
-            </div>
+            {user.plan !== 'pro' && (
+              <div className="flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-teal-50 px-3 py-1.5 rounded-full border border-emerald-100">
+                <Sparkles className="w-4 h-4 text-amber-500" />
+                <span className="text-sm font-medium text-emerald-700">
+                  {user.credit_balance} creditos
+                </span>
+              </div>
+            )}
             <button
               onClick={() => { logout(); router.push('/'); }}
               className="text-gray-400 hover:text-gray-600 transition-colors"
