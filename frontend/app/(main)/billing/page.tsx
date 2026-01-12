@@ -611,12 +611,12 @@ export default function BillingPage() {
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm">Analises completas restantes</span>
-              <span className="font-bold text-lg">{billingStatus.pro_analyses_remaining}/90</span>
+              <span className="font-bold text-lg">{Math.min(billingStatus.pro_analyses_remaining, 90)}/90</span>
             </div>
             <div className="w-full bg-white/20 rounded-full h-2">
               <div 
                 className="bg-white rounded-full h-2 transition-all" 
-                style={{ width: `${(billingStatus.pro_analyses_remaining / 90) * 100}%` }}
+                style={{ width: `${Math.min((billingStatus.pro_analyses_remaining / 90) * 100, 100)}%` }}
               />
             </div>
             <p className="text-xs text-white/70 mt-2">Renova todo mes automaticamente</p>
@@ -670,7 +670,7 @@ export default function BillingPage() {
                 <Star className="w-5 h-5 text-amber-500" />
                 <span className="font-semibold text-gray-800">Analises PRO</span>
               </div>
-              <p className="text-2xl font-bold text-purple-600">{billingStatus?.pro_analyses_remaining || 90}<span className="text-sm font-normal text-gray-500">/mes</span></p>
+              <p className="text-2xl font-bold text-purple-600">{Math.min(billingStatus?.pro_analyses_remaining || 90, 90)}<span className="text-sm font-normal text-gray-500">/mes</span></p>
             </div>
           </div>
           
