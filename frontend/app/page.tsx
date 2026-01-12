@@ -187,9 +187,15 @@ export default function LandingPage() {
               <ul className="space-y-2">
                 <li className="flex items-center gap-2 text-xs">
                   <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <Infinity className="w-2.5 h-2.5 text-white" />
+                    <Zap className="w-2.5 h-2.5 text-white" />
                   </div>
-                  Analises ilimitadas
+                  Analises simples ilimitadas
+                </li>
+                <li className="flex items-center gap-2 text-xs">
+                  <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <Star className="w-2.5 h-2.5 text-yellow-300" />
+                  </div>
+                  90 analises PRO/mes
                 </li>
                 <li className="flex items-center gap-2 text-xs">
                   <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
