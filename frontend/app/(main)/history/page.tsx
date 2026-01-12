@@ -133,18 +133,59 @@ export default function HistoryPage() {
               <p className="text-xs text-gray-500">esta semana</p>
             </div>
             <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
-              <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mx-auto mb-2">
-                <Target className="w-4 h-4 text-green-500" />
+              <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center mx-auto mb-2">
+                <Target className="w-4 h-4 text-rose-500" />
               </div>
-              <p className="text-xl font-bold text-gray-900">{stats.week_avg_calorias}</p>
+              <p className="text-xl font-bold text-gray-900">{stats.avg_calorias}</p>
               <p className="text-xs text-gray-500">kcal media</p>
             </div>
             <div className="bg-white rounded-xl p-3 shadow-sm border text-center">
-              <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center mx-auto mb-2">
-                <Star className="w-4 h-4 text-purple-500" />
+              <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mx-auto mb-2">
+                <TrendingUp className="w-4 h-4 text-green-500" />
               </div>
-              <p className="text-xl font-bold text-gray-900">{stats.week_avg_proteina}g</p>
-              <p className="text-xs text-gray-500">proteina</p>
+              <p className="text-xl font-bold text-gray-900">{stats.days_using}</p>
+              <p className="text-xs text-gray-500">dias usando</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl p-4 shadow-sm border mb-4">
+            <p className="text-sm font-semibold text-gray-700 mb-3">Medias nutricionais</p>
+            <div className="grid grid-cols-5 gap-2">
+              <div className="text-center">
+                <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center mx-auto mb-1">
+                  <span className="text-xs font-bold text-red-600">P</span>
+                </div>
+                <p className="text-sm font-bold text-gray-900">{stats.avg_proteina}g</p>
+                <p className="text-xs text-gray-400">prot</p>
+              </div>
+              <div className="text-center">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center mx-auto mb-1">
+                  <span className="text-xs font-bold text-amber-600">C</span>
+                </div>
+                <p className="text-sm font-bold text-gray-900">{stats.avg_carbo}g</p>
+                <p className="text-xs text-gray-400">carbo</p>
+              </div>
+              <div className="text-center">
+                <div className="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center mx-auto mb-1">
+                  <span className="text-xs font-bold text-yellow-600">G</span>
+                </div>
+                <p className="text-sm font-bold text-gray-900">{stats.avg_gordura}g</p>
+                <p className="text-xs text-gray-400">gord</p>
+              </div>
+              <div className="text-center">
+                <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mx-auto mb-1">
+                  <span className="text-xs font-bold text-green-600">F</span>
+                </div>
+                <p className="text-sm font-bold text-gray-900">{stats.avg_fibra}g</p>
+                <p className="text-xs text-gray-400">fibra</p>
+              </div>
+              <div className="text-center">
+                <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center mx-auto mb-1">
+                  <Flame className="w-4 h-4 text-rose-500" />
+                </div>
+                <p className="text-sm font-bold text-gray-900">{stats.avg_calorias}</p>
+                <p className="text-xs text-gray-400">kcal</p>
+              </div>
             </div>
           </div>
 
