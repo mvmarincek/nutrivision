@@ -316,8 +316,8 @@ export interface CreditPackage {
 }
 
 export const authApi = {
-  register: (email: string, password: string, referral_code?: string) =>
-    api<TokenResponse>('/auth/register', { method: 'POST', body: { email, password, referral_code }, skipAuth: true }),
+  register: (email: string, password: string, name?: string, phone?: string, referral_code?: string) =>
+    api<TokenResponse>('/auth/register', { method: 'POST', body: { email, password, name, phone, referral_code }, skipAuth: true }),
   
   login: (email: string, password: string) =>
     api<TokenResponse>('/auth/login', { method: 'POST', body: { email, password }, skipAuth: true }),
@@ -561,9 +561,26 @@ export interface UserDetails {
   referrals_count: number;
 }
 
+export interface ChartData {
+  revenue_by_day: { date: string; credits: number; subscriptions: number }[];
+  users_by_day: { date: string; count: number }[];
+  meals_by_day: { date: string; count: number }[];
+  kpis: {
+    total_credits_revenue: number;
+    total_subscription_revenue: number;
+    conversion_rate: number;
+    avg_revenue_per_user: number;
+    paying_users: number;
+    active_subscriptions: number;
+  };
+}
+
 export const adminApi = {
   getStats: () =>
     api<AdminStats>('/admin/stats'),
+  
+  getCharts: () =>
+    api<ChartData>('/admin/charts'),
   
   getUsers: (params?: { search?: string; plan?: string; page?: number; limit?: number }) => {
     const query = new URLSearchParams();

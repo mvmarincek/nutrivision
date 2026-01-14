@@ -72,6 +72,99 @@ async def get_dashboard_stats(
         "pending_payments": pending_payments
     }
 
+@router.get("/charts")
+async def get_chart_data(
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    today = datetime.utcnow().date()
+    
+    revenue_by_day = []
+    users_by_day = []
+    meals_by_day = []
+    
+    for i in range(29, -1, -1):
+        day = today - timedelta(days=i)
+        day_str = day.strftime("%d/%m")
+        
+        credits_revenue = await db.scalar(
+            select(func.sum(Payment.amount))
+            .where(Payment.status == "confirmed")
+            .where(Payment.payment_type == "credits")
+            .where(func.date(Payment.paid_at) == day)
+        ) or 0
+        
+        subscription_revenue = await db.scalar(
+            select(func.sum(Payment.amount))
+            .where(Payment.status == "confirmed")
+            .where(Payment.payment_type == "subscription")
+            .where(func.date(Payment.paid_at) == day)
+        ) or 0
+        
+        revenue_by_day.append({
+            "date": day_str,
+            "credits": float(credits_revenue),
+            "subscriptions": float(subscription_revenue)
+        })
+        
+        new_users = await db.scalar(
+            select(func.count(User.id)).where(func.date(User.created_at) == day)
+        ) or 0
+        users_by_day.append({"date": day_str, "count": new_users})
+        
+        meals_count = await db.scalar(
+            select(func.count(Meal.id)).where(func.date(Meal.created_at) == day)
+        ) or 0
+        meals_by_day.append({"date": day_str, "count": meals_count})
+    
+    total_credits_revenue = await db.scalar(
+        select(func.sum(Payment.amount))
+        .where(Payment.status == "confirmed")
+        .where(Payment.payment_type == "credits")
+    ) or 0
+    
+    total_subscription_revenue = await db.scalar(
+        select(func.sum(Payment.amount))
+        .where(Payment.status == "confirmed")
+        .where(Payment.payment_type == "subscription")
+    ) or 0
+    
+    conversion_rate = 0
+    total_users = await db.scalar(select(func.count(User.id)))
+    paying_users = await db.scalar(
+        select(func.count(func.distinct(Payment.user_id)))
+        .where(Payment.status == "confirmed")
+    )
+    if total_users and total_users > 0:
+        conversion_rate = round((paying_users / total_users) * 100, 1)
+    
+    avg_revenue_per_user = 0
+    if paying_users and paying_users > 0:
+        total_revenue = await db.scalar(
+            select(func.sum(Payment.amount)).where(Payment.status == "confirmed")
+        ) or 0
+        avg_revenue_per_user = round(total_revenue / paying_users, 2)
+    
+    active_subscriptions = await db.scalar(
+        select(func.count(User.id))
+        .where(User.plan == "pro")
+        .where(User.asaas_subscription_id != None)
+    )
+    
+    return {
+        "revenue_by_day": revenue_by_day,
+        "users_by_day": users_by_day,
+        "meals_by_day": meals_by_day,
+        "kpis": {
+            "total_credits_revenue": float(total_credits_revenue),
+            "total_subscription_revenue": float(total_subscription_revenue),
+            "conversion_rate": conversion_rate,
+            "avg_revenue_per_user": avg_revenue_per_user,
+            "paying_users": paying_users,
+            "active_subscriptions": active_subscriptions
+        }
+    }
+
 @router.get("/users")
 async def list_users(
     search: Optional[str] = None,

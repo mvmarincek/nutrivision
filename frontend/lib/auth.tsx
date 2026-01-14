@@ -8,7 +8,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, referralCode?: string) => Promise<void>;
+  register: (email: string, password: string, name?: string, phone?: string, referralCode?: string) => Promise<void>;
   logout: () => void;
   updateUser: (user: User) => void;
   refreshUser: () => Promise<void>;
@@ -77,8 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(true);
   };
 
-  const register = async (email: string, password: string, referralCode?: string) => {
-    const response = await authApi.register(email, password, referralCode);
+  const register = async (email: string, password: string, name?: string, phone?: string, referralCode?: string) => {
+    const response = await authApi.register(email, password, name, phone, referralCode);
     
     setAccessToken(response.access_token);
     localStorage.setItem('refreshToken', response.refresh_token);

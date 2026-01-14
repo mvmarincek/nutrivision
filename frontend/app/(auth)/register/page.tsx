@@ -5,11 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
-import { Gift, Mail, CheckCircle, Lock, ArrowRight, User } from 'lucide-react';
+import { Gift, Mail, CheckCircle, Lock, ArrowRight, User, Phone } from 'lucide-react';
 import BowlLogo from '@/components/BowlLogo';
 
 function RegisterContent() {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -20,6 +22,18 @@ function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const referralCode = searchParams.get('ref');
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    if (numbers.length <= 11) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhone(formatPhone(e.target.value));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +85,7 @@ function RegisterContent() {
     setLoading(true);
 
     try {
-      await register(email, password, referralCode || undefined);
+      await register(email, password, name || undefined, phone || undefined, referralCode || undefined);
       setRegistered(true);
     } catch (err: any) {
       setLoading(false);
@@ -193,6 +207,42 @@ function RegisterContent() {
         )}
 
         <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-8 border border-gray-100">
+          <div className="mb-5">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Nome completo</label>
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                <User className="w-5 h-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full pl-12 pr-4 py-4 border-2 border-gray-100 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-400 transition-all outline-none"
+                placeholder="Seu nome completo"
+                required
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div className="mb-5">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Celular</label>
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                <Phone className="w-5 h-5 text-gray-400" />
+              </div>
+              <input
+                type="tel"
+                value={phone}
+                onChange={handlePhoneChange}
+                className="w-full pl-12 pr-4 py-4 border-2 border-gray-100 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-400 transition-all outline-none"
+                placeholder="(11) 99999-9999"
+                required
+                disabled={loading}
+              />
+            </div>
+          </div>
+
           <div className="mb-5">
             <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
             <div className="relative">

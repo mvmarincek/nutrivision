@@ -5,6 +5,8 @@ from datetime import datetime
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
+    name: Optional[str] = None
+    phone: Optional[str] = None
     referral_code: Optional[str] = None
 
 class UserLogin(BaseModel):

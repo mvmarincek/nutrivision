@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { adminApi, AdminStats, AdminUser, AdminPayment, UserDetails } from '@/lib/api';
+import { adminApi, AdminStats, AdminUser, AdminPayment, UserDetails, ChartData } from '@/lib/api';
 import { useFeedback } from '@/lib/feedback';
 import { 
   Users, CreditCard, TrendingUp, Activity, Search, ChevronLeft, ChevronRight,
-  Crown, Shield, Plus, Eye, X, Calendar, Mail, Phone, Hash, Trash2, RefreshCw
+  Crown, Shield, Plus, Eye, X, Calendar, Mail, Phone, Hash, Trash2, RefreshCw,
+  MessageCircle, BarChart3, DollarSign, UserPlus, Zap
 } from 'lucide-react';
 
 function formatPrice(cents: number) {
@@ -25,6 +26,7 @@ export default function AdminPage() {
   const { showError, showSuccess, clearFeedback } = useFeedback();
   
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [charts, setCharts] = useState<ChartData | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [payments, setPayments] = useState<AdminPayment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,12 +63,14 @@ export default function AdminPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [statsData, usersData, paymentsData] = await Promise.all([
+      const [statsData, chartsData, usersData, paymentsData] = await Promise.all([
         adminApi.getStats(),
+        adminApi.getCharts(),
         adminApi.getUsers({ page: 1, limit: 20 }),
         adminApi.getPayments({ page: 1, limit: 20 })
       ]);
       setStats(statsData);
+      setCharts(chartsData);
       setUsers(usersData.users);
       setUserPages(usersData.pages);
       setPayments(paymentsData.payments);
@@ -304,6 +308,141 @@ export default function AdminPage() {
             <p className="text-xs text-gray-400 mt-3">{stats.meals.today} hoje</p>
           </div>
         </div>
+
+        {charts && (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+              <div className="bg-white rounded-2xl p-5 shadow-lg shadow-gray-100/50 border border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl">
+                    <DollarSign className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Receita Creditos</p>
+                    <p className="text-xl font-bold text-gray-900">{formatPrice(charts.kpis.total_credits_revenue * 100)}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-2xl p-5 shadow-lg shadow-gray-100/50 border border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-gradient-to-br from-violet-100 to-purple-100 rounded-xl">
+                    <Crown className="w-6 h-6 text-violet-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Receita Assinaturas</p>
+                    <p className="text-xl font-bold text-gray-900">{formatPrice(charts.kpis.total_subscription_revenue * 100)}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-2xl p-5 shadow-lg shadow-gray-100/50 border border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl">
+                    <Zap className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Taxa Conversao</p>
+                    <p className="text-xl font-bold text-gray-900">{charts.kpis.conversion_rate}%</p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">{charts.kpis.paying_users} usuarios pagantes</p>
+              </div>
+              
+              <div className="bg-white rounded-2xl p-5 shadow-lg shadow-gray-100/50 border border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-xl">
+                    <UserPlus className="w-6 h-6 text-cyan-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Ticket Medio</p>
+                    <p className="text-xl font-bold text-gray-900">{formatPrice(charts.kpis.avg_revenue_per_user * 100)}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">{charts.kpis.active_subscriptions} assinaturas ativas</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div className="bg-white rounded-2xl p-5 shadow-lg shadow-gray-100/50 border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-emerald-500" />
+                  Receita Ultimos 30 Dias
+                </h3>
+                <div className="h-48 flex items-end gap-1">
+                  {charts.revenue_by_day.slice(-15).map((d, i) => {
+                    const total = d.credits + d.subscriptions;
+                    const maxVal = Math.max(...charts.revenue_by_day.map(x => x.credits + x.subscriptions), 1);
+                    const height = total > 0 ? Math.max((total / maxVal) * 100, 5) : 2;
+                    const creditsHeight = d.credits > 0 ? (d.credits / Math.max(total, 1)) * height : 0;
+                    const subsHeight = d.subscriptions > 0 ? (d.subscriptions / Math.max(total, 1)) * height : 0;
+                    return (
+                      <div key={i} className="flex-1 flex flex-col justify-end items-center gap-0.5" title={`${d.date}: Creditos R$${(d.credits).toFixed(2)} | Assinaturas R$${(d.subscriptions).toFixed(2)}`}>
+                        <div className="w-full flex flex-col gap-0.5">
+                          {subsHeight > 0 && <div className="w-full bg-gradient-to-t from-violet-500 to-purple-400 rounded-t" style={{height: `${subsHeight}%`}} />}
+                          {creditsHeight > 0 && <div className="w-full bg-gradient-to-t from-emerald-500 to-teal-400 rounded-t" style={{height: `${creditsHeight}%`}} />}
+                          {total === 0 && <div className="w-full bg-gray-200 rounded-t" style={{height: '2%'}} />}
+                        </div>
+                        <span className="text-[8px] text-gray-400 rotate-45 origin-left">{d.date.split('/')[0]}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-4 mt-3 text-xs">
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-gradient-to-r from-emerald-500 to-teal-400 rounded" />
+                    <span className="text-gray-500">Creditos</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-gradient-to-r from-violet-500 to-purple-400 rounded" />
+                    <span className="text-gray-500">Assinaturas</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-5 shadow-lg shadow-gray-100/50 border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-blue-500" />
+                  Crescimento Usuarios
+                </h3>
+                <div className="h-48 flex items-end gap-1">
+                  {charts.users_by_day.slice(-15).map((d, i) => {
+                    const maxVal = Math.max(...charts.users_by_day.map(x => x.count), 1);
+                    const height = d.count > 0 ? Math.max((d.count / maxVal) * 100, 5) : 2;
+                    return (
+                      <div key={i} className="flex-1 flex flex-col justify-end items-center gap-0.5" title={`${d.date}: ${d.count} novos usuarios`}>
+                        <div className="w-full bg-gradient-to-t from-blue-500 to-cyan-400 rounded-t" style={{height: `${height}%`}} />
+                        <span className="text-[8px] text-gray-400 rotate-45 origin-left">{d.date.split('/')[0]}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 shadow-lg shadow-gray-100/50 border border-gray-100 mt-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Activity className="w-5 h-5 text-fuchsia-500" />
+                Analises Realizadas
+              </h3>
+              <div className="h-32 flex items-end gap-1">
+                {charts.meals_by_day.slice(-30).map((d, i) => {
+                  const maxVal = Math.max(...charts.meals_by_day.map(x => x.count), 1);
+                  const height = d.count > 0 ? Math.max((d.count / maxVal) * 100, 3) : 2;
+                  return (
+                    <div key={i} className="flex-1 flex flex-col justify-end items-center" title={`${d.date}: ${d.count} analises`}>
+                      <div className="w-full bg-gradient-to-t from-fuchsia-500 to-pink-400 rounded-t" style={{height: `${height}%`}} />
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+                <span>{charts.meals_by_day[0]?.date}</span>
+                <span>{charts.meals_by_day[charts.meals_by_day.length - 1]?.date}</span>
+              </div>
+            </div>
+          </>
+        )}
       )}
 
       {activeTab === 'users' && (
@@ -339,6 +478,7 @@ export default function AdminPage() {
               <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                 <tr>
                   <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Usuario</th>
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Contato</th>
                   <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Plano</th>
                   <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Creditos</th>
                   <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Cadastro</th>
@@ -352,10 +492,26 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2">
                         {u.is_admin && <Shield className="w-4 h-4 text-orange-500" />}
                         <div>
-                          <p className="font-medium text-gray-900">{u.email}</p>
-                          {u.name && <p className="text-xs text-gray-500">{u.name}</p>}
+                          <p className="font-medium text-gray-900">{u.name || u.email}</p>
+                          <p className="text-xs text-gray-500">{u.email}</p>
                         </div>
                       </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      {u.phone ? (
+                        <a 
+                          href={`https://wa.me/55${u.phone.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 rounded-full text-xs font-medium hover:from-green-200 hover:to-emerald-200 transition-all"
+                          title="Abrir WhatsApp"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          {u.phone}
+                        </a>
+                      ) : (
+                        <span className="text-xs text-gray-400">-</span>
+                      )}
                     </td>
                     <td className="px-4 py-4">
                       <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${

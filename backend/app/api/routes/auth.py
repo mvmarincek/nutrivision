@@ -63,6 +63,8 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks, db:
     user = User(
         email=user_data.email,
         password_hash=get_password_hash(user_data.password),
+        name=user_data.name,
+        phone=user_data.phone,
         credit_balance=36,
         referral_code=referral_code,
         referred_by=referrer.id if referrer else None,
