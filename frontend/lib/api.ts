@@ -357,7 +357,10 @@ export const authApi = {
     api<User>('/auth/me'),
   
   getMyReferrals: () =>
-    api<{ total_referred: number; converted: number }>('/auth/my-referrals')
+    api<{ total_referred: number; converted: number }>('/auth/my-referrals'),
+  
+  resendVerification: (email: string) =>
+    api<{ message: string }>('/auth/resend-verification', { method: 'POST', body: { email }, skipAuth: true })
 };
 
 export const profileApi = {
@@ -681,5 +684,8 @@ export const adminApi = {
     api<{ success: boolean }>('/admin/errors/resolve-all', { method: 'POST' }),
   
   deleteError: (errorId: number) =>
-    api<{ success: boolean }>(`/admin/errors/${errorId}`, { method: 'DELETE' })
+    api<{ success: boolean }>(`/admin/errors/${errorId}`, { method: 'DELETE' }),
+  
+  resendVerificationEmail: (userId: number) =>
+    api<{ success: boolean; message: string }>(`/admin/users/${userId}/resend-verification`, { method: 'POST' })
 };

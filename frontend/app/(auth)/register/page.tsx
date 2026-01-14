@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
-import { Gift, Mail, CheckCircle, Lock, ArrowRight, User, Phone } from 'lucide-react';
+import { authApi } from '@/lib/api';
+import { Gift, Mail, CheckCircle, Lock, ArrowRight, User, Phone, RefreshCw } from 'lucide-react';
 import BowlLogo from '@/components/BowlLogo';
 
 function RegisterContent() {
@@ -17,8 +18,10 @@ function RegisterContent() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
   const { register } = useAuth();
-  const { showError, showWarning, clearFeedback } = useFeedback();
+  const { showError, showWarning, showSuccess, clearFeedback } = useFeedback();
   const router = useRouter();
   const searchParams = useSearchParams();
   const referralCode = searchParams.get('ref');
@@ -127,6 +130,19 @@ function RegisterContent() {
     }
   };
 
+  const handleResendEmail = async () => {
+    setResending(true);
+    try {
+      await authApi.resendVerification(email);
+      setResent(true);
+      showSuccess('Email reenviado! Verifique sua caixa de entrada.', 'Email enviado');
+    } catch (err: any) {
+      showError(err.message || 'Erro ao reenviar email', 'Erro');
+    } finally {
+      setResending(false);
+    }
+  };
+
   if (registered) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex items-center justify-center p-4">
@@ -161,15 +177,40 @@ function RegisterContent() {
               </div>
             </div>
             <p className="text-sm text-gray-400 mb-4">
-              Não recebeu o email? Verifique a pasta de spam.
+              Nao recebeu o email? Verifique a pasta de spam ou clique abaixo para reenviar.
             </p>
-            <button
-              onClick={() => router.push('/login')}
-              className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white py-4 rounded-2xl font-bold hover:shadow-xl hover:shadow-emerald-200/50 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
-            >
-              Ir para login
-              <ArrowRight className="w-5 h-5" />
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={handleResendEmail}
+                disabled={resending || resent}
+                className={`flex-1 py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 ${
+                  resent 
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {resending ? (
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                ) : resent ? (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    Enviado!
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-5 h-5" />
+                    Reenviar
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => router.push('/login')}
+                className="flex-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white py-4 rounded-2xl font-bold hover:shadow-xl hover:shadow-emerald-200/50 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+              >
+                Login
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

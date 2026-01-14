@@ -8,7 +8,7 @@ import { useFeedback } from '@/lib/feedback';
 import { 
   Users, CreditCard, TrendingUp, Activity, Search, ChevronLeft, ChevronRight,
   Crown, Shield, Plus, Eye, X, Calendar, Mail, Phone, Hash, Trash2, RefreshCw,
-  MessageCircle, BarChart3, DollarSign, UserPlus, Zap, Download, Gift, AlertCircle, Check
+  MessageCircle, BarChart3, DollarSign, UserPlus, Zap, Download, Gift, AlertCircle, Check, Send
 } from 'lucide-react';
 
 function formatPrice(cents: number) {
@@ -261,6 +261,15 @@ export default function AdminPage() {
       searchUsers();
     } catch (err: any) {
       showError(err.message || 'Erro ao excluir usuário', 'Erro');
+    }
+  };
+
+  const handleResendVerification = async (userId: number) => {
+    try {
+      const result = await adminApi.resendVerificationEmail(userId);
+      showSuccess(result.message, 'Email enviado');
+    } catch (err: any) {
+      showError(err.message || 'Erro ao reenviar email', 'Erro');
     }
   };
 
@@ -680,6 +689,11 @@ export default function AdminPage() {
                         <button onClick={() => handleToggleAdmin(u.id)} className="p-2 hover:bg-orange-100 rounded-lg transition-colors" title="Toggle Admin">
                           <Shield className="w-4 h-4 text-orange-600" />
                         </button>
+                        {!u.email_verified && (
+                          <button onClick={() => handleResendVerification(u.id)} className="p-2 hover:bg-blue-100 rounded-lg transition-colors" title="Reenviar email de verificacao">
+                            <Send className="w-4 h-4 text-blue-600" />
+                          </button>
+                        )}
                         <button onClick={() => handleDeleteUser(u.id)} className="p-2 hover:bg-red-100 rounded-lg transition-colors" title="Excluir usuario">
                           <Trash2 className="w-4 h-4 text-red-600" />
                         </button>
