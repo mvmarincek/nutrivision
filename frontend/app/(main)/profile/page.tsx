@@ -586,29 +586,6 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-6 border border-emerald-100 mt-6 shadow-lg shadow-emerald-50">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-200">
-            <QrCode className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h3 className="font-bold text-gray-900">Acesse o App</h3>
-            <p className="text-sm text-gray-500">QR Code para acesso rápido</p>
-          </div>
-        </div>
-
-        <div className="flex justify-center">
-          <div className="bg-white p-4 rounded-2xl border-2 border-emerald-100 inline-block shadow-lg shadow-emerald-50">
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(appLink)}`}
-              alt="QR Code do App"
-              className="w-36 h-36"
-            />
-            <p className="text-xs text-center text-gray-500 mt-2">nutrivision.ai8hub.com</p>
-          </div>
-        </div>
-      </div>
-
       <PageAds position="bottom" />
     </div>
   );
