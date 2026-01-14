@@ -42,7 +42,7 @@ export default function ProfilePage() {
   const [cancelingSubscription, setCancelingSubscription] = useState(false);
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [stats, setStats] = useState<MealStats | null>(null);
-  const [myReferrals, setMyReferrals] = useState<{ total_referred: number; converted: number } | null>(null);
+  const [myReferrals, setMyReferrals] = useState<{ total_referred: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user, refreshUser } = useAuth();
   const { showError, showSuccess, clearFeedback } = useFeedback();
@@ -524,8 +524,8 @@ export default function ProfilePage() {
           </div>
           {myReferrals && myReferrals.total_referred > 0 && (
             <div className="ml-auto text-right">
-              <p className="text-lg font-bold text-purple-600">{myReferrals.converted}/{myReferrals.total_referred}</p>
-              <p className="text-xs text-gray-500">convertidos</p>
+              <p className="text-lg font-bold text-purple-600">{myReferrals.total_referred}</p>
+              <p className="text-xs text-gray-500">indicados</p>
             </div>
           )}
         </div>

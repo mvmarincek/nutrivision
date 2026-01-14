@@ -116,15 +116,7 @@ async def get_my_referrals(
         select(func.count(Referral.id)).where(Referral.referrer_id == current_user.id)
     ) or 0
     
-    referred_who_paid = await db.scalar(
-        select(func.count(func.distinct(Payment.user_id)))
-        .where(Payment.status == "confirmed")
-        .where(Payment.user_id.in_(
-            select(Referral.referred_id).where(Referral.referrer_id == current_user.id)
-        ))
-    ) or 0
-    
-    return {"total_referred": total_referred, "converted": referred_who_paid}
+    return {"total_referred": total_referred}
 
 @router.post("/login", response_model=TokenResponse)
 async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
@@ -155,15 +147,7 @@ async def get_my_referrals(
         select(func.count(Referral.id)).where(Referral.referrer_id == current_user.id)
     ) or 0
     
-    referred_who_paid = await db.scalar(
-        select(func.count(func.distinct(Payment.user_id)))
-        .where(Payment.status == "confirmed")
-        .where(Payment.user_id.in_(
-            select(Referral.referred_id).where(Referral.referrer_id == current_user.id)
-        ))
-    ) or 0
-    
-    return {"total_referred": total_referred, "converted": referred_who_paid}
+    return {"total_referred": total_referred}
 
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_tokens(request: RefreshTokenRequest, db: AsyncSession = Depends(get_db)):
@@ -365,12 +349,4 @@ async def get_my_referrals(
         select(func.count(Referral.id)).where(Referral.referrer_id == current_user.id)
     ) or 0
     
-    referred_who_paid = await db.scalar(
-        select(func.count(func.distinct(Payment.user_id)))
-        .where(Payment.status == "confirmed")
-        .where(Payment.user_id.in_(
-            select(Referral.referred_id).where(Referral.referrer_id == current_user.id)
-        ))
-    ) or 0
-    
-    return {"total_referred": total_referred, "converted": referred_who_paid}
+    return {"total_referred": total_referred}

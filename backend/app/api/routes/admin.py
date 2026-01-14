@@ -720,30 +720,6 @@ async def export_kpis_csv(
         headers={"Content-Disposition": f"attachment; filename=kpis_{datetime.utcnow().strftime('%Y%m%d')}.csv"}
     )
 
-@router.get("/users/{user_id}/referrals-converted")
-async def get_user_referrals_converted(
-    user_id: int,
-    admin: User = Depends(get_admin_user),
-    db: AsyncSession = Depends(get_db)
-):
-    total_referred = await db.scalar(
-        select(func.count(Referral.id)).where(Referral.referrer_id == user_id)
-    ) or 0
-    
-    referred_who_paid = await db.scalar(
-        select(func.count(func.distinct(Payment.user_id)))
-        .where(Payment.status == "confirmed")
-        .where(Payment.user_id.in_(
-            select(Referral.referred_id).where(Referral.referrer_id == user_id)
-        ))
-    ) or 0
-    
-    return {
-        "total_referred": total_referred,
-        "converted": referred_who_paid,
-        "conversion_rate": round((referred_who_paid / total_referred * 100), 1) if total_referred > 0 else 0
-    }
-
 @router.get("/errors")
 async def get_error_logs(
     admin: User = Depends(get_admin_user),
@@ -1122,30 +1098,6 @@ async def export_kpis_csv(
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename=kpis_{datetime.utcnow().strftime('%Y%m%d')}.csv"}
     )
-
-@router.get("/users/{user_id}/referrals-converted")
-async def get_user_referrals_converted(
-    user_id: int,
-    admin: User = Depends(get_admin_user),
-    db: AsyncSession = Depends(get_db)
-):
-    total_referred = await db.scalar(
-        select(func.count(Referral.id)).where(Referral.referrer_id == user_id)
-    ) or 0
-    
-    referred_who_paid = await db.scalar(
-        select(func.count(func.distinct(Payment.user_id)))
-        .where(Payment.status == "confirmed")
-        .where(Payment.user_id.in_(
-            select(Referral.referred_id).where(Referral.referrer_id == user_id)
-        ))
-    ) or 0
-    
-    return {
-        "total_referred": total_referred,
-        "converted": referred_who_paid,
-        "conversion_rate": round((referred_who_paid / total_referred * 100), 1) if total_referred > 0 else 0
-    }
 
 @router.get("/errors")
 async def get_error_logs(

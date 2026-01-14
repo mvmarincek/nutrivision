@@ -357,7 +357,7 @@ export const authApi = {
     api<User>('/auth/me'),
   
   getMyReferrals: () =>
-    api<{ total_referred: number; converted: number }>('/auth/my-referrals'),
+    api<{ total_referred: number }>('/auth/my-referrals'),
   
   resendVerification: (email: string) =>
     api<{ message: string }>('/auth/resend-verification', { method: 'POST', body: { email }, skipAuth: true })
@@ -659,7 +659,7 @@ export const adminApi = {
     api<{ success: boolean; message: string }>(`/admin/users/${userId}`, { method: 'DELETE' }),
   
   getUserReferralsConverted: (userId: number) =>
-    api<{ total_referred: number; converted: number; conversion_rate: number }>(`/admin/users/${userId}/referrals-converted`),
+    api<{ total_referred: number }>(`/admin/users/${userId}/referrals-converted`),
   
   exportUsersCSV: () => `${API_URL}/admin/export/users`,
   exportPaymentsCSV: () => `${API_URL}/admin/export/payments`,
