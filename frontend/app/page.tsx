@@ -48,11 +48,11 @@ export default function LandingPage() {
           </div>
           
           <h1 className="text-3xl sm:text-4xl font-black text-white mb-4 leading-tight">
-            Descubra os nutrientes da sua refeição
+            Controle sua alimentação de forma simples e inteligente
           </h1>
           
           <p className="text-emerald-100 text-base sm:text-lg mb-8 max-w-md mx-auto">
-            Tire uma foto e receba uma análise nutricional completa em segundos com inteligência artificial
+            Descubra os nutrientes e as calorias das suas refeições apenas tirando uma foto
           </p>
           
           <Link 
@@ -83,11 +83,10 @@ export default function LandingPage() {
       <div className="max-w-lg mx-auto px-4 py-8">
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-3xl p-6 mb-8 border border-emerald-200">
           <p className="text-gray-700 text-center leading-relaxed">
-            O NutriVision é um assistente inteligente para o controle da sua alimentação. 
-            Através de fotos, você descobre os nutrientes e as calorias das suas refeições 
-            de forma simples e prática. Crie um histórico alimentar completo para acompanhar 
-            sua evolução e compartilhar com seu nutricionista ou nutrólogo, auxiliando em 
-            uma alimentação mais saudável e consciente.
+            O NutriVision é um assistente de alimentação saudável que ajuda você a entender 
+            melhor o que consome no dia a dia. Crie um histórico alimentar completo para 
+            acompanhar sua evolução e compartilhar com seu nutricionista ou nutrólogo, 
+            tornando suas escolhas mais conscientes e equilibradas.
           </p>
         </div>
 
