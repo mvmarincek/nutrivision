@@ -7,7 +7,7 @@ from typing import Optional
 from datetime import datetime, timedelta
 from app.db.database import get_db
 from app.core.security import get_current_user
-from app.models.models import User, Payment, CreditTransaction, Meal, Referral, EmailLog, EmailSettings
+from app.models.models import User, Payment, CreditTransaction, Meal, Referral, EmailLog, EmailSettings, ErrorLog
 import csv
 import io
 
@@ -744,6 +744,132 @@ async def get_user_referrals_converted(
         "conversion_rate": round((referred_who_paid / total_referred * 100), 1) if total_referred > 0 else 0
     }
 
+@router.get("/errors")
+async def get_error_logs(
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db),
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=100),
+    error_type: Optional[str] = None,
+    resolved: Optional[bool] = None
+):
+    query = select(ErrorLog).order_by(desc(ErrorLog.created_at))
+    count_query = select(func.count(ErrorLog.id))
+    
+    if error_type:
+        query = query.where(ErrorLog.error_type == error_type)
+        count_query = count_query.where(ErrorLog.error_type == error_type)
+    if resolved is not None:
+        query = query.where(ErrorLog.resolved == resolved)
+        count_query = count_query.where(ErrorLog.resolved == resolved)
+    
+    total = await db.scalar(count_query) or 0
+    
+    query = query.offset((page - 1) * limit).limit(limit)
+    result = await db.execute(query)
+    errors = result.scalars().all()
+    
+    return {
+        "errors": [
+            {
+                "id": e.id,
+                "user_id": e.user_id,
+                "error_type": e.error_type,
+                "error_message": e.error_message,
+                "error_stack": e.error_stack,
+                "url": e.url,
+                "user_agent": e.user_agent,
+                "extra_data": e.extra_data,
+                "resolved": e.resolved,
+                "created_at": e.created_at.isoformat() if e.created_at else None
+            }
+            for e in errors
+        ],
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit
+    }
+
+@router.get("/errors/stats")
+async def get_error_stats(
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    today = datetime.utcnow().date()
+    week_ago = today - timedelta(days=7)
+    
+    total_errors = await db.scalar(select(func.count(ErrorLog.id))) or 0
+    unresolved_errors = await db.scalar(
+        select(func.count(ErrorLog.id)).where(ErrorLog.resolved == False)
+    ) or 0
+    errors_today = await db.scalar(
+        select(func.count(ErrorLog.id)).where(func.date(ErrorLog.created_at) == today)
+    ) or 0
+    errors_week = await db.scalar(
+        select(func.count(ErrorLog.id)).where(func.date(ErrorLog.created_at) >= week_ago)
+    ) or 0
+    
+    type_result = await db.execute(
+        select(ErrorLog.error_type, func.count(ErrorLog.id))
+        .group_by(ErrorLog.error_type)
+        .order_by(desc(func.count(ErrorLog.id)))
+        .limit(10)
+    )
+    errors_by_type = [{"type": t, "count": c} for t, c in type_result.all()]
+    
+    return {
+        "total": total_errors,
+        "unresolved": unresolved_errors,
+        "today": errors_today,
+        "week": errors_week,
+        "by_type": errors_by_type
+    }
+
+@router.post("/errors/{error_id}/resolve")
+async def resolve_error(
+    error_id: int,
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(ErrorLog).where(ErrorLog.id == error_id))
+    error = result.scalar_one_or_none()
+    
+    if not error:
+        raise HTTPException(status_code=404, detail="Erro nao encontrado")
+    
+    error.resolved = True
+    await db.commit()
+    
+    return {"success": True}
+
+@router.post("/errors/resolve-all")
+async def resolve_all_errors(
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    from sqlalchemy import update
+    await db.execute(update(ErrorLog).where(ErrorLog.resolved == False).values(resolved=True))
+    await db.commit()
+    
+    return {"success": True}
+
+@router.delete("/errors/{error_id}")
+async def delete_error(
+    error_id: int,
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(ErrorLog).where(ErrorLog.id == error_id))
+    error = result.scalar_one_or_none()
+    
+    if not error:
+        raise HTTPException(status_code=404, detail="Erro nao encontrado")
+    
+    await db.delete(error)
+    await db.commit()
+    
+    return {"success": True}
+
 @router.get("/email-stats")
 async def get_email_stats(
     admin: User = Depends(get_admin_user),
@@ -994,3 +1120,129 @@ async def get_user_referrals_converted(
         "converted": referred_who_paid,
         "conversion_rate": round((referred_who_paid / total_referred * 100), 1) if total_referred > 0 else 0
     }
+
+@router.get("/errors")
+async def get_error_logs(
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db),
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=100),
+    error_type: Optional[str] = None,
+    resolved: Optional[bool] = None
+):
+    query = select(ErrorLog).order_by(desc(ErrorLog.created_at))
+    count_query = select(func.count(ErrorLog.id))
+    
+    if error_type:
+        query = query.where(ErrorLog.error_type == error_type)
+        count_query = count_query.where(ErrorLog.error_type == error_type)
+    if resolved is not None:
+        query = query.where(ErrorLog.resolved == resolved)
+        count_query = count_query.where(ErrorLog.resolved == resolved)
+    
+    total = await db.scalar(count_query) or 0
+    
+    query = query.offset((page - 1) * limit).limit(limit)
+    result = await db.execute(query)
+    errors = result.scalars().all()
+    
+    return {
+        "errors": [
+            {
+                "id": e.id,
+                "user_id": e.user_id,
+                "error_type": e.error_type,
+                "error_message": e.error_message,
+                "error_stack": e.error_stack,
+                "url": e.url,
+                "user_agent": e.user_agent,
+                "extra_data": e.extra_data,
+                "resolved": e.resolved,
+                "created_at": e.created_at.isoformat() if e.created_at else None
+            }
+            for e in errors
+        ],
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit
+    }
+
+@router.get("/errors/stats")
+async def get_error_stats(
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    today = datetime.utcnow().date()
+    week_ago = today - timedelta(days=7)
+    
+    total_errors = await db.scalar(select(func.count(ErrorLog.id))) or 0
+    unresolved_errors = await db.scalar(
+        select(func.count(ErrorLog.id)).where(ErrorLog.resolved == False)
+    ) or 0
+    errors_today = await db.scalar(
+        select(func.count(ErrorLog.id)).where(func.date(ErrorLog.created_at) == today)
+    ) or 0
+    errors_week = await db.scalar(
+        select(func.count(ErrorLog.id)).where(func.date(ErrorLog.created_at) >= week_ago)
+    ) or 0
+    
+    type_result = await db.execute(
+        select(ErrorLog.error_type, func.count(ErrorLog.id))
+        .group_by(ErrorLog.error_type)
+        .order_by(desc(func.count(ErrorLog.id)))
+        .limit(10)
+    )
+    errors_by_type = [{"type": t, "count": c} for t, c in type_result.all()]
+    
+    return {
+        "total": total_errors,
+        "unresolved": unresolved_errors,
+        "today": errors_today,
+        "week": errors_week,
+        "by_type": errors_by_type
+    }
+
+@router.post("/errors/{error_id}/resolve")
+async def resolve_error(
+    error_id: int,
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(ErrorLog).where(ErrorLog.id == error_id))
+    error = result.scalar_one_or_none()
+    
+    if not error:
+        raise HTTPException(status_code=404, detail="Erro nao encontrado")
+    
+    error.resolved = True
+    await db.commit()
+    
+    return {"success": True}
+
+@router.post("/errors/resolve-all")
+async def resolve_all_errors(
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    from sqlalchemy import update
+    await db.execute(update(ErrorLog).where(ErrorLog.resolved == False).values(resolved=True))
+    await db.commit()
+    
+    return {"success": True}
+
+@router.delete("/errors/{error_id}")
+async def delete_error(
+    error_id: int,
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(ErrorLog).where(ErrorLog.id == error_id))
+    error = result.scalar_one_or_none()
+    
+    if not error:
+        raise HTTPException(status_code=404, detail="Erro nao encontrado")
+    
+    await db.delete(error)
+    await db.commit()
+    
+    return {"success": True}

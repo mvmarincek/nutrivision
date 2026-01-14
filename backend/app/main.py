@@ -12,17 +12,21 @@ import logging
 from app.db.database import init_db, async_session
 from app.core.config import settings
 from app.api.routes import auth, profile, meals, jobs, billing, credits, feedback, admin
+from app.models.models import ErrorLog
 
 logger = logging.getLogger(__name__)
 
 class ClientError(BaseModel):
     error_message: str
     error_stack: Optional[str] = None
+    error_type: Optional[str] = "frontend"
     file_name: Optional[str] = None
     file_type: Optional[str] = None
     file_size: Optional[int] = None
     user_agent: str
     url: str
+    user_id: Optional[int] = None
+    extra_data: Optional[dict] = None
     timestamp: Optional[str] = None
 
 @asynccontextmanager
@@ -103,11 +107,36 @@ async def log_client_error(error: ClientError):
 Time: {error.timestamp or datetime.utcnow().isoformat()}
 URL: {error.url}
 User-Agent: {error.user_agent}
+User ID: {error.user_id}
+Type: {error.error_type}
 File: {error.file_name} | Type: {error.file_type} | Size: {error.file_size}
 Error: {error.error_message}
 Stack: {error.error_stack}
 ====================
 """)
+    
+    try:
+        async with async_session() as db:
+            extra = error.extra_data or {}
+            if error.file_name:
+                extra["file_name"] = error.file_name
+                extra["file_type"] = error.file_type
+                extra["file_size"] = error.file_size
+            
+            error_log = ErrorLog(
+                user_id=error.user_id,
+                error_type=error.error_type or "frontend",
+                error_message=error.error_message,
+                error_stack=error.error_stack,
+                url=error.url,
+                user_agent=error.user_agent,
+                extra_data=extra if extra else None
+            )
+            db.add(error_log)
+            await db.commit()
+    except Exception as e:
+        logger.error(f"Failed to save error log: {e}")
+    
     return {"logged": True}
 
 @app.get("/run-migration")
@@ -144,6 +173,20 @@ async def run_migration():
         "INSERT INTO email_settings (key, value, description) VALUES ('welcome_credits', '36', 'Creditos de bonus para novos usuarios') ON CONFLICT (key) DO NOTHING",
         "INSERT INTO email_settings (key, value, description) VALUES ('referral_credits', '12', 'Creditos por indicacao') ON CONFLICT (key) DO NOTHING",
         "ALTER TABLE meal_analysis DROP COLUMN IF EXISTS receita",
+        """CREATE TABLE IF NOT EXISTS error_logs (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id),
+            error_type VARCHAR(50) NOT NULL,
+            error_message TEXT NOT NULL,
+            error_stack TEXT,
+            url VARCHAR(500),
+            user_agent VARCHAR(500),
+            extra_data JSONB,
+            resolved BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT NOW()
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_error_logs_error_type ON error_logs(error_type)",
+        "CREATE INDEX IF NOT EXISTS ix_error_logs_created_at ON error_logs(created_at)",
     ]
     
     results = []

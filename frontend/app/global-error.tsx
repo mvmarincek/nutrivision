@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { AlertCircle, RefreshCw, LogIn } from 'lucide-react';
-import BowlLogo from '@/components/BowlLogo';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://nutrivision-api-dcr0.onrender.com';
 
 export default function GlobalError({
   error,
@@ -12,10 +12,24 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const router = useRouter();
-
   useEffect(() => {
     console.error('Global error:', error);
+    
+    try {
+      fetch(`${API_URL}/log-error`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          error_message: error.message,
+          error_stack: error.stack,
+          error_type: 'global_error',
+          user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+          url: typeof window !== 'undefined' ? window.location.href : 'unknown',
+          extra_data: { digest: error.digest },
+          timestamp: new Date().toISOString()
+        })
+      });
+    } catch {}
   }, [error]);
 
   return (

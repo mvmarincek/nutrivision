@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { adminApi, AdminStats, AdminUser, AdminPayment, UserDetails, ChartData } from '@/lib/api';
+import { adminApi, AdminStats, AdminUser, AdminPayment, UserDetails, ChartData, ErrorLogItem } from '@/lib/api';
 import { useFeedback } from '@/lib/feedback';
 import { 
   Users, CreditCard, TrendingUp, Activity, Search, ChevronLeft, ChevronRight,
   Crown, Shield, Plus, Eye, X, Calendar, Mail, Phone, Hash, Trash2, RefreshCw,
-  MessageCircle, BarChart3, DollarSign, UserPlus, Zap, Download, Gift
+  MessageCircle, BarChart3, DollarSign, UserPlus, Zap, Download, Gift, AlertCircle, Check
 } from 'lucide-react';
 
 function formatPrice(cents: number) {
@@ -30,7 +30,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [payments, setPayments] = useState<AdminPayment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'payments'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'payments' | 'logs'>('dashboard');
   
   const [searchTerm, setSearchTerm] = useState('');
   const [planFilter, setPlanFilter] = useState('');
@@ -48,6 +48,12 @@ export default function AdminPage() {
   const [addCreditsUserId, setAddCreditsUserId] = useState<number | null>(null);
   const [addCreditsAmount, setAddCreditsAmount] = useState('');
   const [addCreditsReason, setAddCreditsReason] = useState('');
+  
+  const [errors, setErrors] = useState<ErrorLogItem[]>([]);
+  const [errorStats, setErrorStats] = useState<{ total: number; unresolved: number; today: number; week: number; by_type: { type: string; count: number }[] } | null>(null);
+  const [errorPage, setErrorPage] = useState(1);
+  const [errorPages, setErrorPages] = useState(1);
+  const [errorFilter, setErrorFilter] = useState<'all' | 'unresolved'>('unresolved');
 
   useEffect(() => {
     if (!authLoading && user && !user.is_admin) {
@@ -64,11 +70,12 @@ export default function AdminPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [statsData, chartsData, usersData, paymentsData] = await Promise.all([
+      const [statsData, chartsData, usersData, paymentsData, errorStatsData] = await Promise.all([
         adminApi.getStats(),
         adminApi.getCharts(),
         adminApi.getUsers({ page: 1, limit: 20 }),
-        adminApi.getPayments({ page: 1, limit: 20 })
+        adminApi.getPayments({ page: 1, limit: 20 }),
+        adminApi.getErrorStats()
       ]);
       setStats(statsData);
       setCharts(chartsData);
@@ -76,6 +83,7 @@ export default function AdminPage() {
       setUserPages(usersData.pages);
       setPayments(paymentsData.payments);
       setPaymentPages(paymentsData.pages);
+      setErrorStats(errorStatsData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -114,6 +122,55 @@ export default function AdminPage() {
       loadPayments();
     }
   }, [paymentPage, paymentStatus]);
+
+  const loadErrors = async () => {
+    try {
+      const [errorsData, statsData] = await Promise.all([
+        adminApi.getErrors({ page: errorPage, limit: 30, resolved: errorFilter === 'unresolved' ? false : undefined }),
+        adminApi.getErrorStats()
+      ]);
+      setErrors(errorsData.errors);
+      setErrorPages(errorsData.pages);
+      setErrorStats(statsData);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.is_admin && activeTab === 'logs') {
+      loadErrors();
+    }
+  }, [activeTab, errorPage, errorFilter]);
+
+  const handleResolveError = async (errorId: number) => {
+    try {
+      await adminApi.resolveError(errorId);
+      loadErrors();
+    } catch (err) {
+      showError('Erro ao resolver', 'Erro');
+    }
+  };
+
+  const handleResolveAll = async () => {
+    if (!confirm('Marcar todos os erros como resolvidos?')) return;
+    try {
+      await adminApi.resolveAllErrors();
+      showSuccess('Todos os erros marcados como resolvidos!', 'Sucesso');
+      loadErrors();
+    } catch (err) {
+      showError('Erro ao resolver', 'Erro');
+    }
+  };
+
+  const handleDeleteError = async (errorId: number) => {
+    try {
+      await adminApi.deleteError(errorId);
+      loadErrors();
+    } catch (err) {
+      showError('Erro ao excluir', 'Erro');
+    }
+  };
 
   const handleDeletePayment = async (paymentId: number) => {
     if (!confirm('Tem certeza que deseja excluir este pagamento?')) return;
@@ -244,17 +301,20 @@ export default function AdminPage() {
       </div>
 
       <div className="flex gap-2 mb-6 bg-white rounded-2xl p-2 shadow-lg shadow-gray-100/50 border border-gray-100">
-        {['dashboard', 'users', 'payments'].map((tab) => (
+        {['dashboard', 'users', 'payments', 'logs'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
-            className={`px-6 py-3 font-medium rounded-xl transition-all ${
+            className={`px-6 py-3 font-medium rounded-xl transition-all flex items-center gap-2 ${
               activeTab === tab 
                 ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md' 
                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
             }`}
           >
-            {tab === 'dashboard' ? 'Dashboard' : tab === 'users' ? 'Usuários' : 'Pagamentos'}
+            {tab === 'dashboard' ? 'Dashboard' : tab === 'users' ? 'Usuarios' : tab === 'payments' ? 'Pagamentos' : 'Logs'}
+            {tab === 'logs' && errorStats && errorStats.unresolved > 0 && (
+              <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{errorStats.unresolved}</span>
+            )}
           </button>
         ))}
       </div>
@@ -727,6 +787,141 @@ export default function AdminPage() {
               Próxima <ChevronRight className="w-4 h-4" />
             </button>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'logs' && (
+        <div className="bg-white rounded-2xl shadow-lg shadow-gray-100/50 p-6 border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+              Logs de Erros
+            </h2>
+            <div className="flex gap-2">
+              <select
+                value={errorFilter}
+                onChange={(e) => { setErrorFilter(e.target.value as any); setErrorPage(1); }}
+                className="px-4 py-2 border-2 border-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-300 outline-none"
+              >
+                <option value="unresolved">Nao resolvidos</option>
+                <option value="all">Todos</option>
+              </select>
+              <button
+                onClick={loadErrors}
+                className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                title="Atualizar"
+              >
+                <RefreshCw className="w-5 h-5 text-gray-600" />
+              </button>
+              {errorStats && errorStats.unresolved > 0 && (
+                <button
+                  onClick={handleResolveAll}
+                  className="px-4 py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-colors flex items-center gap-2"
+                >
+                  <Check className="w-4 h-4" />
+                  Resolver todos
+                </button>
+              )}
+            </div>
+          </div>
+
+          {errorStats && (
+            <div className="grid grid-cols-4 gap-4 mb-6">
+              <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-xl p-4 text-center border border-red-100">
+                <p className="text-2xl font-bold text-red-600">{errorStats.unresolved}</p>
+                <p className="text-xs text-gray-500">Nao resolvidos</p>
+              </div>
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 text-center border border-amber-100">
+                <p className="text-2xl font-bold text-amber-600">{errorStats.today}</p>
+                <p className="text-xs text-gray-500">Hoje</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 text-center border border-blue-100">
+                <p className="text-2xl font-bold text-blue-600">{errorStats.week}</p>
+                <p className="text-xs text-gray-500">Ultimos 7 dias</p>
+              </div>
+              <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-4 text-center border border-gray-200">
+                <p className="text-2xl font-bold text-gray-600">{errorStats.total}</p>
+                <p className="text-xs text-gray-500">Total</p>
+              </div>
+            </div>
+          )}
+
+          {errors.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p>Nenhum erro encontrado</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {errors.map((err) => (
+                <div 
+                  key={err.id} 
+                  className={`border rounded-xl p-4 ${err.resolved ? 'bg-gray-50 border-gray-200' : 'bg-red-50 border-red-200'}`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        err.error_type === 'error_boundary' ? 'bg-red-100 text-red-700' :
+                        err.error_type === 'global_error' ? 'bg-purple-100 text-purple-700' :
+                        err.error_type === 'api' ? 'bg-blue-100 text-blue-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {err.error_type}
+                      </span>
+                      <span className="text-xs text-gray-400">{formatDate(err.created_at)}</span>
+                      {err.user_id && <span className="text-xs text-gray-400">User #{err.user_id}</span>}
+                    </div>
+                    <div className="flex gap-1">
+                      {!err.resolved && (
+                        <button
+                          onClick={() => handleResolveError(err.id)}
+                          className="p-1.5 hover:bg-emerald-100 rounded-lg transition-colors"
+                          title="Marcar como resolvido"
+                        >
+                          <Check className="w-4 h-4 text-emerald-600" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDeleteError(err.id)}
+                        className="p-1.5 hover:bg-red-100 rounded-lg transition-colors"
+                        title="Excluir"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-sm font-medium text-gray-900 mb-1">{err.error_message}</p>
+                  {err.url && <p className="text-xs text-gray-500 mb-1">URL: {err.url}</p>}
+                  {err.error_stack && (
+                    <details className="mt-2">
+                      <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700">Ver stack trace</summary>
+                      <pre className="mt-2 text-xs bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto max-h-40">{err.error_stack}</pre>
+                    </details>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {errorPages > 1 && (
+            <div className="flex justify-between items-center mt-4">
+              <button
+                onClick={() => setErrorPage(p => Math.max(1, p - 1))}
+                disabled={errorPage === 1}
+                className="flex items-center gap-1 px-4 py-2 bg-white border-2 border-gray-100 rounded-xl disabled:opacity-50 hover:bg-gray-50 transition-all"
+              >
+                <ChevronLeft className="w-4 h-4" /> Anterior
+              </button>
+              <span className="text-sm text-gray-500 font-medium">Pagina {errorPage} de {errorPages}</span>
+              <button
+                onClick={() => setErrorPage(p => Math.min(errorPages, p + 1))}
+                disabled={errorPage === errorPages}
+                className="flex items-center gap-1 px-4 py-2 bg-white border-2 border-gray-100 rounded-xl disabled:opacity-50 hover:bg-gray-50 transition-all"
+              >
+                Proxima <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
 

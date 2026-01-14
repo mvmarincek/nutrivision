@@ -1,16 +1,29 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://nutrivision-api-dcr0.onrender.com';
 
-export async function logClientError(error: Error, fileInfo?: { name?: string; type?: string; size?: number }) {
+interface ErrorLogOptions {
+  error_type?: string;
+  extra_data?: Record<string, any>;
+  fileInfo?: { name?: string; type?: string; size?: number };
+}
+
+export async function logClientError(error: Error, options?: ErrorLogOptions) {
   try {
+    const userId = typeof localStorage !== 'undefined' 
+      ? JSON.parse(localStorage.getItem('user') || '{}')?.id 
+      : null;
+    
     await fetch(`${API_URL}/log-error`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         error_message: error.message,
         error_stack: error.stack,
-        file_name: fileInfo?.name,
-        file_type: fileInfo?.type,
-        file_size: fileInfo?.size,
+        error_type: options?.error_type || 'frontend',
+        file_name: options?.fileInfo?.name,
+        file_type: options?.fileInfo?.type,
+        file_size: options?.fileInfo?.size,
+        user_id: userId,
+        extra_data: options?.extra_data,
         user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
         url: typeof window !== 'undefined' ? window.location.href : 'unknown',
         timestamp: new Date().toISOString()
@@ -556,6 +569,19 @@ export interface AdminTransaction {
   created_at: string | null;
 }
 
+export interface ErrorLogItem {
+  id: number;
+  user_id: number | null;
+  error_type: string;
+  error_message: string;
+  error_stack: string | null;
+  url: string | null;
+  user_agent: string | null;
+  extra_data: Record<string, any> | null;
+  resolved: boolean;
+  created_at: string | null;
+}
+
 export interface UserDetails {
   user: AdminUser & { asaas_customer_id: string | null; asaas_subscription_id: string | null; referral_code: string | null };
   payments: AdminPayment[];
@@ -634,5 +660,26 @@ export const adminApi = {
   
   exportUsersCSV: () => `${API_URL}/admin/export/users`,
   exportPaymentsCSV: () => `${API_URL}/admin/export/payments`,
-  exportKPIsCSV: () => `${API_URL}/admin/export/kpis`
+  exportKPIsCSV: () => `${API_URL}/admin/export/kpis`,
+  
+  getErrors: (params?: { page?: number; limit?: number; error_type?: string; resolved?: boolean }) => {
+    const query = new URLSearchParams();
+    if (params?.page) query.set('page', params.page.toString());
+    if (params?.limit) query.set('limit', params.limit.toString());
+    if (params?.error_type) query.set('error_type', params.error_type);
+    if (params?.resolved !== undefined) query.set('resolved', params.resolved.toString());
+    return api<{ errors: ErrorLogItem[]; total: number; page: number; pages: number }>(`/admin/errors?${query}`);
+  },
+  
+  getErrorStats: () =>
+    api<{ total: number; unresolved: number; today: number; week: number; by_type: { type: string; count: number }[] }>('/admin/errors/stats'),
+  
+  resolveError: (errorId: number) =>
+    api<{ success: boolean }>(`/admin/errors/${errorId}/resolve`, { method: 'POST' }),
+  
+  resolveAllErrors: () =>
+    api<{ success: boolean }>('/admin/errors/resolve-all', { method: 'POST' }),
+  
+  deleteError: (errorId: number) =>
+    api<{ success: boolean }>(`/admin/errors/${errorId}`, { method: 'DELETE' })
 };

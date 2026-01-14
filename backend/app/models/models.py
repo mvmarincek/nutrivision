@@ -204,3 +204,19 @@ class EmailSettings(Base):
     value = Column(Text, nullable=False)
     description = Column(String(255), nullable=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class ErrorLog(Base):
+    __tablename__ = "error_logs"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    error_type = Column(String(50), nullable=False, index=True)
+    error_message = Column(Text, nullable=False)
+    error_stack = Column(Text, nullable=True)
+    url = Column(String(500), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    extra_data = Column(JSON, nullable=True)
+    resolved = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    
+    user = relationship("User", backref="error_logs")

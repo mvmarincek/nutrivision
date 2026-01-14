@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, RefreshCw, Home } from 'lucide-react';
-import BowlLogo from '@/components/BowlLogo';
+import { logClientError } from '@/lib/api';
 
 export default function Error({
   error,
@@ -16,6 +16,7 @@ export default function Error({
 
   useEffect(() => {
     console.error('App error:', error);
+    logClientError(error, { error_type: 'error_boundary', extra_data: { digest: error.digest } });
   }, [error]);
 
   return (
