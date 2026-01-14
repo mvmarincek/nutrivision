@@ -759,12 +759,7 @@ async def test_confirm_payment(
     return {"status": "success", "message": "Pagamento confirmado"}
 
 @router.get("/diagnose")
-async def diagnose_asaas(
-    current_user: User = Depends(get_current_user)
-):
-    if not current_user.is_admin:
-        raise HTTPException(status_code=403, detail="Admin only")
-    
+async def diagnose_asaas():
     import httpx
     result = {
         "asaas_base_url": settings.ASAAS_BASE_URL,
