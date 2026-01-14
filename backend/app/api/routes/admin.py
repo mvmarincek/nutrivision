@@ -402,6 +402,24 @@ async def delete_payment(
     
     return {"success": True, "message": "Pagamento excluido com sucesso"}
 
+@router.get("/users/{user_id}/referrals-converted")
+async def get_user_referrals_converted(
+    user_id: int,
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario nao encontrado")
+    
+    total_referred = await db.scalar(
+        select(func.count(Referral.id)).where(Referral.referrer_id == user_id)
+    ) or 0
+    
+    return {"total_referred": total_referred}
+
 @router.post("/users/{user_id}/add-credits")
 async def add_credits_to_user(
     user_id: int,
