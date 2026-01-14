@@ -42,6 +42,7 @@ export default function AdminPage() {
   const [paymentPages, setPaymentPages] = useState(1);
   
   const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null);
+  const [selectedUserReferrals, setSelectedUserReferrals] = useState<{ total_referred: number; converted: number; conversion_rate: number } | null>(null);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showAddCreditsModal, setShowAddCreditsModal] = useState(false);
   const [addCreditsUserId, setAddCreditsUserId] = useState<number | null>(null);
@@ -127,8 +128,12 @@ export default function AdminPage() {
 
   const viewUserDetails = async (userId: number) => {
     try {
-      const details = await adminApi.getUserDetails(userId);
+      const [details, referralsData] = await Promise.all([
+        adminApi.getUserDetails(userId),
+        adminApi.getUserReferralsConverted(userId)
+      ]);
       setSelectedUser(details);
+      setSelectedUserReferrals(referralsData);
       setShowUserModal(true);
     } catch (err) {
       showError('Erro ao carregar detalhes do usuario', 'Erro');
@@ -773,8 +778,10 @@ export default function AdminPage() {
                 <p className="text-xs text-gray-500">Análises</p>
               </div>
               <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-4 text-center border border-violet-100">
-                <p className="text-2xl font-bold text-violet-600">{selectedUser.referrals_count}</p>
-                <p className="text-xs text-gray-500">Indicacoes</p>
+                <p className="text-2xl font-bold text-violet-600">
+                  {selectedUserReferrals ? `${selectedUserReferrals.converted}/${selectedUserReferrals.total_referred}` : selectedUser.referrals_count}
+                </p>
+                <p className="text-xs text-gray-500">Indicacoes convertidas</p>
               </div>
             </div>
 

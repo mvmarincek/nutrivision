@@ -341,7 +341,10 @@ export const authApi = {
     api<{ email_verified: boolean }>('/auth/check-email-verified'),
   
   getMe: () =>
-    api<User>('/auth/me')
+    api<User>('/auth/me'),
+  
+  getMyReferrals: () =>
+    api<{ total_referred: number; converted: number }>('/auth/my-referrals')
 };
 
 export const profileApi = {

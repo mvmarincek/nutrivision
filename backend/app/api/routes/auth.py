@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from pydantic import BaseModel
 from app.db.database import get_db
-from app.models.models import User, Referral
+from app.models.models import User, Referral, Payment
 from app.schemas.schemas import UserCreate, UserLogin, TokenResponse, UserResponse
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, decode_refresh_token, get_current_user
 from app.services.email_service import send_welcome_email, send_password_reset_email, send_referral_activated_email, send_email_verification, send_email_verified_success
@@ -107,6 +107,25 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks, db:
         user=UserResponse.model_validate(user)
     )
 
+@router.get("/my-referrals")
+async def get_my_referrals(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    total_referred = await db.scalar(
+        select(func.count(Referral.id)).where(Referral.referrer_id == current_user.id)
+    ) or 0
+    
+    referred_who_paid = await db.scalar(
+        select(func.count(func.distinct(Payment.user_id)))
+        .where(Payment.status == "confirmed")
+        .where(Payment.user_id.in_(
+            select(Referral.referred_id).where(Referral.referrer_id == current_user.id)
+        ))
+    ) or 0
+    
+    return {"total_referred": total_referred, "converted": referred_who_paid}
+
 @router.post("/login", response_model=TokenResponse)
 async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == user_data.email))
@@ -126,6 +145,25 @@ async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
         refresh_token=refresh_token,
         user=UserResponse.model_validate(user)
     )
+
+@router.get("/my-referrals")
+async def get_my_referrals(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    total_referred = await db.scalar(
+        select(func.count(Referral.id)).where(Referral.referrer_id == current_user.id)
+    ) or 0
+    
+    referred_who_paid = await db.scalar(
+        select(func.count(func.distinct(Payment.user_id)))
+        .where(Payment.status == "confirmed")
+        .where(Payment.user_id.in_(
+            select(Referral.referred_id).where(Referral.referrer_id == current_user.id)
+        ))
+    ) or 0
+    
+    return {"total_referred": total_referred, "converted": referred_who_paid}
 
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_tokens(request: RefreshTokenRequest, db: AsyncSession = Depends(get_db)):
@@ -317,3 +355,22 @@ async def create_test_user(db: AsyncSession = Depends(get_db)):
         refresh_token=refresh_token,
         user=UserResponse.model_validate(user)
     )
+
+@router.get("/my-referrals")
+async def get_my_referrals(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    total_referred = await db.scalar(
+        select(func.count(Referral.id)).where(Referral.referrer_id == current_user.id)
+    ) or 0
+    
+    referred_who_paid = await db.scalar(
+        select(func.count(func.distinct(Payment.user_id)))
+        .where(Payment.status == "confirmed")
+        .where(Payment.user_id.in_(
+            select(Referral.referred_id).where(Referral.referrer_id == current_user.id)
+        ))
+    ) or 0
+    
+    return {"total_referred": total_referred, "converted": referred_who_paid}

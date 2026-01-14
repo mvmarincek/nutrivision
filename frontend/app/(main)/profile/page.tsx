@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
-import { profileApi, feedbackApi, billingApi, mealsApi, MealStats } from '@/lib/api';
+import { profileApi, feedbackApi, billingApi, mealsApi, authApi, MealStats } from '@/lib/api';
 import { Save, User, ArrowRight, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera, Crown, Loader2, Flame, TrendingUp, Calendar, Trophy } from 'lucide-react';
 import PageAds from '@/components/PageAds';
 import BowlLogo from '@/components/BowlLogo';
@@ -42,6 +42,7 @@ export default function ProfilePage() {
   const [cancelingSubscription, setCancelingSubscription] = useState(false);
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [stats, setStats] = useState<MealStats | null>(null);
+  const [myReferrals, setMyReferrals] = useState<{ total_referred: number; converted: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user, refreshUser } = useAuth();
   const { showError, showSuccess, clearFeedback } = useFeedback();
@@ -138,6 +139,7 @@ export default function ProfilePage() {
           profileApi.get(),
           mealsApi.getStats()
         ]);
+        authApi.getMyReferrals().then(setMyReferrals).catch(() => {});
         setObjetivo(profile.objetivo || '');
         setRestricoes(profile.restricoes || []);
         setAlergias((profile.alergias || []).join(', '));
@@ -520,6 +522,12 @@ export default function ProfilePage() {
             <h3 className="font-bold text-gray-900">Indique Amigos</h3>
             <p className="text-sm text-gray-500">Ganhe 12 créditos por indicação!</p>
           </div>
+          {myReferrals && myReferrals.total_referred > 0 && (
+            <div className="ml-auto text-right">
+              <p className="text-lg font-bold text-purple-600">{myReferrals.converted}/{myReferrals.total_referred}</p>
+              <p className="text-xs text-gray-500">convertidos</p>
+            </div>
+          )}
         </div>
 
         <p className="text-sm text-gray-600 mb-4">
