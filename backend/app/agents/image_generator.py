@@ -17,16 +17,16 @@ class ImageGenerationManager:
             }
             item_type = type_context.get(meal_type, "a real dish")
             
-            full_prompt = f"""REALISTIC food photography of {item_type}: {prompt}
+            full_prompt = f"""REALISTIC homemade food photography of {item_type}: {prompt}
+
+Style:
+home-style cooking, simple and easy to prepare at home, everyday meal, casual presentation, realistic portions, natural lighting, domestic kitchen or table, simple white plate or bowl, no professional plating, no restaurant style, photorealistic.
 
 IMPORTANT RULES:
-- Show ONLY real, existing foods that are commonly eaten
-- Do NOT invent or hallucinate fictional foods
-- Do NOT create surreal or impossible food combinations
-- The item must look like something from a real restaurant or home kitchen
-- Generate ONLY the type specified: {meal_type}
-
-Style: Professional food photography, natural daylight, shallow depth of field, top-down 45-degree angle view, on appropriate serving ware, minimal garnish, photorealistic, high resolution."""
+- Food must look homemade and achievable
+- Show ONLY real, commonly eaten foods
+- Avoid gourmet, editorial or restaurant appearance
+- Generate ONLY the specified type: {meal_type}"""
 
             response = await self.client.images.generate(
                 model="dall-e-3",

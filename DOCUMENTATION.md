@@ -1,750 +1,1201 @@
-# NUTRI-VISION WEB - Documentação Técnica Completa
+# NUTRI-VISION - Documentação Técnica Completa
+
+## Índice
+1. [Visão Geral](#visão-geral)
+2. [URLs de Produção](#urls-de-produção)
+3. [Arquitetura do Sistema](#arquitetura-do-sistema)
+4. [Stack Tecnológico](#stack-tecnológico)
+5. [Estrutura de Diretórios](#estrutura-de-diretórios)
+6. [Backend - FastAPI](#backend---fastapi)
+7. [Frontend - Next.js](#frontend---nextjs)
+8. [Banco de Dados](#banco-de-dados)
+9. [Sistema de Agentes IA](#sistema-de-agentes-ia)
+10. [Integrações Externas](#integrações-externas)
+11. [Autenticação e Segurança](#autenticação-e-segurança)
+12. [Sistema de Pagamentos](#sistema-de-pagamentos)
+13. [Deploy e Infraestrutura](#deploy-e-infraestrutura)
+14. [Variáveis de Ambiente](#variáveis-de-ambiente)
+15. [Fluxos Principais](#fluxos-principais)
+16. [Padrões e Boas Práticas](#padrões-e-boas-práticas)
+17. [Troubleshooting](#troubleshooting)
+18. [Versionamento](#versionamento)
+
+---
 
 ## Visão Geral
 
-**Nutri-Vision Web** é um SaaS de análise nutricional de refeições por IA. O usuário fotografa sua refeição e recebe análise completa de calorias, macronutrientes, benefícios, pontos de atenção e sugestões de melhoria.
+**Nutri-Vision** é um aplicativo web/PWA de análise nutricional por imagem. O usuário fotografa sua refeição e o sistema utiliza IA (GPT-4 Vision) para identificar alimentos, estimar porções e calcular informações nutricionais.
 
-### URLs de Produção
-- **Frontend (Vercel):** https://nutrivision.ai8hub.com (domínio customizado) ou https://nutrivision-drab.vercel.app
-- **Backend (Render):** https://nutrivision-api-dcr0.onrender.com
-- **Repositório:** https://github.com/mvmarincek/nutrivision.git
-
----
-
-## Arquitetura
-
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Frontend      │────▶│   Backend       │────▶│   PostgreSQL    │
-│   Next.js 14    │     │   FastAPI       │     │   (Render)      │
-│   (Vercel)      │     │   (Render)      │     │                 │
-└─────────────────┘     └────────┬────────┘     └─────────────────┘
-                                │
-                    ┌───────────┼───────────┐
-                    │           │           │
-                    ▼           ▼           ▼
-           ┌─────────────┐ ┌─────────┐ ┌─────────┐
-           │  OpenAI API │ │  ASAAS  │ │  Resend │
-           │  GPT-4o     │ │ Pagam.  │ │  Emails │
-           │  DALL-E 3   │ │         │ │         │
-           └─────────────┘ └─────────┘ └─────────┘
-```
+### Funcionalidades Principais
+- Análise de imagens de refeições (pratos, sobremesas, bebidas)
+- Identificação automática de alimentos via IA
+- Estimativa de porções e calorias
+- Recomendações nutricionais personalizadas
+- Sugestões de melhorias com imagem gerada (DALL-E 3)
+- Sistema de créditos e assinatura PRO
+- Painel administrativo completo
+- Sistema de indicação com recompensas
+- PWA instalável
 
 ---
 
-## Stack Tecnológica
+## URLs de Produção
+
+| Serviço | URL |
+|---------|-----|
+| Frontend (Vercel) | https://nutrivision.ai8hub.com |
+| Frontend alternativo | https://nutrivision-drab.vercel.app |
+| Backend (Render) | https://nutrivision-api-dcr0.onrender.com |
+| API Docs | https://nutrivision-api-dcr0.onrender.com/docs |
+| Repositório | https://github.com/mvmarincek/nutrivision.git |
+
+---
+
+## Arquitetura do Sistema
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         FRONTEND                                 │
+│                    (Next.js + Vercel)                           │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
+│  │    Pages    │  │  Components │  │     Lib     │             │
+│  │  (auth,     │  │  (AdSense,  │  │  (api.ts,   │             │
+│  │   main)     │  │   Footer)   │  │   auth.tsx) │             │
+│  └─────────────┘  └─────────────┘  └─────────────┘             │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │ HTTPS/REST
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                         BACKEND                                  │
+│                    (FastAPI + Render)                           │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
+│  │   Routes    │  │   Agents    │  │  Services   │             │
+│  │  (auth,     │  │  (food,     │  │  (asaas,    │             │
+│  │   meals,    │  │   portion,  │  │   email)    │             │
+│  │   billing)  │  │   health)   │  │             │             │
+│  └─────────────┘  └─────────────┘  └─────────────┘             │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+        ┌───────────────────┼───────────────────┐
+        ▼                   ▼                   ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│   PostgreSQL  │   │   OpenAI API  │   │   ASAAS API   │
+│   (Render)    │   │  (GPT-4, DALL │   │  (Pagamentos) │
+│               │   │    E-3)       │   │               │
+└───────────────┘   └───────────────┘   └───────────────┘
+```
+
+---
+
+## Stack Tecnológico
 
 ### Backend
-- **Python 3.11** (obrigatório - versões superiores causam incompatibilidade)
-- **FastAPI** - Framework web assíncrono
-- **SQLAlchemy 2.0** - ORM com suporte async
-- **asyncpg** - Driver PostgreSQL assíncrono
-- **OpenAI SDK** - Chamadas para GPT-4o e DALL-E 3
-- **bcrypt** - Hash de senhas
-- **python-jose** - JWT tokens
-- **Pillow** - Processamento de imagens
-- **ASAAS** - Gateway de pagamentos (PIX, Cartão, Boleto)
-- **Resend** - Envio de emails transacionais
+| Tecnologia | Versão | Propósito |
+|------------|--------|-----------|
+| Python | 3.11+ | Linguagem principal |
+| FastAPI | 0.109+ | Framework web assíncrono |
+| SQLAlchemy | 2.0+ | ORM assíncrono |
+| PostgreSQL | 15+ | Banco de dados |
+| Pydantic | 2.5+ | Validação de dados |
+| OpenAI | 1.10+ | Integração GPT-4/DALL-E |
+| httpx | 0.26+ | Cliente HTTP assíncrono |
+| Resend | 0.7+ | Envio de emails |
+| bcrypt | 4.0+ | Hash de senhas |
+| python-jose | 3.3+ | JWT tokens |
 
 ### Frontend
-- **Next.js 14** (App Router)
-- **React 18**
-- **TypeScript**
-- **Tailwind CSS** - Estilização
-- **Lucide React** - Ícones
-- **browser-image-compression** - Compressão de imagens no cliente
-- **Google AdSense** - Monetização com anúncios (apenas usuários FREE)
+| Tecnologia | Versão | Propósito |
+|------------|--------|-----------|
+| Next.js | 14.1 | Framework React |
+| React | 18.2 | Biblioteca UI |
+| TypeScript | 5.3 | Tipagem estática |
+| Tailwind CSS | 3.4 | Estilização |
+| Lucide React | 0.312 | Ícones |
+| next-pwa | 5.6 | Progressive Web App |
+
+### Infraestrutura
+| Serviço | Propósito |
+|---------|-----------|
+| Vercel | Hosting frontend |
+| Render | Hosting backend + PostgreSQL |
+| GitHub | Repositório + CI/CD |
+| ASAAS | Gateway de pagamento (PIX/Cartão) |
+| Resend | Serviço de email transacional |
+| Google AdSense | Monetização (usuários free) |
 
 ---
 
 ## Estrutura de Diretórios
 
 ```
-nutrivision/
+SistemaNutri/
 ├── backend/
 │   ├── app/
-│   │   ├── agents/                 # Sistema multiagente IA
-│   │   │   ├── food_recognizer.py  # GPT-4o - identifica alimentos
-│   │   │   ├── portion_estimator.py # GPT-4o - estima porções
-│   │   │   ├── nutrition_calculator.py # Calcula calorias/macros
-│   │   │   ├── health_advisor.py   # GPT-4o-mini - orientações
-│   │   │   ├── meal_optimizer.py   # GPT-4o-mini - versão melhorada
-│   │   │   ├── image_generator.py  # DALL-E 3 - imagem sugerida
-│   │   │   ├── orchestrator.py     # Coordena todos os agentes
-│   │   │   └── json_utils.py       # Utilitário para parse seguro
-│   │   ├── api/routes/
-│   │   │   ├── auth.py             # Registro, login, verificação email
-│   │   │   ├── profile.py          # CRUD perfil do usuário + avatar
-│   │   │   ├── meals.py            # Upload, análise, histórico
-│   │   │   ├── jobs.py             # Status de jobs assíncronos
-│   │   │   ├── billing.py          # ASAAS pagamentos
-│   │   │   ├── credits.py          # Saldo de créditos
-│   │   │   ├── feedback.py         # Sugestões dos usuários
-│   │   │   └── admin.py            # Painel administrativo
+│   │   ├── agents/                 # Agentes de IA
+│   │   │   ├── food_recognizer.py  # Identificação de alimentos
+│   │   │   ├── portion_estimator.py # Estimativa de porções
+│   │   │   ├── nutrition_calculator.py # Cálculo nutricional
+│   │   │   ├── health_advisor.py   # Recomendações de saúde
+│   │   │   ├── meal_optimizer.py   # Otimização de refeições
+│   │   │   ├── image_generator.py  # Geração de imagens (DALL-E)
+│   │   │   ├── orchestrator.py     # Orquestrador principal
+│   │   │   └── json_utils.py       # Parsing seguro de JSON
+│   │   ├── api/
+│   │   │   └── routes/
+│   │   │       ├── auth.py         # Autenticação (login, registro)
+│   │   │       ├── meals.py        # Upload e análise de refeições
+│   │   │       ├── jobs.py         # Status de processamento
+│   │   │       ├── billing.py      # Pagamentos e assinaturas
+│   │   │       ├── credits.py      # Gerenciamento de créditos
+│   │   │       ├── profile.py      # Perfil do usuário
+│   │   │       ├── admin.py        # Painel administrativo
+│   │   │       └── feedback.py     # Log de erros frontend
 │   │   ├── core/
-│   │   │   ├── config.py           # Configurações
-│   │   │   └── security.py         # JWT e bcrypt
+│   │   │   ├── config.py           # Configurações e env vars
+│   │   │   └── security.py         # JWT e autenticação
 │   │   ├── db/
-│   │   │   └── database.py         # Conexão PostgreSQL async
+│   │   │   └── database.py         # Conexão com banco
 │   │   ├── models/
 │   │   │   └── models.py           # Modelos SQLAlchemy
 │   │   ├── schemas/
 │   │   │   └── schemas.py          # Schemas Pydantic
 │   │   ├── services/
 │   │   │   ├── asaas_service.py    # Integração ASAAS
-│   │   │   └── email_service.py    # Integração Resend
+│   │   │   └── email_service.py    # Envio de emails
 │   │   ├── utils/
 │   │   │   ├── nutrition_database.json # Base nutricional
-│   │   │   └── nutrition_lookup.py # Busca por nome/sinônimo
-│   │   └── main.py                 # App FastAPI + migrations
+│   │   │   └── nutrition_lookup.py # Busca nutricional
+│   │   └── main.py                 # Entry point FastAPI
 │   ├── requirements.txt
-│   ├── migrate_db.py               # Script de migração standalone
-│   ├── Procfile                    # Comando de deploy Render
-│   └── runtime.txt                 # python-3.11.11
+│   ├── Procfile                    # Comando Render
+│   └── runtime.txt                 # Versão Python
 │
 ├── frontend/
 │   ├── app/
-│   │   ├── (auth)/                 # Páginas de autenticação
-│   │   ├── (main)/                 # Páginas do app (logado)
-│   │   ├── billing/                # Success/Cancel de pagamento
-│   │   ├── about/page.tsx          # Sobre o app
-│   │   ├── privacy/page.tsx        # Política de privacidade
-│   │   └── terms/page.tsx          # Termos de uso
+│   │   ├── (auth)/                 # Rotas de autenticação
+│   │   │   ├── login/
+│   │   │   ├── register/
+│   │   │   ├── forgot-password/
+│   │   │   └── verify-email/
+│   │   ├── (main)/                 # Rotas autenticadas
+│   │   │   ├── home/               # Tela principal
+│   │   │   ├── processing/         # Processamento de análise
+│   │   │   ├── result/             # Resultado da análise
+│   │   │   ├── history/            # Histórico de refeições
+│   │   │   ├── profile/            # Perfil e indicações
+│   │   │   ├── billing/            # Compra de créditos/PRO
+│   │   │   └── admin/              # Painel admin
+│   │   ├── about/                  # Página sobre
+│   │   ├── privacy/                # Política de privacidade
+│   │   ├── terms/                  # Termos de uso
+│   │   ├── layout.tsx              # Layout raiz
+│   │   └── page.tsx                # Landing page
 │   ├── components/
-│   │   ├── AdSenseAd.tsx           # Componente de anúncio
-│   │   ├── PageAds.tsx             # Wrapper de ads (só FREE)
-│   │   ├── FeedbackModal.tsx       # Modal de feedback global
-│   │   └── Footer.tsx              # Rodapé
+│   │   ├── AdSenseAd.tsx           # Componente de anúncios
+│   │   ├── PageAds.tsx             # Wrapper de anúncios
+│   │   ├── Footer.tsx              # Rodapé
+│   │   ├── BowlLogo.tsx            # Logo animado
+│   │   └── InstallPWAButton.tsx    # Botão instalar PWA
 │   ├── lib/
-│   │   ├── api.ts                  # Cliente API tipado
+│   │   ├── api.ts                  # Cliente API centralizado
 │   │   ├── auth.tsx                # Context de autenticação
-│   │   ├── feedback.tsx            # Context de feedback
-│   │   └── image-utils.ts          # Normalização de orientação
-│   └── public/
-│       └── manifest.json           # PWA manifest
+│   │   ├── feedback.tsx            # Sistema de notificações
+│   │   └── image-utils.ts          # Compressão de imagens
+│   ├── public/
+│   │   ├── manifest.json           # PWA manifest
+│   │   ├── sw.js                   # Service Worker
+│   │   └── icons...                # Ícones PWA
+│   ├── next.config.js
+│   ├── tailwind.config.js
+│   └── package.json
 │
-├── DOCUMENTATION.md                # Este arquivo
-└── README.md                       # Quick start
+└── DOCUMENTATION.md                # Este arquivo
 ```
 
 ---
 
-## Sistema de Emails (Resend)
+## Backend - FastAPI
 
-### Configuração
+### Estrutura de Rotas (Endpoints)
 
-O sistema usa **Resend** para envio de emails transacionais. A configuração fica em variáveis de ambiente e também pode ser ajustada pelo painel admin.
+#### Auth (`/auth`)
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| POST | `/auth/register` | Registrar novo usuário | Não |
+| POST | `/auth/login` | Login (retorna JWT) | Não |
+| GET | `/auth/me` | Dados do usuário logado | Sim |
+| POST | `/auth/forgot-password` | Solicitar reset de senha | Não |
+| POST | `/auth/reset-password` | Resetar senha | Não |
+| GET | `/auth/verify-email/{token}` | Verificar email | Não |
 
-**Variável de ambiente:**
-```env
-RESEND_API_KEY=re_xxx
-```
+#### Meals (`/meals`)
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| POST | `/meals/upload` | Upload de imagem + análise | Sim |
+| GET | `/meals/history` | Histórico de refeições | Sim |
+| GET | `/meals/{meal_id}` | Detalhes de uma refeição | Sim |
+| DELETE | `/meals/{meal_id}` | Excluir refeição | Sim |
 
-**Domínio verificado:** ai8hub.com (configurado no Resend Dashboard)
+#### Jobs (`/jobs`)
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| GET | `/jobs/{job_id}` | Status do processamento | Sim |
+| POST | `/jobs/{job_id}/answers` | Enviar respostas | Sim |
 
-### Tipos de Emails Enviados
+#### Billing (`/billing`)
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| GET | `/billing/packages` | Listar pacotes de créditos | Não |
+| GET | `/billing/status` | Status do plano do usuário | Sim |
+| POST | `/billing/create-pix-payment` | Gerar PIX para créditos | Sim |
+| POST | `/billing/create-card-payment` | Pagamento com cartão | Sim |
+| POST | `/billing/create-pro-subscription` | Assinar PRO | Sim |
+| POST | `/billing/cancel-subscription` | Cancelar assinatura | Sim |
+| GET | `/billing/payment-status/{id}` | Status de pagamento | Sim |
+| POST | `/billing/webhook` | Webhook ASAAS | Não |
+| GET | `/billing/diagnose` | Diagnóstico ASAAS | Não* |
 
-| Tipo | Trigger | Destinatário |
-|------|---------|--------------|
-| `email_verification` | Cadastro de novo usuário | Usuário |
-| `email_verified` | Email verificado com sucesso | Usuário |
-| `welcome` | Email verificado (junto com verified) | Usuário |
-| `password_reset` | Solicitação de recuperação de senha | Usuário |
-| `referral` | Indicado se cadastrou | Quem indicou |
-| `pro_upgrade` | Assinatura PRO ativada | Usuário |
-| `credits_purchase` | Compra de créditos confirmada | Usuário |
-| `subscription_cancelled` | Assinatura cancelada | Usuário |
-| `subscription_renewed` | Assinatura renovada | Usuário |
-| `payment_failed` | Falha no pagamento | Usuário |
-| `suggestion` | Usuário enviou sugestão | Admin |
+#### Profile (`/profile`)
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| GET | `/profile` | Obter perfil | Sim |
+| PUT | `/profile` | Atualizar perfil | Sim |
+| POST | `/profile/avatar` | Upload de avatar | Sim |
 
-### Configurações Editáveis (Admin)
+#### Admin (`/admin`) - Requer is_admin=True
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/admin/stats` | Estatísticas dashboard |
+| GET | `/admin/charts` | Dados para gráficos |
+| GET | `/admin/users` | Listar usuários |
+| GET | `/admin/users/{id}` | Detalhes do usuário |
+| GET | `/admin/users/{id}/referrals-converted` | Indicações do usuário |
+| POST | `/admin/users/{id}/add-credits` | Adicionar créditos |
+| POST | `/admin/users/{id}/set-pro` | Ativar PRO |
+| POST | `/admin/users/{id}/remove-pro` | Remover PRO |
+| POST | `/admin/users/{id}/toggle-admin` | Alternar admin |
+| POST | `/admin/users/{id}/reset-pro-analyses` | Resetar análises |
+| POST | `/admin/users/{id}/resend-verification` | Reenviar email |
+| DELETE | `/admin/users/{id}` | Excluir usuário |
+| GET | `/admin/payments` | Listar pagamentos |
+| DELETE | `/admin/payments/{id}` | Excluir pagamento |
+| GET | `/admin/errors` | Listar logs de erro |
+| GET | `/admin/errors/stats` | Estatísticas de erros |
+| POST | `/admin/errors/{id}/resolve` | Resolver erro |
+| POST | `/admin/errors/resolve-all` | Resolver todos |
+| DELETE | `/admin/errors/{id}` | Excluir erro |
+| GET | `/admin/export/users` | Exportar CSV usuários |
+| GET | `/admin/export/payments` | Exportar CSV pagamentos |
+| GET | `/admin/export/kpis` | Exportar CSV KPIs |
 
-Tabela `email_settings` no banco de dados:
+---
 
-| Key | Descrição | Valor Padrão |
-|-----|-----------|--------------|
-| `admin_email` | Email do administrador | mvmarincek@gmail.com |
-| `support_email` | Email de suporte | suporte@ai8hub.com |
-| `app_url` | URL base da aplicação | https://nutrivision.ai8hub.com |
-| `frontend_url` | URL do frontend | https://nutrivision-drab.vercel.app |
-| `from_name` | Nome do remetente | Nutri-Vision |
-| `from_email` | Email do remetente | nutrivision-noreply@ai8hub.com |
-| `welcome_credits` | Créditos de boas-vindas | 36 |
-| `referral_credits` | Créditos por indicação | 12 |
+## Banco de Dados
 
-### Endpoints Admin para Emails
+### Modelos (Tabelas)
 
-```
-GET  /admin/email-settings          # Listar configurações
-PUT  /admin/email-settings/{key}    # Atualizar configuração
-POST /admin/email-settings/reload   # Recarregar cache
-GET  /admin/email-logs              # Logs de todos os emails
-GET  /admin/email-stats             # Estatísticas de envio
-GET  /admin/users/{id}/email-logs   # Logs de email de um usuário
-```
-
-### Rastreamento de Emails
-
-Todos os emails são registrados na tabela `email_logs`:
-
+#### User
 ```python
-id: int
-user_id: int (nullable)      # Vincula ao usuário
-to_email: str                # Destinatário
-subject: str                 # Assunto
-email_type: str              # Tipo do email
-status: str                  # pending, sent, failed
-error_message: str           # Erro se falhou
-resend_id: str               # ID retornado pelo Resend
-created_at: datetime
+class User(Base):
+    __tablename__ = "users"
+    
+    id: int                      # PK
+    email: str                   # Único, indexado
+    password_hash: str           # bcrypt hash
+    name: str                    # Nome opcional
+    cpf: str                     # Para pagamentos ASAAS
+    phone: str                   # Telefone
+    plan: str                    # "free" ou "pro"
+    credit_balance: int          # Saldo de créditos
+    pro_analyses_remaining: int  # Análises PRO restantes (90/mês)
+    pro_started_at: datetime     # Início do PRO
+    pro_expires_at: datetime     # Expiração do PRO
+    asaas_customer_id: str       # ID cliente ASAAS
+    asaas_subscription_id: str   # ID assinatura ASAAS
+    referral_code: str           # Código de indicação único
+    referred_by: int             # FK quem indicou
+    email_verified: bool         # Email verificado
+    email_verification_token: str # Token de verificação
+    is_admin: bool               # É administrador
+    created_at: datetime
+    updated_at: datetime
 ```
 
-### Testando Emails
-
-Endpoint para testar se o Resend está funcionando:
-
-```
-GET /test-email/{email}
-```
-
-Exemplo: `https://nutrivision-api-dcr0.onrender.com/test-email/seu@email.com`
-
----
-
-## Sistema de Pagamentos (ASAAS)
-
-### Configuração
-
-```env
-ASAAS_API_KEY=xxx
-ASAAS_ENVIRONMENT=production  # ou sandbox
-```
-
-**Ambientes:**
-- Sandbox: https://sandbox.asaas.com/api/v3
-- Produção: https://api.asaas.com/v3
-
-### Fluxo de Pagamento PIX
-
-1. Frontend chama `POST /billing/create-pix-payment` com pacote e CPF
-2. Backend cria customer no ASAAS (se não existir)
-3. Backend cria cobrança PIX no ASAAS
-4. Backend salva pagamento na tabela `payments`
-5. Retorna código PIX copia-cola + QR Code base64
-6. Frontend exibe QR Code e faz polling a cada 5s em `GET /billing/payment-status/{id}`
-7. Quando status = CONFIRMED ou RECEIVED:
-   - Créditos são adicionados à conta
-   - Email de confirmação é enviado
-
-### Fluxo de Pagamento Cartão
-
-1. Frontend chama `POST /billing/create-card-payment` com dados do cartão
-2. Backend processa pagamento no ASAAS
-3. Se aprovado imediatamente:
-   - Créditos são adicionados
-   - Email de confirmação é enviado
-4. Se pendente:
-   - Frontend faz polling até confirmação
-
-### Webhook ASAAS
-
-Endpoint: `POST /billing/webhook`
-
-Eventos processados:
-- `PAYMENT_CONFIRMED` / `PAYMENT_RECEIVED` - Adiciona créditos ou ativa PRO
-- `PAYMENT_OVERDUE` - Log de aviso
-- `SUBSCRIPTION_DELETED` / `SUBSCRIPTION_INACTIVE` - Cancela assinatura
-
-### Pacotes de Créditos
-
-Definidos em `backend/app/core/config.py`:
-
+#### Profile
 ```python
-CREDIT_PACKAGES = {
-    "starter": {"credits": 12, "price": 490},    # R$ 4,90
-    "basic": {"credits": 36, "price": 1290},     # R$ 12,90
-    "advanced": {"credits": 60, "price": 1990},  # R$ 19,90
-    "pro": {"credits": 120, "price": 3490}       # R$ 34,90
-}
+class Profile(Base):
+    __tablename__ = "profiles"
+    
+    id: int
+    user_id: int                 # FK User (único)
+    objetivo: str                # "emagrecer", "manter", "ganhar_massa", "saude_geral"
+    restricoes: list[str]        # ["vegetariano", "vegano", "sem_gluten", "sem_lactose"]
+    alergias: list[str]          # ["amendoim", "leite", "ovo", "frutos_do_mar"]
+    avatar_url: str              # URL do avatar
+    created_at: datetime
 ```
 
-### Assinatura PRO
-
-- **Preço:** R$ 49,90/mês
-- **Benefícios:**
-  - Análises simples ilimitadas
-  - 60 análises completas por mês (PRO_MONTHLY_ANALYSES)
-  - Sem propagandas
-
----
-
-## Sistema de Anúncios (Google AdSense)
-
-### Configuração
-
-No `frontend/app/layout.tsx`, o script do AdSense é carregado:
-
-```html
-<Script
-  async
-  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3364979853180818"
-  crossOrigin="anonymous"
-/>
-```
-
-### Componentes
-
-**AdSenseAd.tsx** - Componente base do anúncio:
-- Slot: 5278243728
-- Formato: horizontal, responsivo
-- Altura: 90px
-
-**PageAds.tsx** - Wrapper que só exibe para usuários FREE:
-```tsx
-if (user?.plan !== 'free') {
-  return null;
-}
-```
-
-### Políticas do AdSense
-
-Para conformidade com políticas do Google AdSense:
-
-1. **Não exibir ads em telas de loading/processamento**
-   - Removido de `/processing`
-
-2. **Não exibir ads em telas sem conteúdo**
-   - Histórico vazio mostra conteúdo informativo sem ads
-   - Ads só aparecem quando há análises
-
-3. **Não exibir ads em telas de alerta/navegação**
-   - Páginas `/billing/success` e `/billing/cancel` têm conteúdo substancial
-
-### Onde os Ads Aparecem
-
-| Página | Posição |
-|--------|---------|
-| /home | Inline (entre seções) + Bottom |
-| /result | Inline + Bottom |
-| /profile | Inline + Bottom |
-| /billing | Inline |
-| /history | Top + Inline (a cada 3 itens) + Bottom |
-
----
-
-## Painel Administrativo
-
-### Acesso
-
-Usuários com `is_admin = True` têm acesso às rotas `/admin/*`.
-
-Para tornar um usuário admin:
-```sql
-UPDATE users SET is_admin = TRUE WHERE email = 'seu@email.com';
-```
-
-Ou via migration em `migrate_db.py` que já define:
+#### Meal
 ```python
-"UPDATE users SET is_admin = TRUE WHERE email = 'mvmarincek@gmail.com'"
+class Meal(Base):
+    __tablename__ = "meals"
+    
+    id: int
+    user_id: int                 # FK User
+    image_url: str               # Caminho da imagem (/uploads/...)
+    meal_type: str               # "prato", "sobremesa", "bebida"
+    status: str                  # "pending", "analyzing", "waiting_user", "completed", "failed"
+    mode: str                    # "simple" ou "full"
+    user_notes: str              # Observações do usuário
+    weight_grams: float          # Peso informado (opcional)
+    volume_ml: float             # Volume informado (opcional)
+    created_at: datetime
 ```
 
-### Endpoints Admin
-
+#### MealAnalysis
+```python
+class MealAnalysis(Base):
+    __tablename__ = "meal_analysis"
+    
+    id: int
+    meal_id: int                 # FK Meal (único)
+    itens_identificados: list    # [{"nome": "arroz", "confianca": "alto", ...}]
+    porcoes_estimadas: list      # [{"item": "arroz", "peso_g_ml_central": 150, ...}]
+    calorias_central: float      # Calorias estimadas
+    calorias_min: float          # Faixa mínima
+    calorias_max: float          # Faixa máxima
+    proteina_g: float
+    carbo_g: float
+    gordura_g: float
+    fibra_g: float
+    confianca: str               # "baixo", "medio", "alto"
+    incertezas: list[str]        # Fatores de incerteza
+    beneficios: list[str]        # Pontos positivos
+    pontos_de_atencao: list[str] # Pontos de atenção
+    recomendacoes_praticas: list[str] # Dicas práticas
+    sugestao_melhorada_texto: str # (modo full) Descrição da sugestão
+    sugestao_melhorada_imagem_url: str # (modo full) URL imagem DALL-E
+    mudancas_sugeridas: list[str] # (modo full) Lista de mudanças
+    calorias_nova_versao: dict   # (modo full) {"central": x, "min": y, "max": z}
+    macros_nova_versao: dict     # (modo full) {"proteina_g": x, ...}
+    created_at: datetime
 ```
-GET  /admin/stats                   # Dashboard com estatísticas
-GET  /admin/users                   # Listar usuários (com busca/filtro)
-GET  /admin/users/{id}              # Detalhes de um usuário
-POST /admin/users/{id}/add-credits  # Adicionar créditos manualmente
-POST /admin/users/{id}/toggle-admin # Alternar status admin
-POST /admin/users/{id}/set-pro      # Ativar PRO manualmente
-GET  /admin/payments                # Listar pagamentos
-GET  /admin/email-logs              # Logs de emails
-GET  /admin/email-stats             # Estatísticas de emails
-GET  /admin/email-settings          # Configurações de email
-PUT  /admin/email-settings/{key}    # Atualizar configuração
+
+#### Job
+```python
+class Job(Base):
+    __tablename__ = "jobs"
+    
+    id: int
+    user_id: int                 # FK User
+    meal_id: int                 # FK Meal
+    tipo: str                    # "analyze_meal"
+    status: str                  # "received", "running", "waiting_user", "completed", "failed"
+    etapa_atual: str             # "Identificando alimentos...", etc
+    questions: list              # Perguntas ao usuário (se houver)
+    answers: dict                # Respostas do usuário
+    resultado_final: dict        # Resultado completo da análise
+    erro: str                    # Mensagem de erro (se falhou)
+    created_at: datetime
+```
+
+#### Payment
+```python
+class Payment(Base):
+    __tablename__ = "payments"
+    
+    id: int
+    user_id: int                 # FK User
+    asaas_payment_id: str        # ID no ASAAS
+    asaas_subscription_id: str   # ID assinatura (se aplicável)
+    payment_type: str            # "credits" ou "subscription" ou "pro_subscription"
+    billing_type: str            # "PIX" ou "CREDIT_CARD"
+    amount: float                # Valor em reais
+    status: str                  # "pending", "confirmed"
+    description: str             # Descrição
+    credits_purchased: int       # Quantidade de créditos
+    pix_code: str                # Código copia-cola PIX
+    pix_qr_code_url: str         # QR Code base64
+    boleto_url: str              # URL do boleto (se aplicável)
+    paid_at: datetime            # Data de pagamento
+    created_at: datetime
+    updated_at: datetime
+```
+
+#### CreditTransaction
+```python
+class CreditTransaction(Base):
+    __tablename__ = "credit_transactions"
+    
+    id: int
+    user_id: int                 # FK User
+    credits_added: int           # Créditos adicionados
+    credits_used: int            # Créditos usados
+    balance_after: int           # Saldo após transação
+    transaction_type: str        # "purchase", "usage", "referral", "admin_credit", "admin_pro"
+    description: str             # Descrição detalhada
+    created_at: datetime
+```
+
+#### Referral
+```python
+class Referral(Base):
+    __tablename__ = "referrals"
+    
+    id: int
+    referrer_id: int             # FK User - quem indicou
+    referred_id: int             # FK User - quem foi indicado (único)
+    credits_awarded: int         # Créditos dados (12)
+    created_at: datetime
+```
+
+#### EmailLog
+```python
+class EmailLog(Base):
+    __tablename__ = "email_logs"
+    
+    id: int
+    user_id: int                 # FK User (opcional)
+    to_email: str                # Email destinatário
+    subject: str                 # Assunto
+    email_type: str              # Tipo do email
+    status: str                  # "pending", "sent", "failed"
+    error_message: str           # Erro (se falhou)
+    resend_id: str               # ID no Resend
+    created_at: datetime
+```
+
+#### ErrorLog
+```python
+class ErrorLog(Base):
+    __tablename__ = "error_logs"
+    
+    id: int
+    user_id: int                 # FK User (opcional)
+    error_type: str              # Tipo: "billing_pix_payment", "frontend_error", etc
+    error_message: str           # Mensagem de erro
+    error_stack: str             # Stack trace
+    url: str                     # URL onde ocorreu
+    user_agent: str              # Browser/device
+    extra_data: dict             # Dados adicionais (JSON)
+    resolved: bool               # Marcado como resolvido
+    created_at: datetime
 ```
 
 ---
 
-## Sistema Multiagente (IA)
+## Sistema de Agentes IA
 
 ### Fluxo de Análise
 
 ```
-1. FoodRecognizerAgent (GPT-4o com visão)
-   └── Recebe imagem base64 + tipo (prato/sobremesa/bebida)
-   └── Considera observações do usuário (user_notes)
-   └── Considera peso/volume informado
-   └── Retorna: itens_identificados, alternativas
-
-2. PortionEstimatorAgent (GPT-4o com visão)
-   └── Recebe imagem + alimentos identificados
-   └── Estima peso/volume de cada item
-   └── Pode gerar perguntas se incerteza alta
-   └── Retorna: porcoes, questions (opcional)
-
-3. NutritionCalculatorAgent (local, sem IA)
-   └── Recebe porções estimadas
-   └── Consulta nutrition_database.json
-   └── Calcula calorias e macros totais
-   └── Retorna: calorias{central,min,max}, macros
-
-4. HealthAdvisorAgent (GPT-4o-mini)
-   └── Recebe valores nutricionais + perfil usuário
-   └── Gera benefícios, pontos de atenção, recomendações
-   └── Retorna: beneficios, pontos_de_atencao, recomendacoes
-
-5. MealOptimizerAgent (GPT-4o-mini) - APENAS modo full
-   └── Recebe análise completa + perfil + meal_type
-   └── Gera sugestão de melhoria
-   └── Retorna: sugestao_texto, mudancas, novos_valores
-
-6. ImageGenerationManager (DALL-E 3) - APENAS modo full
-   └── Recebe prompt do MealOptimizer
-   └── Gera imagem fotorrealista
-   └── Retorna: URL da imagem
+┌─────────────┐     ┌──────────────────┐     ┌───────────────────┐
+│   Imagem    │────▶│ FoodRecognizer   │────▶│ PortionEstimator  │
+│   Upload    │     │ (GPT-4 Vision)   │     │ (GPT-4 Vision)    │
+└─────────────┘     └──────────────────┘     └───────────────────┘
+                            │                         │
+                    Identifica alimentos      Estima porções (g/ml)
+                            │                         │
+                            ▼                         ▼
+                    ┌──────────────────┐     ┌───────────────────┐
+                    │ NutritionCalc    │◀────│  Base Nutricional │
+                    │ (Cálculo local)  │     │    (JSON 200+)    │
+                    └──────────────────┘     └───────────────────┘
+                            │
+                    Calcula macros/calorias
+                            │
+                            ▼
+                    ┌──────────────────┐
+                    │  HealthAdvisor   │
+                    │  (GPT-4o-mini)   │
+                    └──────────────────┘
+                            │
+                    Gera recomendações
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+        Modo Simple                  Modo Full
+              │                           │
+              ▼                           ▼
+        ┌──────────┐            ┌──────────────────┐
+        │ Resultado│            │  MealOptimizer   │
+        │  Final   │            │  (GPT-4o-mini)   │
+        └──────────┘            └──────────────────┘
+                                          │
+                                Gera sugestão melhorada
+                                          │
+                                          ▼
+                                ┌──────────────────┐
+                                │ ImageGenerator   │
+                                │   (DALL-E 3)     │
+                                └──────────────────┘
+                                          │
+                                          ▼
+                                   ┌──────────┐
+                                   │ Resultado│
+                                   │  Final   │
+                                   └──────────┘
 ```
 
-### Modos de Análise
+### Agentes Detalhados
 
-| Modo | Custo | Agentes | Resultado |
-|------|-------|---------|-----------|
-| simple | Grátis (FREE) / 5 créditos | 1-4 | Sem sugestão visual |
-| full | 12 créditos | 1-6 | Com sugestão + imagem DALL-E |
+#### 1. FoodRecognizerAgent
+- **Arquivo**: `backend/app/agents/food_recognizer.py`
+- **Modelo**: GPT-4 Vision (gpt-4o)
+- **Função**: Identificar alimentos na imagem
+- **Input**: Imagem base64, tipo de refeição (prato/sobremesa/bebida)
+- **Output**: Lista de itens com confiança e flag de industrializado
+
+#### 2. PortionEstimatorAgent
+- **Arquivo**: `backend/app/agents/portion_estimator.py`
+- **Modelo**: GPT-4 Vision (gpt-4o)
+- **Função**: Estimar peso/volume de cada item
+- **Input**: Imagem, lista de itens identificados
+- **Output**: Porções em gramas/ml com faixas min/max
+
+#### 3. NutritionCalculatorAgent
+- **Arquivo**: `backend/app/agents/nutrition_calculator.py`
+- **Modelo**: Cálculo local (sem IA) - usa base JSON
+- **Função**: Calcular macros e calorias
+- **Input**: Lista de porções
+- **Output**: Calorias, proteína, carboidrato, gordura, fibra
+
+#### 4. HealthAdvisorAgent
+- **Arquivo**: `backend/app/agents/health_advisor.py`
+- **Modelo**: GPT-4o-mini
+- **Função**: Gerar recomendações nutricionais
+- **Input**: Dados nutricionais, perfil do usuário, tipo de refeição
+- **Output**: Benefícios, pontos de atenção, dicas práticas
+
+#### 5. MealOptimizerAgent (Modo Full apenas)
+- **Arquivo**: `backend/app/agents/meal_optimizer.py`
+- **Modelo**: GPT-4o-mini
+- **Função**: Sugerir versão melhorada da refeição
+- **Input**: Refeição atual, perfil do usuário
+- **Output**: Sugestão textual + prompt para imagem
+
+#### 6. ImageGenerationManager (Modo Full apenas)
+- **Arquivo**: `backend/app/agents/image_generator.py`
+- **Modelo**: DALL-E 3
+- **Função**: Gerar imagem da sugestão melhorada
+- **Input**: Prompt em inglês
+- **Output**: URL da imagem gerada
+
+### Orquestrador
+- **Arquivo**: `backend/app/agents/orchestrator.py`
+- **Função**: Coordena todo o fluxo de análise
+- **Responsabilidades**:
+  - Validar créditos
+  - Descontar créditos
+  - Chamar agentes na ordem correta
+  - Salvar resultado no banco
+  - Tratar erros e fazer refund se necessário
 
 ---
 
-## Modelo de Dados Completo
+## Integrações Externas
 
-### User
+### OpenAI API
 ```python
-id: int (PK)
-email: str (unique)
-password_hash: str
-name: str (nullable)
-cpf: str (nullable)
-phone: str (nullable)
-plan: str = "free"  # free, pro
-credit_balance: int = 0
-pro_analyses_remaining: int = 0
-pro_started_at: datetime (nullable)
-pro_expires_at: datetime (nullable)
-referral_code: str (unique, auto-generated)
-referred_by: int (FK -> User, nullable)
-email_verified: bool = False
-email_verification_token: str (nullable)
-asaas_customer_id: str (nullable)
-asaas_subscription_id: str (nullable)
-is_admin: bool = False
-created_at: datetime
-updated_at: datetime
+# Modelos utilizados e custos aproximados
+GPT-4o Vision     # Reconhecimento (input: $5/1M, output: $15/1M)
+GPT-4o-mini       # Recomendações (input: $0.15/1M, output: $0.60/1M)
+DALL-E 3          # Imagens ($0.04/imagem 1024x1024)
+
+# Exemplo de uso
+from openai import AsyncOpenAI
+client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+
+response = await client.chat.completions.create(
+    model="gpt-4o",
+    messages=[...],
+    max_tokens=1000
+)
 ```
 
-### Profile
+### ASAAS (Pagamentos)
 ```python
-id: int (PK)
-user_id: int (FK -> User, unique)
-objetivo: str  # emagrecer, manter, ganhar_massa, saude_geral
-restricoes: JSON  # ["vegetariano", "sem_lactose", ...]
-alergias: JSON  # ["amendoim", "frutos_do_mar", ...]
-avatar_url: str (nullable)
-created_at: datetime
+# URL Base
+PRODUÇÃO: https://api.asaas.com/v3
+SANDBOX:  https://sandbox.asaas.com/api/v3
+
+# Headers
+{
+    "access_token": "ASAAS_API_KEY",
+    "Content-Type": "application/json"
+}
+
+# Endpoints utilizados
+POST /customers              # Criar cliente
+PUT  /customers/{id}         # Atualizar CPF
+POST /payments               # Criar cobrança PIX/Cartão
+GET  /payments/{id}/pixQrCode # Obter QR Code
+POST /subscriptions          # Criar assinatura recorrente
+DELETE /subscriptions/{id}   # Cancelar assinatura
+
+# Webhook URL
+https://nutrivision-api-dcr0.onrender.com/billing/webhook
+
+# Webhook events tratados
+PAYMENT_CONFIRMED       # Pagamento confirmado → credita créditos/ativa PRO
+PAYMENT_RECEIVED        # Pagamento recebido → mesma ação
+PAYMENT_OVERDUE         # Pagamento atrasado → log
+SUBSCRIPTION_DELETED    # Assinatura cancelada → remove PRO
+SUBSCRIPTION_INACTIVE   # Assinatura inativa → remove PRO
 ```
 
-### Meal
+### Resend (Emails)
 ```python
-id: int (PK)
-user_id: int (FK -> User)
-image_url: str  # /uploads/uuid.jpg
-meal_type: str  # prato, sobremesa, bebida
-status: str  # pending, analyzing, waiting_user, completed, failed
-mode: str  # simple, full
-user_notes: str (nullable)
-weight_grams: float (nullable)
-volume_ml: float (nullable)
-created_at: datetime
+# Tipos de email enviados
+email_verification       # Verificação de email (registro)
+password_reset           # Reset de senha
+credits_purchased        # Compra de créditos confirmada
+upgraded_to_pro          # Upgrade para PRO
+subscription_renewed     # Renovação mensal de assinatura
+subscription_cancelled   # Cancelamento de assinatura
+referral_bonus           # Bônus de indicação recebido
+
+# Exemplo de uso
+import resend
+resend.api_key = settings.RESEND_API_KEY
+
+resend.Emails.send({
+    "from": "Nutri-Vision <noreply@nutrivision.ai8hub.com>",
+    "to": email,
+    "subject": "Assunto",
+    "html": "<html>...</html>"
+})
 ```
 
-### MealAnalysis
-```python
-id: int (PK)
-meal_id: int (FK -> Meal, unique)
-itens_identificados: JSON
-porcoes_estimadas: JSON
-calorias_central, calorias_min, calorias_max: float
-proteina_g, carbo_g, gordura_g, fibra_g: float
-confianca: str
-incertezas: JSON
-beneficios: JSON
-pontos_de_atencao: JSON
-recomendacoes_praticas: JSON
-sugestao_melhorada_texto: str (nullable)
-sugestao_melhorada_imagem_url: str (nullable)
-mudancas_sugeridas: JSON (nullable)
-calorias_nova_versao: JSON (nullable)
-macros_nova_versao: JSON (nullable)
-created_at: datetime
+---
+
+## Autenticação e Segurança
+
+### Fluxo de Autenticação
+
+```
+1. REGISTRO (/auth/register)
+   ├─ Valida email único
+   ├─ Hash da senha (bcrypt, cost=12)
+   ├─ Gera referral_code único (8 chars)
+   ├─ Se ?ref=CODIGO, registra indicação
+   ├─ Gera token verificação email
+   ├─ Envia email de verificação
+   └─ Retorna JWT token (30 dias)
+
+2. LOGIN (/auth/login)
+   ├─ Busca usuário por email
+   ├─ Verifica senha (bcrypt)
+   └─ Retorna JWT token (30 dias)
+
+3. REQUISIÇÕES AUTENTICADAS
+   ├─ Header: Authorization: Bearer <token>
+   ├─ Middleware decodifica JWT
+   ├─ Extrai user_id do payload
+   ├─ Busca User no banco
+   └─ Injeta no endpoint via Depends()
 ```
 
-### Job
+### JWT Token
 ```python
-id: int (PK)
-user_id: int (FK -> User)
-meal_id: int (FK -> Meal)
-tipo: str  # analyze_meal, generate_suggestion_image
-status: str  # received, running, waiting_user, completed, failed
-etapa_atual: str
-questions: JSON
-answers: JSON
-resultado_final: JSON
-erro: str (nullable)
-created_at: datetime
+# Payload
+{
+    "sub": "123",           # user_id como string
+    "exp": 1234567890       # timestamp expiração (30 dias)
+}
+
+# Configuração
+ALGORITHM = "HS256"
+SECRET_KEY = env("SECRET_KEY")
+ACCESS_TOKEN_EXPIRE_MINUTES = 43200  # 30 dias
 ```
 
-### Payment
+### Proteção de Rotas
 ```python
-id: int (PK)
-user_id: int (FK -> User)
-asaas_payment_id: str
-asaas_subscription_id: str (nullable)
-payment_type: str  # credits, pro_subscription
-billing_type: str  # PIX, CREDIT_CARD, BOLETO
-amount: float
-status: str  # pending, confirmed, failed, refunded
-description: str
-credits_purchased: int (nullable)
-pix_code: str (nullable)
-pix_qr_code_url: str (nullable)
-boleto_url: str (nullable)
-paid_at: datetime (nullable)
-created_at: datetime
-updated_at: datetime
+# Usuário autenticado
+from app.core.security import get_current_user
+
+@router.get("/rota")
+async def rota(current_user: User = Depends(get_current_user)):
+    ...
+
+# Apenas admin
+from app.api.routes.admin import get_admin_user
+
+@router.get("/admin/rota")
+async def rota(admin: User = Depends(get_admin_user)):
+    ...
 ```
 
-### CreditTransaction
-```python
-id: int (PK)
-user_id: int (FK -> User)
-credits_added: int
-credits_used: int = 0
-balance_after: int
-transaction_type: str  # welcome_bonus, purchase, analysis, admin_credit, referral
-description: str
-created_at: datetime
+### Segurança Implementada
+- Senhas hasheadas com bcrypt (cost 12)
+- JWT com expiração de 30 dias
+- CORS restritivo (apenas domínios permitidos)
+- Validação de inputs via Pydantic
+- Proteção SQL injection via ORM (SQLAlchemy)
+- Logs de erro sem dados sensíveis
+- CPF e dados de cartão não persistidos
+
+---
+
+## Sistema de Pagamentos
+
+### Planos e Créditos
+
+| Plano | Preço | Benefícios |
+|-------|-------|------------|
+| Free | R$ 0 | Análises simples ilimitadas, com anúncios |
+| PRO | R$ 49,90/mês | 90 análises completas/mês, sem anúncios |
+
+| Pacote | Créditos | Preço | Custo/Análise |
+|--------|----------|-------|---------------|
+| 12 créditos | 12 | R$ 4,90 | R$ 0,41 |
+| 36 créditos | 36 | R$ 12,90 | R$ 0,36 |
+| 60 créditos | 60 | R$ 19,90 | R$ 0,33 |
+| 120 créditos | 120 | R$ 34,90 | R$ 0,29 |
+
+### Custo de Análises
+- **Análise Simples**: Gratuita (ilimitada)
+- **Análise Completa**: 12 créditos ou 1 análise PRO
+
+### Fluxo de Pagamento PIX
+```
+1. Frontend: Usuário escolhe pacote e informa CPF
+2. Backend: Cria/atualiza cliente no ASAAS
+3. Backend: Cria cobrança PIX
+4. Backend: Obtém QR Code
+5. Frontend: Exibe QR Code e código copia-cola
+6. Usuário: Paga via app do banco
+7. ASAAS: Envia webhook PAYMENT_CONFIRMED
+8. Backend: Credita créditos ao usuário
+9. Backend: Envia email de confirmação
+10. Frontend: Polling detecta pagamento confirmado
 ```
 
-### Referral
-```python
-id: int (PK)
-referrer_id: int (FK -> User)
-referred_id: int (FK -> User, unique)
-credits_awarded: int = 12
-created_at: datetime
+### Fluxo de Assinatura PRO (PIX)
+```
+1. Usuário solicita assinatura PIX
+2. Backend cria cobrança PIX avulsa (primeira mensalidade)
+3. Usuário paga
+4. Webhook ativa PRO + cria assinatura recorrente
+5. Próximos meses: ASAAS gera PIX automaticamente
+6. Webhook renova análises (90/mês)
 ```
 
-### EmailLog
-```python
-id: int (PK)
-user_id: int (FK -> User, nullable)
-to_email: str
-subject: str
-email_type: str
-status: str  # pending, sent, failed
-error_message: str (nullable)
-resend_id: str (nullable)
-created_at: datetime
+### Fluxo de Assinatura PRO (Cartão)
+```
+1. Usuário informa dados do cartão
+2. Backend cria assinatura com cartão
+3. Se aprovado: PRO ativado imediatamente
+4. Cobranças mensais automáticas
 ```
 
-### EmailSettings
-```python
-id: int (PK)
-key: str (unique)
-value: str
-description: str
-updated_at: datetime
+---
+
+## Deploy e Infraestrutura
+
+### Backend (Render)
+
+**Web Service Settings:**
+```yaml
+Name: nutrivision-api
+Environment: Python
+Build Command: pip install -r requirements.txt
+Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
 ```
+
+**Arquivos necessários:**
+
+`Procfile`:
+```
+web: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
+`runtime.txt`:
+```
+python-3.11.4
+```
+
+### Frontend (Vercel)
+
+**Configuração automática** (detecta Next.js)
+
+`vercel.json` (opcional):
+```json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs"
+}
+```
+
+### Banco de Dados (Render PostgreSQL)
+
+**Configuração:**
+- Plano: Free tier (90 dias) ou Starter ($7/mês)
+- Região: Mesma do backend (Oregon)
+- Conexão via DATABASE_URL
+
+### CI/CD
+
+**Deploy automático:**
+- Push para `main` → Render e Vercel fazem deploy automaticamente
+- Build time: ~2-3 min (backend), ~1-2 min (frontend)
 
 ---
 
 ## Variáveis de Ambiente
 
-### Backend (Render)
+### Backend (Render Environment)
+
 ```env
-DATABASE_URL=postgresql://user:pass@host/db
-SECRET_KEY=chave-secreta-jwt-256-bits
-OPENAI_API_KEY=sk-proj-xxx
-ASAAS_API_KEY=xxx
-ASAAS_ENVIRONMENT=production
-RESEND_API_KEY=re_xxx
+# OBRIGATÓRIAS
+DATABASE_URL=postgresql://user:pass@host:5432/dbname
+SECRET_KEY=chave-secreta-longa-e-aleatoria-minimo-32-chars
+OPENAI_API_KEY=sk-...
+
+# URLs
 FRONTEND_URL=https://nutrivision.ai8hub.com
 BACKEND_URL=https://nutrivision-api-dcr0.onrender.com
+
+# ASAAS (Pagamentos)
+ASAAS_API_KEY=$aact_prod_...
+ASAAS_BASE_URL=https://api.asaas.com/v3
+
+# Email (Resend)
+RESEND_API_KEY=re_...
+
+# OPCIONAIS (têm defaults)
+UPLOAD_DIR=./uploads
+ACCESS_TOKEN_EXPIRE_MINUTES=43200
+CREDIT_COST_SIMPLE=1
+CREDIT_COST_FULL=12
+PRO_MONTHLY_ANALYSES=90
 ```
 
-### Frontend (Vercel)
+### Frontend (Vercel Environment)
+
 ```env
 NEXT_PUBLIC_API_URL=https://nutrivision-api-dcr0.onrender.com
-NEXT_PUBLIC_ADSENSE_CLIENT_ID=ca-pub-3364979853180818
 ```
-
----
-
-## Deploy
-
-### Backend (Render)
-
-1. Criar Web Service no Render
-2. Conectar repositório GitHub
-3. Configurações:
-   - **Root Directory:** backend
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-4. Adicionar variáveis de ambiente
-5. Deploy automático em push para main
-6. **Após deploy:** Acessar `/run-migration` para criar/atualizar tabelas
-
-### Frontend (Vercel)
-
-1. Importar projeto do GitHub
-2. Configurações:
-   - **Root Directory:** frontend
-   - **Framework Preset:** Next.js
-3. Adicionar variáveis de ambiente
-4. Deploy automático em push para main
-
-### Banco de Dados (Render)
-
-1. Criar PostgreSQL no Render
-2. Copiar Internal Database URL
-3. Usar como DATABASE_URL no backend
-
----
-
-## Endpoints de Migração
-
-Executar via navegador após cada deploy:
-
-```
-GET /run-migration
-```
-
-Cria/atualiza todas as tabelas e insere dados iniciais.
-
-```
-GET /fix-referral-codes
-```
-
-Gera códigos de indicação para usuários antigos.
-
-```
-GET /test-email/{email}
-```
-
-Testa se o Resend está funcionando.
-
----
-
-## Endpoints de Teste/Debug
-
-```
-GET /health              # Health check
-GET /test-asaas          # Verifica configuração ASAAS
-GET /test-pix            # Testa criação de PIX
-POST /auth/create-test-user  # Cria usuário de teste com 100k créditos
-```
-
-**Usuário de teste:**
-- Email: teste@nutrivision.com
-- Senha: teste123
-- Créditos: 100.000
-
----
-
-## Problemas Conhecidos e Soluções
-
-### 1. Pillow incompatível com Python 3.13
-**Solução:** Forçar Python 3.11 em `runtime.txt`
-
-### 2. CORS bloqueando requisições
-**Solução:** CORS permissivo com `allow_origins=["*"]`
-
-### 3. PostgreSQL URL incompatível
-**Solução:** Converter `postgres://` para `postgresql+asyncpg://`
-
-### 4. Imagem não acessível pelo GPT-4o
-**Solução:** Converter para base64 antes de enviar
-
-### 5. Orientação de imagem incorreta (EXIF)
-**Solução:** Normalizar no frontend (`image-utils.ts`)
-
-### 6. Domínio de email não verificado no Resend
-**Solução:** Verificar domínio em https://resend.com/domains
-
----
-
-## Replicando para Outros Apps
-
-### Checklist de Serviços Externos
-
-1. **Render** - Backend + PostgreSQL
-2. **Vercel** - Frontend
-3. **OpenAI** - Chaves de API (GPT-4o, DALL-E 3)
-4. **ASAAS** - Conta + Chave de API (produção)
-5. **Resend** - Conta + Domínio verificado + Chave de API
-6. **Google AdSense** - Conta aprovada + Slots de anúncio
-7. **Domínio** - DNS configurado para Vercel
-
-### Passos para Novo App
-
-1. Fork/clone do repositório
-2. Atualizar nomes/branding nos arquivos
-3. Criar recursos no Render (Web Service + PostgreSQL)
-4. Criar projeto no Vercel
-5. Criar contas/chaves nos serviços externos
-6. Configurar variáveis de ambiente
-7. Fazer deploy
-8. Executar `/run-migration`
-9. Verificar domínio no Resend
-10. Testar fluxos de email e pagamento
-
-### Arquivos que Precisam de Atualização
-
-- `backend/app/core/config.py` - Configurações do app
-- `backend/app/services/email_service.py` - Templates de email
-- `frontend/app/layout.tsx` - Metadata, AdSense ID
-- `frontend/components/AdSenseAd.tsx` - Slot de anúncio
-- `frontend/public/manifest.json` - PWA info
-- Migrations no `main.py` - Email admin padrão
-
----
-
-## Comandos Úteis
 
 ### Desenvolvimento Local
-```bash
-# Backend
-cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload
 
-# Frontend
-cd frontend
-npm install
-npm run dev
+**Backend (.env):**
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nutrivision
+SECRET_KEY=dev-secret-key-not-for-production
+OPENAI_API_KEY=sk-...
+FRONTEND_URL=http://localhost:3000
+BACKEND_URL=http://localhost:8000
+ASAAS_API_KEY=$aact_...
+ASAAS_BASE_URL=https://sandbox.asaas.com/api/v3
+RESEND_API_KEY=re_...
 ```
 
-### Deploy
-```bash
-git add .
-git commit -m "feat: description"
-git push origin main
+**Frontend (.env.local):**
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-### Verificar Status
-```bash
-# Health check
-curl https://nutrivision-api-dcr0.onrender.com/health
+---
 
-# Swagger UI
-# https://nutrivision-api-dcr0.onrender.com/docs
+## Fluxos Principais
+
+### 1. Registro de Usuário
 ```
+1. Usuário acessa /register
+2. Preenche email, senha, nome (opcional)
+3. Se veio com ?ref=CODIGO, armazena
+4. POST /auth/register
+5. Backend:
+   ├─ Valida email único
+   ├─ Hash senha (bcrypt)
+   ├─ Gera referral_code
+   ├─ Se ref válido: cria Referral
+   ├─ Envia email verificação
+   └─ Retorna JWT
+6. Frontend salva token no localStorage
+7. Redireciona para /home
+```
+
+### 2. Verificação de Email
+```
+1. Usuário clica link no email
+2. GET /auth/verify-email/{token}
+3. Backend:
+   ├─ Busca user pelo token
+   ├─ Marca email_verified = True
+   ├─ Se foi indicado:
+   │   ├─ Credita 12 ao referrer
+   │   └─ Envia email ao referrer
+   └─ Retorna sucesso
+4. Redireciona para /login com mensagem
+```
+
+### 3. Análise de Refeição
+```
+1. Usuário na /home escolhe tipo (prato/sobremesa/bebida)
+2. Escolhe modo (simple/full)
+3. Tira/seleciona foto
+4. Frontend comprime imagem (max 1MB)
+5. POST /meals/upload (multipart)
+6. Backend:
+   ├─ Valida créditos (se full)
+   ├─ Salva imagem
+   ├─ Cria Meal e Job
+   ├─ Desconta créditos
+   └─ Inicia análise async
+7. Frontend redireciona para /processing/{job_id}
+8. Frontend faz polling GET /jobs/{job_id}
+9. Quando status=completed:
+   └─ Redireciona para /result/{meal_id}
+```
+
+### 4. Compra de Créditos
+```
+1. Usuário em /billing escolhe pacote
+2. Informa CPF
+3. POST /billing/create-pix-payment
+4. Backend:
+   ├─ Cria/atualiza customer ASAAS
+   ├─ Cria payment PIX
+   ├─ Obtém QR Code
+   └─ Salva Payment no banco
+5. Frontend exibe QR Code
+6. Usuário paga
+7. ASAAS envia webhook
+8. Backend:
+   ├─ Atualiza Payment.status
+   ├─ Credita user.credit_balance
+   ├─ Cria CreditTransaction
+   └─ Envia email
+9. Frontend polling detecta pagamento
+10. Mostra sucesso
+```
+
+### 5. Sistema de Indicação
+```
+1. Usuário A copia link de indicação (/register?ref=ABC123)
+2. Usuário B acessa link e se registra
+3. Sistema cria Referral (referrer=A, referred=B)
+4. Quando B verifica email:
+   ├─ A.credit_balance += 12
+   ├─ Cria CreditTransaction para A
+   └─ Envia email para A
+```
+
+---
+
+## Padrões e Boas Práticas
+
+### Código Python (Backend)
+```python
+# Async/await em todas as operações I/O
+async def get_user(db: AsyncSession, user_id: int):
+    result = await db.execute(select(User).where(User.id == user_id))
+    return result.scalar_one_or_none()
+
+# Type hints
+def calculate_calories(portions: List[Dict[str, Any]]) -> Dict[str, float]:
+    ...
+
+# Dependency Injection
+@router.get("/me")
+async def get_me(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    ...
+
+# Tratamento de erros específicos
+try:
+    result = await asaas_service.create_payment(...)
+except AsaasError as e:
+    await log_billing_error(db, "pix_payment", e.message, user.id, e.to_dict())
+    raise HTTPException(status_code=400, detail=e.message)
+```
+
+### Código TypeScript (Frontend)
+```typescript
+// Interfaces para tipagem
+interface User {
+  id: number;
+  email: string;
+  plan: 'free' | 'pro';
+  credit_balance: number;
+}
+
+// API client centralizado
+const response = await api<User>('/auth/me');
+
+// Context para estado global
+const { user, isLoading } = useAuth();
+
+// Tratamento de erros
+try {
+  await mealApi.upload(formData);
+} catch (error) {
+  showError('Erro ao enviar imagem');
+}
+```
+
+### Convenções de Código
+- Nomes de variáveis em snake_case (Python) e camelCase (TypeScript)
+- Componentes React em PascalCase
+- Arquivos de rotas refletem URL: `/billing` → `app/(main)/billing/page.tsx`
+- Commits semânticos: `feat:`, `fix:`, `docs:`, `refactor:`
+
+---
+
+## Troubleshooting
+
+### Erro: "Créditos insuficientes"
+```
+Causa: user.credit_balance < 12 e user.pro_analyses_remaining = 0
+Solução:
+- Verificar saldo no painel admin
+- Análise completa custa 12 créditos
+- PRO usa quota separada (pro_analyses_remaining)
+```
+
+### Erro: "Erro ao criar pagamento"
+```
+Causas possíveis:
+1. ASAAS_API_KEY não configurada ou inválida
+2. ASAAS_BASE_URL incorreta (deve ser https://api.asaas.com/v3)
+3. CPF inválido ou mal formatado
+
+Diagnóstico:
+- Acessar /billing/diagnose para testar conexão
+- Ver logs de erro em /admin > Logs
+```
+
+### Erro: "Webhook não processa pagamento"
+```
+Causas possíveis:
+1. URL do webhook incorreta no ASAAS
+2. externalReference não está sendo enviado
+3. Pagamento já foi processado (duplicado)
+
+Verificar:
+- URL deve ser: https://nutrivision-api-dcr0.onrender.com/billing/webhook
+- Logs do backend no Render
+```
+
+### Erro: "Análise falha / timeout"
+```
+Causas possíveis:
+1. OPENAI_API_KEY inválida ou sem créditos
+2. Imagem muito grande ou formato inválido
+3. Timeout da OpenAI
+
+Verificar:
+- Job.erro no banco de dados
+- Logs do backend
+- Saldo na OpenAI
+```
+
+### Deploy não atualiza
+```
+Render:
+- Verificar se push foi feito para main
+- Ver build logs no dashboard
+- Às vezes precisa "Manual Deploy"
+
+Vercel:
+- Deploy é automático
+- Verificar se build passou
+- Limpar cache: Settings > Functions > Redeploy
+```
+
+### Banco de dados lento/erro conexão
+```
+Render Free Tier:
+- Hiberna após 15min inatividade
+- Primeira request leva 30-60s
+- Considerar upgrade para Starter ($7/mês)
+```
+
+---
+
+## Versionamento
+
+### Tags Git
+```bash
+# Listar tags
+git tag
+
+# Criar tag
+git tag -a v1.0.0 -m "Descrição da versão"
+git push origin v1.0.0
+
+# Versão atual
+v1.0.0-release  # Versão de lançamento estável
+```
+
+### Rollback
+```bash
+# Voltar para versão anterior
+git checkout v1.0.0-release
+git push -f origin main
+
+# Render e Vercel farão redeploy automático
+```
+
+### Boas Práticas
+```
+- Criar tag antes de mudanças grandes
+- Testar em local antes de push
+- Manter DOCUMENTATION.md atualizada
+- Commits pequenos e frequentes
+```
+
+---
+
+## Checklist de Novo Projeto
+
+### 1. Setup Inicial
+- [ ] Criar repositório GitHub
+- [ ] Estrutura de pastas backend/frontend
+- [ ] Configurar .gitignore
+- [ ] Criar requirements.txt / package.json
+
+### 2. Backend
+- [ ] Configurar FastAPI + SQLAlchemy
+- [ ] Criar models do banco
+- [ ] Implementar autenticação JWT
+- [ ] Criar rotas principais
+- [ ] Configurar CORS
+
+### 3. Frontend
+- [ ] Configurar Next.js + Tailwind
+- [ ] Criar lib/api.ts centralizada
+- [ ] Implementar AuthContext
+- [ ] Criar pages principais
+- [ ] Configurar PWA
+
+### 4. Deploy
+- [ ] Criar PostgreSQL no Render
+- [ ] Deploy backend no Render
+- [ ] Configurar variáveis de ambiente
+- [ ] Deploy frontend na Vercel
+- [ ] Testar integração
+
+### 5. Integrações
+- [ ] Configurar ASAAS (produção)
+- [ ] Configurar webhook ASAAS
+- [ ] Configurar Resend
+- [ ] Testar fluxo de pagamento
+- [ ] Testar envio de emails
+
+### 6. Produção
+- [ ] Configurar domínio customizado
+- [ ] Criar tag de versão
+- [ ] Documentar variáveis de ambiente
+- [ ] Testar fluxos principais
+
+---
+
+*Documentação atualizada em: Janeiro 2025*
+*Versão do sistema: 1.0.0-release*
