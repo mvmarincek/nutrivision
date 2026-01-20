@@ -7,17 +7,15 @@
     </linearGradient>
   </defs>
   <rect width="192" height="192" rx="40" fill="url(#bg)"/>
-  <circle cx="96" cy="100" r="50" fill="rgba(255,255,255,0.15)"/>
-  <circle cx="96" cy="100" r="38" stroke="white" stroke-width="6" fill="none"/>
-  <circle cx="96" cy="100" r="14" fill="white"/>
-  <line x1="96" y1="50" x2="96" y2="62" stroke="white" stroke-width="5" stroke-linecap="round"/>
-  <line x1="96" y1="138" x2="96" y2="150" stroke="white" stroke-width="5" stroke-linecap="round"/>
-  <line x1="46" y1="100" x2="58" y2="100" stroke="white" stroke-width="5" stroke-linecap="round"/>
-  <line x1="134" y1="100" x2="146" y2="100" stroke="white" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="78" cy="90" r="6" fill="#22c55e"/>
-  <circle cx="112" cy="88" r="5" fill="#fb923c"/>
-  <circle cx="108" cy="112" r="7" fill="#ef4444"/>
-  <circle cx="82" cy="114" r="5.5" fill="#eab308"/>
-  <rect x="130" y="30" width="32" height="24" rx="5" fill="white"/>
-  <circle cx="146" cy="42" r="6" fill="rgba(16,185,129,0.5)"/>
+  <rect x="24" y="40" width="144" height="112" rx="20" fill="white"/>
+  <circle cx="96" cy="96" r="42" fill="url(#bg)"/>
+  <circle cx="96" cy="96" r="35" stroke="white" stroke-width="6" fill="none"/>
+  <circle cx="96" cy="96" r="14" fill="white"/>
+  <rect x="52" y="24" width="36" height="20" rx="6" fill="white"/>
+  <circle cx="138" cy="52" r="10" fill="white"/>
+  <circle cx="138" cy="52" r="5" fill="url(#bg)" opacity="0.5"/>
+  <circle cx="78" cy="84" r="7" fill="#22c55e"/>
+  <circle cx="110" cy="80" r="5.5" fill="#fb923c"/>
+  <circle cx="106" cy="108" r="7" fill="#ef4444"/>
+  <circle cx="82" cy="104" r="5" fill="#eab308"/>
 </svg>
