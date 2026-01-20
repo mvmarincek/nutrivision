@@ -372,6 +372,19 @@ async def create_pro_subscription(
                 next_due_days=1
             )
             
+            db_payment = Payment(
+                user_id=current_user.id,
+                asaas_payment_id=subscription.get("id"),
+                asaas_subscription_id=subscription.get("id"),
+                payment_type="pro_subscription",
+                billing_type="CREDIT_CARD",
+                amount=49.90,
+                status="confirmed",
+                description="Assinatura PRO (Cartao)",
+                paid_at=datetime.utcnow()
+            )
+            db.add(db_payment)
+            
             current_user.asaas_subscription_id = subscription["id"]
             current_user.plan = "pro"
             current_user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
@@ -522,7 +535,7 @@ async def asaas_webhook(
                                 credits_added=int(credits),
                                 balance_after=user.credit_balance,
                                 transaction_type="purchase",
-                                description=f"Compra de {credits} creditos (PIX) - {asaas_payment_id}"
+                                description=f"Compra de {credits} creditos - {asaas_payment_id}"
                             )
                             db.add(transaction)
                             await db.commit()
