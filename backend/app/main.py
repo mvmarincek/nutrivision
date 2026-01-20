@@ -105,6 +105,24 @@ async def test_login():
         result["db_error"] = str(e)
     return result
 
+@app.get("/debug-meal/{meal_id}")
+async def debug_meal(meal_id: int):
+    from sqlalchemy import text
+    result = {}
+    try:
+        async with async_session() as db:
+            r = await db.execute(text("SELECT id, image_url, status FROM meals WHERE id = :id"), {"id": meal_id})
+            row = r.fetchone()
+            if row:
+                result["meal_id"] = row[0]
+                result["image_url"] = row[1]
+                result["status"] = row[2]
+            else:
+                result["error"] = "Meal not found"
+    except Exception as e:
+        result["error"] = str(e)
+    return result
+
 @app.get("/test-db")
 async def test_db():
     from sqlalchemy import text
