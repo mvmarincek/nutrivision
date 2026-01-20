@@ -44,12 +44,17 @@ def get_email_logo():
             <stop offset="0%" style="stop-color:#10b981"/><stop offset="50%" style="stop-color:#14b8a6"/><stop offset="100%" style="stop-color:#06b6d4"/>
         </linearGradient></defs>
         <rect width="48" height="48" rx="10" fill="url(#bgGrad)"/>
-        <ellipse cx="24" cy="29" rx="13" ry="8" fill="white"/>
-        <path d="M11 29 Q11 21 24 21 Q37 21 37 29" fill="white"/>
-        <ellipse cx="24" cy="21" rx="13" ry="3" fill="rgba(255,255,255,0.3)"/>
-        <path d="M17 18 Q18.5 13 20 18" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-        <path d="M23 16 Q24.5 10 26 16" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-        <path d="M28 18 Q29.5 13 31 18" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <rect x="6" y="10" width="36" height="28" rx="5" fill="white"/>
+        <circle cx="24" cy="24" r="10.5" fill="url(#bgGrad)"/>
+        <circle cx="24" cy="24" r="8.5" stroke="white" stroke-width="1.5" fill="none"/>
+        <circle cx="24" cy="24" r="3.5" fill="white"/>
+        <rect x="13" y="6" width="9" height="5" rx="1.5" fill="white"/>
+        <circle cx="35" cy="13" r="2.5" fill="white"/>
+        <circle cx="35" cy="13" r="1.2" fill="url(#bgGrad)" opacity="0.5"/>
+        <circle cx="19.5" cy="21" r="1.8" fill="#22c55e"/>
+        <circle cx="27.5" cy="20" r="1.4" fill="#fb923c"/>
+        <circle cx="26.5" cy="27" r="1.8" fill="#ef4444"/>
+        <circle cx="20.5" cy="26" r="1.3" fill="#eab308"/>
     </svg>'''
 
 def get_email_header(title: str, subtitle: str = "", gradient: str = "linear-gradient(135deg, #10b981, #14b8a6, #06b6d4)"):
