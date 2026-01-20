@@ -109,7 +109,7 @@ export default function InstallPWAButton() {
               <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Smartphone className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Instalar Nutrivision</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Instalar PicNutra</h3>
               <p className="text-gray-600 text-sm">Siga os passos abaixo para adicionar o app na sua tela inicial:</p>
             </div>
             

@@ -148,7 +148,7 @@ async def create_pix_payment(
         payment = await asaas_service.create_pix_payment(
             customer_id=customer_id,
             value=value,
-            description=f"Nutri-Vision - {credits} Creditos",
+            description=f"PicNutra - {credits} Creditos",
             external_reference=external_reference
         )
         
@@ -225,7 +225,7 @@ async def create_card_payment(
         payment = await asaas_service.create_credit_card_payment(
             customer_id=customer_id,
             value=value,
-            description=f"Nutri-Vision - {credits} Creditos",
+            description=f"PicNutra - {credits} Creditos",
             external_reference=external_reference,
             card_holder_name=request.card_holder_name,
             card_number=request.card_number,
@@ -321,7 +321,7 @@ async def create_pro_subscription(
             payment = await asaas_service.create_pix_payment(
                 customer_id=customer_id,
                 value=49.90,
-                description="Nutri-Vision PRO - Primeira mensalidade",
+                description="PicNutra PRO - Primeira mensalidade",
                 external_reference=external_reference
             )
             
@@ -369,7 +369,7 @@ async def create_pro_subscription(
                 customer_id=customer_id,
                 value=49.90,
                 billing_type="CREDIT_CARD",
-                description="Nutri-Vision PRO - Assinatura Mensal",
+                description="PicNutra PRO - Assinatura Mensal",
                 external_reference=external_reference,
                 card_data=card_data,
                 card_holder_info=card_holder_info,
@@ -550,7 +550,7 @@ async def asaas_webhook(
                                             customer_id=user.asaas_customer_id,
                                             value=49.90,
                                             billing_type="PIX",
-                                            description="Nutri-Vision PRO - Assinatura Mensal",
+                                            description="PicNutra PRO - Assinatura Mensal",
                                             external_reference=json.dumps({
                                                 "user_id": user.id,
                                                 "type": "pro_subscription"
@@ -700,7 +700,7 @@ async def test_confirm_payment(
                     customer_id=current_user.asaas_customer_id,
                     value=49.90,
                     billing_type="PIX",
-                    description="Nutri-Vision PRO - Assinatura Mensal",
+                    description="PicNutra PRO - Assinatura Mensal",
                     external_reference=json.dumps({
                         "user_id": current_user.id,
                         "type": "pro_subscription"

@@ -15,15 +15,15 @@ export default function Footer() {
             <Link href="/about" className="text-gray-600 hover:text-green-600 transition-colors">
               Sobre
             </Link>
-            <a href="mailto:nutrivision-contato@ai8hub.com" className="text-gray-600 hover:text-green-600 transition-colors">
+            <a href="mailto:picnutra-contato@ai8hub.com" className="text-gray-600 hover:text-green-600 transition-colors">
               Contato
             </a>
           </div>
           <p className="text-xs text-gray-400 text-center">
-            NutriVision oferece estimativas aproximadas baseadas em imagem. Não substitui orientação profissional.
+            PicNutra oferece estimativas aproximadas baseadas em imagem. Não substitui orientação profissional.
           </p>
           <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} NutriVision. Todos os direitos reservados.
+            © {new Date().getFullYear()} PicNutra. Todos os direitos reservados.
           </p>
         </div>
       </div>

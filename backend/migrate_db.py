@@ -85,10 +85,10 @@ async def migrate():
             """INSERT INTO email_settings (key, value, description) VALUES 
                 ('admin_email', 'mvmarincek@gmail.com', 'Email do administrador para receber notificacoes'),
                 ('support_email', 'suporte@ai8hub.com', 'Email de suporte exibido nos emails'),
-                ('app_url', 'https://nutrivision.ai8hub.com', 'URL base da aplicacao'),
-                ('frontend_url', 'https://nutrivision-drab.vercel.app', 'URL do frontend para links nos emails'),
-                ('from_name', 'Nutri-Vision', 'Nome do remetente nos emails'),
-                ('from_email', 'nutrivision-noreply@ai8hub.com', 'Email do remetente'),
+                ('app_url', 'https://picnutra.vercel.app', 'URL base da aplicacao'),
+                ('frontend_url', 'https://picnutra.vercel.app', 'URL do frontend para links nos emails'),
+                ('from_name', 'PicNutra', 'Nome do remetente nos emails'),
+                ('from_email', 'picnutra-noreply@ai8hub.com', 'Email do remetente'),
                 ('welcome_credits', '36', 'Creditos de bonus para novos usuarios'),
                 ('referral_credits', '12', 'Creditos por indicacao')
             ON CONFLICT (key) DO NOTHING""",

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://nutri-vision.app/sitemap.xml
+Sitemap: https://picnutra.vercel.app/sitemap.xml

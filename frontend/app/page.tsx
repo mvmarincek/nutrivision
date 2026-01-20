@@ -18,7 +18,7 @@ export default function LandingPage() {
               <BowlLogo className="w-5 h-5 text-white" />
             </div>
             <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-              Nutrivision
+              PicNutra
             </span>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
@@ -83,7 +83,7 @@ export default function LandingPage() {
       <div className="max-w-lg mx-auto px-4 py-8">
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-3xl p-6 mb-8 border border-emerald-200">
           <p className="text-gray-700 text-center leading-relaxed">
-            O NutriVision é um assistente de alimentação saudável que ajuda você a entender 
+            O PicNutra é um assistente de alimentação saudável que ajuda você a entender 
             melhor o que consome no dia a dia. Crie um histórico alimentar completo para 
             acompanhar sua evolução e compartilhar com seu nutricionista ou nutrólogo, 
             tornando suas escolhas mais conscientes e equilibradas.
@@ -100,7 +100,7 @@ export default function LandingPage() {
               <div className="aspect-square rounded-2xl overflow-hidden shadow-lg shadow-gray-200/50 border-2 border-white">
                 <img 
                   src="/demo-meal-1.png" 
-                  alt="Prato saudável analisado pelo NutriVision" 
+                  alt="Prato saudável analisado pelo PicNutra" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
@@ -116,7 +116,7 @@ export default function LandingPage() {
               <div className="aspect-square rounded-2xl overflow-hidden shadow-lg shadow-gray-200/50 border-2 border-white">
                 <img 
                   src="/demo-meal-2.png" 
-                  alt="Refeição balanceada analisada pelo NutriVision" 
+                  alt="Refeição balanceada analisada pelo PicNutra" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
@@ -130,7 +130,7 @@ export default function LandingPage() {
             </div>
           </div>
           <p className="text-center text-xs text-gray-400 mt-3">
-            Análises reais feitas pelo NutriVision em segundos
+            Análises reais feitas pelo PicNutra em segundos
           </p>
         </div>
 
@@ -417,7 +417,7 @@ export default function LandingPage() {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center">
                 <BowlLogo className="w-5 h-5 text-white" />
               </div>
-              <span className="text-lg font-bold">Nutrivision</span>
+              <span className="text-lg font-bold">PicNutra</span>
             </div>
             
             <nav className="flex flex-wrap justify-center gap-4 text-sm">
@@ -438,7 +438,7 @@ export default function LandingPage() {
                 <br/>Não substitui orientação de nutricionista.
               </p>
               <p className="text-gray-600 text-xs mt-2">
-                © {new Date().getFullYear()} Nutrivision
+                © {new Date().getFullYear()} PicNutra
               </p>
             </div>
           </div>

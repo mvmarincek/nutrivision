@@ -259,7 +259,7 @@ function ResultContent() {
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
                     <Lightbulb className="w-4 h-4 text-white" />
                   </div>
-                  Dicas do Nutrivision
+                  Dicas do PicNutra
                 </h3>
                 <ul className="space-y-3">
                   {analysis.recomendacoes_praticas.map((r, idx) => (

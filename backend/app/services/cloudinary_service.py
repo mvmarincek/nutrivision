@@ -19,7 +19,7 @@ def configure_cloudinary():
 def is_cloudinary_configured():
     return bool(settings.CLOUDINARY_CLOUD_NAME and settings.CLOUDINARY_API_KEY and settings.CLOUDINARY_API_SECRET)
 
-async def upload_image_to_cloudinary(content: bytes, filename: str, folder: str = "nutrivision/meals") -> str:
+async def upload_image_to_cloudinary(content: bytes, filename: str, folder: str = "picnutra/meals") -> str:
     if not is_cloudinary_configured():
         logger.warning("Cloudinary not configured, cannot upload")
         return None

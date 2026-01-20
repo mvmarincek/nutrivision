@@ -49,9 +49,9 @@ export default function ProfilePage() {
   const router = useRouter();
 
   const referralLink = user?.referral_code 
-    ? `https://nutrivision.ai8hub.com/register?ref=${user.referral_code}` 
+    ? `https://picnutra.vercel.app/register?ref=${user.referral_code}` 
     : '';
-  const appLink = 'https://nutrivision.ai8hub.com';
+  const appLink = 'https://picnutra.vercel.app';
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -473,7 +473,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <h3 className="font-bold text-gray-900">Tem uma sugestão?</h3>
-            <p className="text-sm text-gray-500">Ajude-nos a melhorar o Nutrivision</p>
+            <p className="text-sm text-gray-500">Ajude-nos a melhorar o PicNutra</p>
           </div>
         </div>
 

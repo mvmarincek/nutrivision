@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-2">1. Introdução</h2>
               <p>
-                O NutriVision é um aplicativo de estimativa nutricional que utiliza inteligência artificial 
+                O PicNutra é um aplicativo de estimativa nutricional que utiliza inteligência artificial 
                 para analisar imagens de refeições. Esta política descreve como coletamos, usamos e protegemos 
                 seus dados.
               </p>
@@ -104,7 +104,7 @@ export default function PrivacyPolicyPage() {
                 entre em contato conosco:
               </p>
               <p className="mt-2">
-                <strong>Email:</strong> nutrivision-contato@ai8hub.com
+                <strong>Email:</strong> picnutra-contato@ai8hub.com
               </p>
             </section>
 

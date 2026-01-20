@@ -1,4 +1,4 @@
-# NutriVision Backend
+# PicNutra Backend
 
 ## Setup
 

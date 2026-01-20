@@ -70,7 +70,7 @@ def get_email_footer():
         <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 20px;">
             <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0 0 10px 0;">
                 Cuide da sua saude, uma refeicao de cada vez.<br>
-                Equipe Nutri-Vision
+                Equipe PicNutra
             </p>
             <p style="color: #94a3b8; font-size: 11px; text-align: center; margin: 0;">
                 Duvidas? Entre em contato: <a href="mailto:{support_email}" style="color: #10b981;">{support_email}</a><br>
@@ -197,11 +197,11 @@ async def flush_email_logs(db: AsyncSession):
 def send_welcome_email(user_email: str, user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
     welcome_credits = get_setting("welcome_credits")
-    subject = f"Bem-vindo ao Nutri-Vision! Voce ganhou {welcome_credits} creditos!"
+    subject = f"Bem-vindo ao PicNutra! Voce ganhou {welcome_credits} creditos!"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f0fdfa;">
-        {get_email_header("Nutri-Vision", "Sua jornada para uma alimentacao saudavel comeca agora!")}
+        {get_email_header("PicNutra", "Sua jornada para uma alimentacao saudavel comeca agora!")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 20px;">
@@ -244,11 +244,11 @@ def send_welcome_email(user_email: str, user_id: Optional[int] = None):
 def send_password_reset_email(user_email: str, reset_token: str, user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
     reset_url = f"{frontend_url}/reset-password?token={reset_token}"
-    subject = "Recuperacao de Senha - Nutri-Vision"
+    subject = "Recuperacao de Senha - PicNutra"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f0fdfa;">
-        {get_email_header("Nutri-Vision", "Recuperacao de Senha")}
+        {get_email_header("PicNutra", "Recuperacao de Senha")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <p style="color: #334155; line-height: 1.8; margin: 0 0 20px 0;">
@@ -274,11 +274,11 @@ def send_password_reset_email(user_email: str, reset_token: str, user_id: Option
 
 def send_suggestion_email(user_email: str, user_id: int, mensagem: str):
     admin_email = get_setting("admin_email")
-    subject = "Nova Sugestao - Nutri-Vision"
+    subject = "Nova Sugestao - PicNutra"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f0fdfa;">
-        {get_email_header("Nutri-Vision", "Nova Sugestao de Usuario")}
+        {get_email_header("PicNutra", "Nova Sugestao de Usuario")}
         
         <div style="background: #f0fdfa; border-radius: 15px; padding: 20px; margin-bottom: 20px;">
             <p style="margin: 0 0 10px 0;"><strong>Usuario:</strong> {user_email}</p>
@@ -296,11 +296,11 @@ def send_suggestion_email(user_email: str, user_id: int, mensagem: str):
 
 def send_referral_activated_email(referrer_email: str, referred_email: str, credits_earned: int, new_balance: int, referrer_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
-    subject = "Voce ganhou creditos! - Nutri-Vision"
+    subject = "Voce ganhou creditos! - PicNutra"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f0fdfa;">
-        {get_email_header("Nutri-Vision", "Parabens! Sua indicacao deu certo!")}
+        {get_email_header("PicNutra", "Parabens! Sua indicacao deu certo!")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 20px;">
@@ -334,11 +334,11 @@ def send_referral_activated_email(referrer_email: str, referred_email: str, cred
 
 def send_upgraded_to_pro_email(user_email: str, user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
-    subject = "Bem-vindo ao Nutri-Vision PRO!"
+    subject = "Bem-vindo ao PicNutra PRO!"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #faf5ff;">
-        {get_email_header("Nutri-Vision PRO", "Sua assinatura foi ativada com sucesso!", "linear-gradient(135deg, #8b5cf6, #a855f7, #d946ef)")}
+        {get_email_header("PicNutra PRO", "Sua assinatura foi ativada com sucesso!", "linear-gradient(135deg, #8b5cf6, #a855f7, #d946ef)")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 20px;">
@@ -376,11 +376,11 @@ def send_upgraded_to_pro_email(user_email: str, user_id: Optional[int] = None):
 
 def send_credits_purchased_email(user_email: str, credits_purchased: int, new_balance: int, user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
-    subject = f"Compra confirmada: +{credits_purchased} creditos - Nutri-Vision"
+    subject = f"Compra confirmada: +{credits_purchased} creditos - PicNutra"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f0fdfa;">
-        {get_email_header("Nutri-Vision", "Compra confirmada!")}
+        {get_email_header("PicNutra", "Compra confirmada!")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 20px;">
@@ -413,11 +413,11 @@ def send_credits_purchased_email(user_email: str, credits_purchased: int, new_ba
 
 def send_subscription_cancelled_email(user_email: str, user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
-    subject = "Assinatura PRO cancelada - Nutri-Vision"
+    subject = "Assinatura PRO cancelada - PicNutra"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f1f5f9;">
-        {get_email_header("Nutri-Vision", "Assinatura cancelada", "linear-gradient(135deg, #64748b, #475569)")}
+        {get_email_header("PicNutra", "Assinatura cancelada", "linear-gradient(135deg, #64748b, #475569)")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <p style="color: #334155; line-height: 1.8; margin: 0 0 15px 0;">
@@ -450,11 +450,11 @@ def send_subscription_cancelled_email(user_email: str, user_id: Optional[int] = 
 def send_email_verification(user_email: str, verification_token: str, user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
     verify_url = f"{frontend_url}/verify-email?token={verification_token}"
-    subject = "Confirme seu email - Nutri-Vision"
+    subject = "Confirme seu email - PicNutra"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f0fdfa;">
-        {get_email_header("Nutri-Vision", "Confirme seu email para ativar sua conta")}
+        {get_email_header("PicNutra", "Confirme seu email para ativar sua conta")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 20px;">
@@ -462,7 +462,7 @@ def send_email_verification(user_email: str, verification_token: str, user_id: O
             </div>
             <h2 style="color: #10b981; margin: 0 0 20px 0; text-align: center;">Quase la!</h2>
             <p style="color: #334155; line-height: 1.8; margin: 0 0 20px 0; text-align: center;">
-                Clique no botao abaixo para confirmar seu email e ativar sua conta no Nutri-Vision.
+                Clique no botao abaixo para confirmar seu email e ativar sua conta no PicNutra.
             </p>
             
             <div style="text-align: center; margin: 30px 0;">
@@ -472,7 +472,7 @@ def send_email_verification(user_email: str, verification_token: str, user_id: O
             </div>
             
             <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin: 0; text-align: center;">
-                Se voce nao criou uma conta no Nutri-Vision, ignore este email.
+                Se voce nao criou uma conta no PicNutra, ignore este email.
             </p>
         </div>
         
@@ -485,11 +485,11 @@ def send_email_verification(user_email: str, verification_token: str, user_id: O
 def send_email_verified_success(user_email: str, user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
     welcome_credits = get_setting("welcome_credits")
-    subject = "Email confirmado! Bem-vindo ao Nutri-Vision!"
+    subject = "Email confirmado! Bem-vindo ao PicNutra!"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f0fdfa;">
-        {get_email_header("Nutri-Vision", "Sua conta foi ativada com sucesso!")}
+        {get_email_header("PicNutra", "Sua conta foi ativada com sucesso!")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 20px;">
@@ -520,11 +520,11 @@ def send_email_verified_success(user_email: str, user_id: Optional[int] = None):
 
 def send_subscription_renewed_email(user_email: str, analyses_remaining: int = 90, user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
-    subject = "Assinatura PRO renovada - Nutri-Vision"
+    subject = "Assinatura PRO renovada - PicNutra"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #faf5ff;">
-        {get_email_header("Nutri-Vision PRO", "Assinatura renovada!", "linear-gradient(135deg, #8b5cf6, #a855f7, #d946ef)")}
+        {get_email_header("PicNutra PRO", "Assinatura renovada!", "linear-gradient(135deg, #8b5cf6, #a855f7, #d946ef)")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 20px;">
@@ -559,11 +559,11 @@ def send_subscription_renewed_email(user_email: str, analyses_remaining: int = 9
 def send_payment_failed_email(user_email: str, user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
     support_email = get_setting("support_email")
-    subject = "Problema com seu pagamento - Nutri-Vision"
+    subject = "Problema com seu pagamento - PicNutra"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fef2f2;">
-        {get_email_header("Nutri-Vision", "Acao necessaria", "linear-gradient(135deg, #ef4444, #f97316)")}
+        {get_email_header("PicNutra", "Acao necessaria", "linear-gradient(135deg, #ef4444, #f97316)")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 20px;">
@@ -591,7 +591,7 @@ def send_payment_failed_email(user_email: str, user_id: Optional[int] = None):
         
         <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">
             Precisa de ajuda? Entre em contato: <a href="mailto:{support_email}" style="color: #10b981;">{support_email}</a><br>
-            Equipe Nutri-Vision
+            Equipe PicNutra
         </p>
     </body>
     </html>

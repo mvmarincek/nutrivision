@@ -17,7 +17,7 @@ export default function AboutPage() {
             <div className="w-20 h-20 rounded-2xl gradient-fresh flex items-center justify-center mx-auto mb-4">
               <Sparkles className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">NutriVision</h1>
+            <h1 className="text-2xl font-bold text-gray-900">PicNutra</h1>
             <p className="text-gray-500 mt-1">Estimativas nutricionais com inteligência artificial</p>
           </div>
 
@@ -28,7 +28,7 @@ export default function AboutPage() {
                 Nossa Missão
               </h2>
               <p>
-                O NutriVision foi criado para ajudar pessoas a entenderem melhor o que estão comendo. 
+                O PicNutra foi criado para ajudar pessoas a entenderem melhor o que estão comendo. 
                 Utilizando inteligência artificial avançada, oferecemos estimativas nutricionais 
                 aproximadas a partir de fotos de refeições, tornando a consciência alimentar mais 
                 acessível e prática.
@@ -54,7 +54,7 @@ export default function AboutPage() {
                 Aviso Importante
               </h2>
               <p className="text-amber-900 text-sm">
-                O NutriVision fornece <strong>estimativas aproximadas</strong> baseadas em análise de imagem. 
+                O PicNutra fornece <strong>estimativas aproximadas</strong> baseadas em análise de imagem. 
                 Os valores apresentados são médias e podem variar conforme ingredientes, porções e preparo. 
                 <strong> Este serviço não substitui orientação profissional de nutricionistas ou médicos.</strong>
               </p>
@@ -78,7 +78,7 @@ export default function AboutPage() {
                 Dúvidas, sugestões ou problemas? Entre em contato conosco:
               </p>
               <p className="mt-2">
-                <strong>Email:</strong> nutrivision-contato@ai8hub.com
+                <strong>Email:</strong> picnutra-contato@ai8hub.com
               </p>
             </section>
 

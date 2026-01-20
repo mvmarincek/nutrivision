@@ -20,7 +20,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-2">1. Aceitação dos Termos</h2>
               <p>
-                Ao utilizar o NutriVision, você concorda com estes Termos de Uso. Se não concordar 
+                Ao utilizar o PicNutra, você concorda com estes Termos de Uso. Se não concordar 
                 com qualquer parte destes termos, não utilize o aplicativo.
               </p>
             </section>
@@ -28,7 +28,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-2">2. Descrição do Serviço</h2>
               <p>
-                O NutriVision é um aplicativo que utiliza inteligência artificial para fornecer 
+                O PicNutra é um aplicativo que utiliza inteligência artificial para fornecer 
                 <strong> estimativas nutricionais aproximadas</strong> com base em imagens de refeições. 
                 O serviço é oferecido para fins informativos e educacionais.
               </p>
@@ -37,7 +37,7 @@ export default function TermsPage() {
             <section className="bg-amber-50 border border-amber-200 rounded-xl p-4">
               <h2 className="text-lg font-semibold text-amber-800 mb-2">3. Aviso Legal Importante</h2>
               <p className="text-amber-900">
-                <strong>O NutriVision NÃO é um serviço médico ou de nutrição clínica.</strong>
+                <strong>O PicNutra NÃO é um serviço médico ou de nutrição clínica.</strong>
               </p>
               <ul className="list-disc pl-5 space-y-1 mt-2 text-amber-800">
                 <li>As análises são <strong>estimativas baseadas em imagem</strong> e podem conter imprecisões</li>
@@ -87,7 +87,7 @@ export default function TermsPage() {
 
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-2">6. Uso Adequado</h2>
-              <p>Ao usar o NutriVision, você concorda em:</p>
+              <p>Ao usar o PicNutra, você concorda em:</p>
               <ul className="list-disc pl-5 space-y-1 mt-2">
                 <li>Enviar apenas imagens de alimentos para análise</li>
                 <li>Não utilizar o serviço para fins ilegais</li>
@@ -100,7 +100,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-2">7. Limitação de Responsabilidade</h2>
               <p>
-                O NutriVision é fornecido "como está", sem garantias de qualquer tipo. 
+                O PicNutra é fornecido "como está", sem garantias de qualquer tipo. 
                 Não nos responsabilizamos por:
               </p>
               <ul className="list-disc pl-5 space-y-1 mt-2">
@@ -114,7 +114,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-2">8. Propriedade Intelectual</h2>
               <p>
-                Todo o conteúdo do NutriVision, incluindo design, código, textos e marca, 
+                Todo o conteúdo do PicNutra, incluindo design, código, textos e marca, 
                 é protegido por direitos autorais. É proibida a reprodução sem autorização.
               </p>
             </section>
@@ -133,7 +133,7 @@ export default function TermsPage() {
                 Para dúvidas sobre estes termos, entre em contato:
               </p>
               <p className="mt-2">
-                <strong>Email:</strong> nutrivision-contato@ai8hub.com
+                <strong>Email:</strong> picnutra-contato@ai8hub.com
               </p>
             </section>
           </div>

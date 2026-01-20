@@ -304,7 +304,7 @@ async def downgrade_to_free(current_user: User = Depends(get_current_user), db: 
 
 @router.post("/create-test-user", response_model=TokenResponse)
 async def create_test_user(db: AsyncSession = Depends(get_db)):
-    test_email = "teste@nutrivision.com"
+    test_email = "teste@picnutra.com"
     test_password = "teste123"
     
     result = await db.execute(select(User).where(User.email == test_email))

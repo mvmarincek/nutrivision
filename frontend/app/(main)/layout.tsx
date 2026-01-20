@@ -54,7 +54,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 <BowlLogo className="w-5 h-5 text-white" />
               </div>
               <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
-                Nutrivision
+                PicNutra
               </span>
               {user.plan === 'pro' && (
                 <div className="flex items-center gap-1 bg-gradient-to-r from-violet-500 to-purple-500 px-2 py-1 rounded-full shadow-sm ml-2">
@@ -69,7 +69,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 <BowlLogo className="w-5 h-5 text-white" />
               </div>
               <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
-                Nutrivision
+                PicNutra
               </span>
               {user.plan === 'pro' && (
                 <div className="flex items-center gap-1 bg-gradient-to-r from-violet-500 to-purple-500 px-2 py-1 rounded-full shadow-sm ml-2">
