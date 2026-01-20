@@ -69,6 +69,21 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+@app.get("/test-db")
+async def test_db():
+    from sqlalchemy import text
+    result = {"database": "unknown"}
+    try:
+        async with async_session() as db:
+            r = await db.execute(text("SELECT COUNT(*) FROM users"))
+            count = r.scalar()
+            result["database"] = "connected"
+            result["user_count"] = count
+    except Exception as e:
+        result["database"] = "error"
+        result["error"] = str(e)
+    return result
+
 @app.get("/test-email/{email}")
 async def test_email(email: str):
     import resend
