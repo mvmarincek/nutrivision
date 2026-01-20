@@ -3,6 +3,11 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy import text
 from app.core.config import settings
 
+Base = declarative_base()
+
+_engine = None
+_async_session = None
+
 def get_database_url():
     url = settings.DATABASE_URL
     if url.startswith("postgres://"):
@@ -11,12 +16,30 @@ def get_database_url():
         url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
     return url
 
-engine = create_async_engine(get_database_url(), echo=False)
-async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-Base = declarative_base()
+def get_engine():
+    global _engine
+    if _engine is None:
+        _engine = create_async_engine(
+            get_database_url(),
+            echo=False,
+            pool_pre_ping=True,
+            pool_recycle=300
+        )
+    return _engine
+
+def get_session_maker():
+    global _async_session
+    if _async_session is None:
+        _async_session = async_sessionmaker(
+            get_engine(),
+            class_=AsyncSession,
+            expire_on_commit=False
+        )
+    return _async_session
 
 async def get_db():
-    async with async_session() as session:
+    session_maker = get_session_maker()
+    async with session_maker() as session:
         try:
             yield session
             await session.commit()
@@ -69,7 +92,7 @@ async def init_db():
     from app.models import models
     try:
         async with asyncio.timeout(30):
-            async with engine.begin() as conn:
+            async with get_engine().begin() as conn:
                 await conn.run_sync(Base.metadata.create_all)
                 await run_migrations(conn)
         print("[DB] Database initialized successfully")
