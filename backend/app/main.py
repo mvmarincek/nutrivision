@@ -125,6 +125,17 @@ async def debug_user(share_token: str):
             result["total_meals"] = len(meals)
             result["meals"] = [{"id": m[0], "status": m[1], "type": m[2]} for m in meals]
             
+            for meal in result["meals"]:
+                analysis_r = await db.execute(text("SELECT id, calorias, macros FROM meal_analysis WHERE meal_id = :mid"), {"mid": meal["id"]})
+                analysis = analysis_r.fetchone()
+                if analysis:
+                    meal["has_analysis"] = True
+                    meal["analysis_id"] = analysis[0]
+                    meal["calorias"] = str(analysis[1])[:100] if analysis[1] else None
+                    meal["macros"] = str(analysis[2])[:100] if analysis[2] else None
+                else:
+                    meal["has_analysis"] = False
+            
     except Exception as e:
         result["error"] = str(e)
     return result
