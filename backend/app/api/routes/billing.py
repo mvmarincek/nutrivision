@@ -154,24 +154,20 @@ async def create_pix_payment(
         
         pix_data = await asaas_service.get_pix_qr_code(payment["id"])
         
-        try:
-            db_payment = Payment(
-                user_id=current_user.id,
-                asaas_payment_id=payment["id"],
-                payment_type="credits",
-                billing_type="PIX",
-                amount=value,
-                status="pending",
-                description=f"Compra de {credits} creditos",
-                credits_purchased=credits,
-                pix_code=pix_data.get("payload", ""),
-                pix_qr_code_url=pix_data.get("encodedImage", "")
-            )
-            db.add(db_payment)
-            await db.commit()
-        except Exception as db_error:
-            import logging
-            logging.getLogger(__name__).warning(f"Failed to save payment to DB: {db_error}")
+        db_payment = Payment(
+            user_id=current_user.id,
+            asaas_payment_id=payment["id"],
+            payment_type="credits",
+            billing_type="PIX",
+            amount=value,
+            status="pending",
+            description=f"Compra de {credits} creditos",
+            credits_purchased=credits,
+            pix_code=pix_data.get("payload", ""),
+            pix_qr_code_url=pix_data.get("encodedImage", "")
+        )
+        db.add(db_payment)
+        await db.commit()
         
         return CreatePixPaymentResponse(
             payment_id=payment["id"],
