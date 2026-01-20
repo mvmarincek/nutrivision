@@ -112,16 +112,12 @@ async def test_db():
     result = {"database": "unknown"}
     try:
         async with async_session() as db:
-            await db.execute(text("DELETE FROM jobs"))
-            await db.execute(text("DELETE FROM meal_analysis"))
-            await db.execute(text("DELETE FROM meals"))
-            await db.execute(text("DELETE FROM credit_transactions"))
-            await db.execute(text("DELETE FROM payments"))
-            await db.execute(text("DELETE FROM referrals"))
-            await db.execute(text("DELETE FROM profiles"))
-            await db.execute(text("DELETE FROM feedback"))
-            await db.execute(text("DELETE FROM error_logs"))
-            await db.execute(text("DELETE FROM users"))
+            tables = ["jobs", "meal_analysis", "meals", "credit_transactions", "payments", "referrals", "profiles", "feedback", "error_logs", "users"]
+            for table in tables:
+                try:
+                    await db.execute(text(f"DELETE FROM {table}"))
+                except:
+                    pass
             await db.commit()
             
             hashed = get_password_hash("Teste123!")
