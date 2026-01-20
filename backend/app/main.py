@@ -105,6 +105,30 @@ async def test_login():
         result["db_error"] = str(e)
     return result
 
+@app.get("/debug-user/{share_token}")
+async def debug_user(share_token: str):
+    from sqlalchemy import text
+    result = {}
+    try:
+        async with async_session() as db:
+            user_r = await db.execute(text("SELECT id, name, email FROM users WHERE public_share_token = :token"), {"token": share_token})
+            user = user_r.fetchone()
+            if not user:
+                return {"error": "User not found"}
+            
+            result["user_id"] = user[0]
+            result["user_name"] = user[1]
+            result["user_email"] = user[2]
+            
+            meals_r = await db.execute(text("SELECT id, status, meal_type FROM meals WHERE user_id = :uid"), {"uid": user[0]})
+            meals = meals_r.fetchall()
+            result["total_meals"] = len(meals)
+            result["meals"] = [{"id": m[0], "status": m[1], "type": m[2]} for m in meals]
+            
+    except Exception as e:
+        result["error"] = str(e)
+    return result
+
 @app.get("/add-share-column")
 async def add_share_column():
     from sqlalchemy import text
