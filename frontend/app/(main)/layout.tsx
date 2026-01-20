@@ -83,7 +83,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             </Link>
           )}
           <div className="flex items-center gap-3">
-            <LanguageSelector />
+            {/* <LanguageSelector /> */}
             {user.plan !== 'pro' && (
               <div className="flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-teal-50 px-3 py-1.5 rounded-full border border-emerald-100">
                 <Sparkles className="w-4 h-4 text-amber-500" />
