@@ -133,7 +133,7 @@ export default function TermsPage() {
                 Para dúvidas sobre estes termos, entre em contato:
               </p>
               <p className="mt-2">
-                <strong>Email:</strong> picnutra-contato@picnutra.com
+                <strong>Email:</strong> contato@picnutra.com
               </p>
             </section>
           </div>

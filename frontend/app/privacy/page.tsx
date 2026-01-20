@@ -104,7 +104,7 @@ export default function PrivacyPolicyPage() {
                 entre em contato conosco:
               </p>
               <p className="mt-2">
-                <strong>Email:</strong> picnutra-contato@picnutra.com
+                <strong>Email:</strong> contato@picnutra.com
               </p>
             </section>
 

@@ -15,7 +15,7 @@ export default function Footer() {
             <Link href="/about" className="text-gray-600 hover:text-green-600 transition-colors">
               Sobre
             </Link>
-            <a href="mailto:picnutra-contato@picnutra.com" className="text-gray-600 hover:text-green-600 transition-colors">
+            <a href="mailto:contato@picnutra.com" className="text-gray-600 hover:text-green-600 transition-colors">
               Contato
             </a>
           </div>
