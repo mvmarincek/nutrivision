@@ -105,6 +105,20 @@ async def test_login():
         result["db_error"] = str(e)
     return result
 
+@app.get("/add-share-column")
+async def add_share_column():
+    from sqlalchemy import text
+    result = {}
+    try:
+        async with async_session() as db:
+            await db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS public_share_token VARCHAR(64)"))
+            await db.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_public_share_token ON users(public_share_token)"))
+            await db.commit()
+            result["status"] = "Column public_share_token added successfully"
+    except Exception as e:
+        result["error"] = str(e)
+    return result
+
 @app.get("/debug-meal/{meal_id}")
 async def debug_meal(meal_id: int):
     from sqlalchemy import text

@@ -129,7 +129,7 @@ export default function HistoryPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">Histórico de Análises</h1>
-                <p className="text-emerald-100">Acompanhe sua jornada nutricional</p>
+                <p className="text-white font-bold text-sm">Compartilhe sua jornada nutricional com estatísticas detalhadas com seu nutricionista ou nutrólogo via QRCode!</p>
               </div>
             </div>
             <button
