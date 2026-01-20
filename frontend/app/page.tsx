@@ -51,9 +51,49 @@ export default function LandingPage() {
             Controle sua alimentação de forma simples e inteligente
           </h1>
           
-          <p className="text-emerald-100 text-base sm:text-lg mb-8 max-w-md mx-auto">
+          <p className="text-emerald-100 text-base sm:text-lg mb-6 max-w-md mx-auto">
             Descubra os nutrientes e as calorias estimadas das suas refeições com seu celular
           </p>
+
+          <div className="mb-6">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="relative group">
+                <div className="aspect-square rounded-2xl overflow-hidden shadow-lg border-2 border-white/30">
+                  <img 
+                    src="/demo-meal-1.png" 
+                    alt="Prato saudável analisado pelo PicNutra" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="absolute bottom-2 left-2 right-2 bg-white/95 backdrop-blur-sm rounded-xl p-2 shadow-lg">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Flame className="w-3.5 h-3.5 text-orange-500" />
+                    <span className="text-xs font-bold text-gray-800">~520 kcal</span>
+                  </div>
+                  <p className="text-[10px] text-gray-500">Bife grelhado, macarrão, grão-de-bico e salada</p>
+                </div>
+              </div>
+              <div className="relative group">
+                <div className="aspect-square rounded-2xl overflow-hidden shadow-lg border-2 border-white/30">
+                  <img 
+                    src="/demo-meal-2.png" 
+                    alt="Refeição balanceada analisada pelo PicNutra" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="absolute bottom-2 left-2 right-2 bg-white/95 backdrop-blur-sm rounded-xl p-2 shadow-lg">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Flame className="w-3.5 h-3.5 text-orange-500" />
+                    <span className="text-xs font-bold text-gray-800">~480 kcal</span>
+                  </div>
+                  <p className="text-[10px] text-gray-500">Filé mignon com batatas rústicas e molho</p>
+                </div>
+              </div>
+            </div>
+            <p className="text-center text-xs text-emerald-200 mt-3">
+              Análises reais feitas pelo PicNutra em segundos
+            </p>
+          </div>
           
           <Link 
             href="/register"
@@ -87,50 +127,6 @@ export default function LandingPage() {
             melhor o que consome no dia a dia. Crie um histórico alimentar completo para 
             acompanhar sua evolução e compartilhar com seu nutricionista ou nutrólogo, 
             tornando suas escolhas mais conscientes e equilibradas.
-          </p>
-        </div>
-
-        <div className="mb-8">
-          <h2 className="text-lg font-bold text-gray-900 mb-4 text-center flex items-center justify-center gap-2">
-            <Camera className="w-5 h-5 text-emerald-500" />
-            Veja o poder da análise
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="relative group">
-              <div className="aspect-square rounded-2xl overflow-hidden shadow-lg shadow-gray-200/50 border-2 border-white">
-                <img 
-                  src="/demo-meal-1.png" 
-                  alt="Prato saudável analisado pelo PicNutra" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="absolute bottom-2 left-2 right-2 bg-white/95 backdrop-blur-sm rounded-xl p-2 shadow-lg">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Flame className="w-3.5 h-3.5 text-orange-500" />
-                  <span className="text-xs font-bold text-gray-800">~520 kcal</span>
-                </div>
-                <p className="text-[10px] text-gray-500">Bife grelhado, macarrão, grão-de-bico e salada</p>
-              </div>
-            </div>
-            <div className="relative group">
-              <div className="aspect-square rounded-2xl overflow-hidden shadow-lg shadow-gray-200/50 border-2 border-white">
-                <img 
-                  src="/demo-meal-2.png" 
-                  alt="Refeição balanceada analisada pelo PicNutra" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="absolute bottom-2 left-2 right-2 bg-white/95 backdrop-blur-sm rounded-xl p-2 shadow-lg">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Flame className="w-3.5 h-3.5 text-orange-500" />
-                  <span className="text-xs font-bold text-gray-800">~480 kcal</span>
-                </div>
-                <p className="text-[10px] text-gray-500">Filé mignon com batatas rústicas e molho</p>
-              </div>
-            </div>
-          </div>
-          <p className="text-center text-xs text-gray-400 mt-3">
-            Análises reais feitas pelo PicNutra em segundos
           </p>
         </div>
 
