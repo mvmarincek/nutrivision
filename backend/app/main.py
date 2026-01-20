@@ -112,7 +112,7 @@ async def test_db():
     result = {"database": "unknown", "deleted": []}
     try:
         async with async_session() as db:
-            tables = ["jobs", "meal_analysis", "meals", "credit_transactions", "payments", "referrals", "profiles", "error_logs"]
+            tables = ["jobs", "meal_analysis", "meals", "credit_transactions", "payments", "referrals", "profiles", "error_logs", "email_logs"]
             for table in tables:
                 try:
                     await db.execute(text(f"DELETE FROM {table}"))
