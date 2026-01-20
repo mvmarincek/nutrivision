@@ -88,7 +88,7 @@ async def migrate():
                 ('app_url', 'https://picnutra.vercel.app', 'URL base da aplicacao'),
                 ('frontend_url', 'https://picnutra.vercel.app', 'URL do frontend para links nos emails'),
                 ('from_name', 'PicNutra', 'Nome do remetente nos emails'),
-                ('from_email', 'picnutra-noreply@picnutra.com', 'Email do remetente'),
+                ('from_email', 'noreply@picnutra.com', 'Email do remetente'),
                 ('welcome_credits', '36', 'Creditos de bonus para novos usuarios'),
                 ('referral_credits', '12', 'Creditos por indicacao')
             ON CONFLICT (key) DO NOTHING""",

@@ -16,7 +16,7 @@ DEFAULT_SETTINGS = {
     "app_url": "https://picnutra.vercel.app",
     "frontend_url": "https://picnutra.vercel.app",
     "from_name": "PicNutra",
-    "from_email": "picnutra-noreply@picnutra.com",
+    "from_email": "noreply@picnutra.com",
     "welcome_credits": "36",
     "referral_credits": "12"
 }
