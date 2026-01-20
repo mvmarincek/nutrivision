@@ -262,7 +262,7 @@ async def create_card_payment(
                 credits_added=credits,
                 balance_after=current_user.credit_balance,
                 transaction_type="purchase",
-                description=f"Compra de {credits} creditos (Cartao)"
+                description=f"Compra de {credits} creditos (Cartao) - {payment['id']}"
             )
             db.add(transaction)
             await db.commit()
@@ -492,6 +492,7 @@ async def asaas_webhook(
         if db_payment:
             db_payment.status = "confirmed"
             db_payment.paid_at = datetime.utcnow()
+            await db.commit()
         
         if external_reference:
             try:

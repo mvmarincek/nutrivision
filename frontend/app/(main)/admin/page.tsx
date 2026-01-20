@@ -760,7 +760,7 @@ export default function AdminPage() {
                     <td className="px-4 py-4">
                       <span className="text-xs text-gray-600">{p.billing_type} - {p.payment_type}</span>
                     </td>
-                    <td className="px-4 py-4 font-semibold text-gray-900">{formatPrice(p.amount)}</td>
+                    <td className="px-4 py-4 font-semibold text-gray-900">{formatPrice(p.amount * 100)}</td>
                     <td className="px-4 py-4">
                       <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
                         p.status === 'confirmed' ? 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700' : 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700'
