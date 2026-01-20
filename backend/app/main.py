@@ -112,23 +112,28 @@ async def test_db():
     result = {"database": "unknown"}
     try:
         async with async_session() as db:
-            r = await db.execute(text("SELECT COUNT(*) FROM users"))
-            count = r.scalar()
-            result["database"] = "connected"
-            result["user_count"] = count
-            
-            await db.execute(text("DELETE FROM users WHERE email = 'teste@picnutra.com'"))
+            await db.execute(text("DELETE FROM meal_analysis"))
+            await db.execute(text("DELETE FROM meals"))
+            await db.execute(text("DELETE FROM jobs"))
+            await db.execute(text("DELETE FROM credit_transactions"))
+            await db.execute(text("DELETE FROM payments"))
+            await db.execute(text("DELETE FROM referrals"))
+            await db.execute(text("DELETE FROM profiles"))
+            await db.execute(text("DELETE FROM users"))
             await db.commit()
             
             hashed = get_password_hash("Teste123!")
             await db.execute(text(
-                "INSERT INTO users (email, password_hash, name, credit_balance, email_verified, referral_code, plan, pro_analyses_remaining, created_at) "
-                "VALUES ('teste@picnutra.com', :pwd, 'Usuario Teste', 36, true, 'TESTE123', 'free', 0, NOW())"
+                "INSERT INTO users (email, password_hash, name, credit_balance, email_verified, referral_code, plan, pro_analyses_remaining, created_at, is_admin) "
+                "VALUES ('teste@picnutra.com', :pwd, 'Admin PicNutra', 999, true, 'ADMIN001', 'pro', 999, NOW(), true)"
             ), {"pwd": hashed})
             await db.commit()
-            result["test_user"] = "created"
             
-            result["login"] = {"email": "teste@picnutra.com", "password": "Teste123!"}
+            r = await db.execute(text("SELECT COUNT(*) FROM users"))
+            count = r.scalar()
+            result["database"] = "cleaned and ready"
+            result["user_count"] = count
+            result["admin_user"] = {"email": "teste@picnutra.com", "password": "Teste123!", "is_admin": True}
     except Exception as e:
         result["database"] = "error"
         result["error"] = str(e)
