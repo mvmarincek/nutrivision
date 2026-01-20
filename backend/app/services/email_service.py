@@ -44,17 +44,15 @@ def get_email_logo():
             <stop offset="0%" style="stop-color:#10b981"/><stop offset="50%" style="stop-color:#14b8a6"/><stop offset="100%" style="stop-color:#06b6d4"/>
         </linearGradient></defs>
         <rect width="48" height="48" rx="10" fill="url(#bgGrad)"/>
-        <rect x="6" y="10" width="36" height="28" rx="5" fill="white"/>
-        <circle cx="24" cy="24" r="10.5" fill="url(#bgGrad)"/>
-        <circle cx="24" cy="24" r="8.5" stroke="white" stroke-width="1.5" fill="none"/>
-        <circle cx="24" cy="24" r="3.5" fill="white"/>
-        <rect x="13" y="6" width="9" height="5" rx="1.5" fill="white"/>
-        <circle cx="35" cy="13" r="2.5" fill="white"/>
-        <circle cx="35" cy="13" r="1.2" fill="url(#bgGrad)" opacity="0.5"/>
-        <circle cx="19.5" cy="21" r="1.8" fill="#22c55e"/>
-        <circle cx="27.5" cy="20" r="1.4" fill="#fb923c"/>
-        <circle cx="26.5" cy="27" r="1.8" fill="#ef4444"/>
-        <circle cx="20.5" cy="26" r="1.3" fill="#eab308"/>
+        <rect x="7" y="12" width="34" height="26" rx="6" fill="white"/>
+        <rect x="18" y="7" width="8" height="6" rx="2" fill="white"/>
+        <circle cx="24" cy="25" r="10" stroke="url(#bgGrad)" stroke-width="2.5" fill="none"/>
+        <circle cx="24" cy="25" r="4" fill="white"/>
+        <circle cx="38" cy="14" r="2" fill="#14b8a6" opacity="0.6"/>
+        <circle cx="19" cy="22" r="2" fill="#22c55e"/>
+        <circle cx="28" cy="21" r="1.8" fill="#fb923c"/>
+        <circle cx="20" cy="28" r="1.6" fill="#eab308"/>
+        <circle cx="28" cy="27" r="2" fill="#ef4444"/>
     </svg>'''
 
 def get_email_header(title: str, subtitle: str = "", gradient: str = "linear-gradient(135deg, #10b981, #14b8a6, #06b6d4)"):
