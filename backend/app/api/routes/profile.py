@@ -171,6 +171,7 @@ async def get_public_history(
     
     return {
         "user_name": user.name or "Usuário",
+        "referral_code": user.referral_code,
         "total_meals": total_meals,
         "averages": {
             "calorias": round(avg_calorias, 1),

@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Calendar, Flame, TrendingUp, BarChart3 } from 'lucide-react';
+import { Calendar, Flame, TrendingUp, BarChart3, Gift, Camera } from 'lucide-react';
 import BowlLogo from '@/components/BowlLogo';
 import Image from 'next/image';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface MealHistory {
   id: number;
@@ -20,6 +21,7 @@ interface MealHistory {
 
 interface PublicHistory {
   user_name: string;
+  referral_code: string | null;
   total_meals: number;
   averages: {
     calorias: number;
@@ -37,6 +39,7 @@ export default function PublicHistoryPage() {
   const [data, setData] = useState<PublicHistory | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showQRModal, setShowQRModal] = useState(false);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://nutrivision-api-dcr0.onrender.com';
 
@@ -167,6 +170,58 @@ export default function PublicHistoryPage() {
           </div>
         </div>
 
+        {data.referral_code && (
+          <button
+            onClick={() => setShowQRModal(true)}
+            className="w-full mb-6 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white rounded-2xl p-4 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all"
+          >
+            <Camera className="w-6 h-6" />
+            <span className="font-bold text-lg">Começar Grátis</span>
+            <Gift className="w-5 h-5 text-yellow-300" />
+          </button>
+        )}
+
+        {showQRModal && data.referral_code && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowQRModal(false)}>
+            <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="text-center mb-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <Gift className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Indicação de {data.user_name.split(' ')[0]}</h3>
+                <p className="text-gray-500 text-sm mt-1">Escaneie o QR Code para criar sua conta com bônus!</p>
+              </div>
+
+              <div className="bg-gray-50 rounded-2xl p-4 flex justify-center mb-4">
+                <QRCodeSVG 
+                  value={`https://picnutra.vercel.app/register?ref=${data.referral_code}`}
+                  size={180}
+                  level="M"
+                />
+              </div>
+
+              <div className="text-center mb-4">
+                <p className="text-emerald-600 font-bold">🎁 Ganhe créditos de bônus!</p>
+                <p className="text-gray-500 text-xs mt-1">Ao se cadastrar com esta indicação</p>
+              </div>
+
+              <a
+                href={`https://picnutra.vercel.app/register?ref=${data.referral_code}`}
+                className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+              >
+                Criar minha conta grátis
+              </a>
+
+              <button
+                onClick={() => setShowQRModal(false)}
+                className="w-full py-3 mt-2 text-gray-500 font-medium"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        )}
+
         <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
           <Calendar className="w-5 h-5 text-emerald-500" />
           Refeições Recentes
@@ -209,12 +264,6 @@ export default function PublicHistoryPage() {
           <p className="text-xs text-gray-400">
             Histórico gerado pelo PicNutra
           </p>
-          <a 
-            href="https://picnutra.vercel.app" 
-            className="text-emerald-600 text-sm font-medium hover:underline"
-          >
-            Criar minha conta grátis
-          </a>
         </div>
       </div>
     </div>
