@@ -7,6 +7,7 @@ import {
   Image as ImageIcon, Target, Award, Users, CreditCard, UserCircle, Gift, Share2, QrCode
 } from 'lucide-react';
 import BowlLogo from '@/components/BowlLogo';
+import ReceptionistChat from '@/components/ReceptionistChat';
 
 export default function LandingPage() {
   return (
@@ -550,6 +551,8 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <ReceptionistChat />
     </div>
   );
 }
