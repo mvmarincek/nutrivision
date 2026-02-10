@@ -34,8 +34,8 @@ class UserResponse(BaseModel):
     pix_key: Optional[str] = None
     phone: Optional[str] = None
     plan: str
-    credit_balance: int
-    pro_analyses_remaining: int
+    simple_analyses_used: int = 0
+    full_analyses_used: int = 0
     referral_code: Optional[str] = None
     email_verified: bool = False
     is_admin: bool = False
@@ -188,7 +188,6 @@ class ReferredUserInfo(BaseModel):
 
 class MyReferralsResponse(BaseModel):
     total_referred: int
-    total_credits_earned: int
     total_commission_earned: float = 0.0
     commission_balance: float = 0.0
     commission_rate: float

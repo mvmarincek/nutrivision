@@ -9,11 +9,11 @@ import logging
 import traceback
 
 from app.db.database import get_db
-from app.models.models import User, CreditTransaction, Payment, ErrorLog, Commission
+from app.models.models import User, Payment, ErrorLog, Commission
 from app.core.security import get_current_user
 from app.core.config import settings
 from app.services.asaas_service import asaas_service, AsaasError
-from app.services.email_service import send_credits_purchased_email, send_upgraded_to_pro_email, send_subscription_cancelled_email, send_subscription_renewed_email, flush_email_logs
+from app.services.email_service import send_upgraded_to_pro_email, send_subscription_cancelled_email, send_subscription_renewed_email, flush_email_logs
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -40,25 +40,9 @@ async def log_billing_error(
 
 router = APIRouter(prefix="/billing", tags=["billing"])
 
-class CreatePixPaymentRequest(BaseModel):
-    package: str
-    cpf: str
-
-class CreateCardPaymentRequest(BaseModel):
-    package: str
-    card_holder_name: str
-    card_number: str
-    expiry_month: str
-    expiry_year: str
-    cvv: str
-    holder_cpf: str
-    holder_phone: str
-    postal_code: str
-    address_number: str
-
 class CreateProSubscriptionRequest(BaseModel):
     billing_type: str
-    plan_type: str = "pro"
+    plan_type: str = "basic"
     card_holder_name: Optional[str] = None
     card_number: Optional[str] = None
     expiry_month: Optional[str] = None
@@ -69,33 +53,22 @@ class CreateProSubscriptionRequest(BaseModel):
     postal_code: Optional[str] = None
     address_number: Optional[str] = None
 
-class CreatePixPaymentResponse(BaseModel):
-    payment_id: str
-    pix_code: str
-    pix_qr_code_base64: str
-    value: float
-    expiration_date: str
-
 class PaymentStatusResponse(BaseModel):
     status: str
     confirmed: bool
 
 class BillingStatusResponse(BaseModel):
     plan: str
-    credit_balance: int
-    pro_analyses_remaining: int
+    simple_analyses_used: int
+    full_analyses_used: int
     has_subscription: bool
-
-@router.get("/packages")
-async def get_packages():
-    return settings.CREDIT_PACKAGES
 
 @router.get("/status", response_model=BillingStatusResponse)
 async def get_billing_status(current_user: User = Depends(get_current_user)):
     return BillingStatusResponse(
         plan=current_user.plan,
-        credit_balance=current_user.credit_balance,
-        pro_analyses_remaining=current_user.pro_analyses_remaining or 0,
+        simple_analyses_used=current_user.simple_analyses_used or 0,
+        full_analyses_used=current_user.full_analyses_used or 0,
         has_subscription=bool(current_user.asaas_subscription_id)
     )
 
@@ -124,180 +97,14 @@ async def get_or_create_customer(user: User, db: AsyncSession, cpf: Optional[str
     await db.commit()
     return customer["id"]
 
-@router.post("/create-pix-payment", response_model=CreatePixPaymentResponse)
-async def create_pix_payment(
-    request: CreatePixPaymentRequest,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    if request.package not in settings.CREDIT_PACKAGES:
-        raise HTTPException(status_code=400, detail="Pacote invalido")
-    
-    package = settings.CREDIT_PACKAGES[request.package]
-    value = package["price"] / 100
-    credits = package["credits"]
-    
-    try:
-        customer_id = await get_or_create_customer(current_user, db, cpf=request.cpf)
-        
-        external_reference = json.dumps({
-            "user_id": current_user.id,
-            "credits": credits,
-            "type": "credits"
-        })
-        
-        payment = await asaas_service.create_pix_payment(
-            customer_id=customer_id,
-            value=value,
-            description=f"PicNutra - {credits} Creditos",
-            external_reference=external_reference
-        )
-        
-        pix_data = await asaas_service.get_pix_qr_code(payment["id"])
-        
-        db_payment = Payment(
-            user_id=current_user.id,
-            asaas_payment_id=payment["id"],
-            payment_type="credits",
-            billing_type="PIX",
-            amount=value,
-            status="pending",
-            description=f"Compra de {credits} creditos",
-            credits_purchased=credits,
-            pix_code=pix_data.get("payload", ""),
-            pix_qr_code_url=pix_data.get("encodedImage", "")
-        )
-        db.add(db_payment)
-        await db.commit()
-        
-        return CreatePixPaymentResponse(
-            payment_id=payment["id"],
-            pix_code=pix_data.get("payload", ""),
-            pix_qr_code_base64=pix_data.get("encodedImage", ""),
-            value=value,
-            expiration_date=pix_data.get("expirationDate", "")
-        )
-    
-    except AsaasError as e:
-        await log_billing_error(
-            db=db,
-            error_type="pix_payment",
-            error_message=e.message,
-            user_id=current_user.id,
-            extra_data=e.to_dict()
-        )
-        raise HTTPException(status_code=400, detail=f"Erro ao criar pagamento: {e.message}")
-    except Exception as e:
-        await log_billing_error(
-            db=db,
-            error_type="pix_payment",
-            error_message=str(e),
-            user_id=current_user.id,
-            extra_data={"package": request.package, "error_type": type(e).__name__}
-        )
-        raise HTTPException(status_code=400, detail=f"Erro ao criar pagamento: {str(e)}")
-
-@router.post("/create-card-payment")
-async def create_card_payment(
-    request: CreateCardPaymentRequest,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    if request.package not in settings.CREDIT_PACKAGES:
-        raise HTTPException(status_code=400, detail="Pacote invalido")
-    
-    package = settings.CREDIT_PACKAGES[request.package]
-    value = package["price"] / 100
-    credits = package["credits"]
-    
-    try:
-        customer_id = await get_or_create_customer(current_user, db, cpf=request.holder_cpf)
-        
-        external_reference = json.dumps({
-            "user_id": current_user.id,
-            "credits": credits,
-            "type": "credits"
-        })
-        
-        payment = await asaas_service.create_credit_card_payment(
-            customer_id=customer_id,
-            value=value,
-            description=f"PicNutra - {credits} Creditos",
-            external_reference=external_reference,
-            card_holder_name=request.card_holder_name,
-            card_number=request.card_number,
-            expiry_month=request.expiry_month,
-            expiry_year=request.expiry_year,
-            cvv=request.cvv,
-            holder_cpf=request.holder_cpf,
-            holder_email=current_user.email,
-            holder_phone=request.holder_phone,
-            postal_code=request.postal_code,
-            address_number=request.address_number
-        )
-        
-        payment_status = "confirmed" if payment.get("status") == "CONFIRMED" else "pending"
-        
-        db_payment = Payment(
-            user_id=current_user.id,
-            asaas_payment_id=payment["id"],
-            payment_type="credits",
-            billing_type="CREDIT_CARD",
-            amount=value,
-            status=payment_status,
-            description=f"Compra de {credits} creditos (Cartao)",
-            credits_purchased=credits,
-            paid_at=datetime.utcnow() if payment_status == "confirmed" else None
-        )
-        db.add(db_payment)
-        
-        if payment.get("status") == "CONFIRMED":
-            current_user.credit_balance += credits
-            
-            transaction = CreditTransaction(
-                user_id=current_user.id,
-                credits_added=credits,
-                balance_after=current_user.credit_balance,
-                transaction_type="purchase",
-                description=f"Compra de {credits} creditos (Cartao) - {payment['id']}"
-            )
-            db.add(transaction)
-            await db.commit()
-            
-            send_credits_purchased_email(current_user.email, credits, current_user.credit_balance, current_user.id)
-            
-            return {"status": "confirmed", "credits_added": credits, "new_balance": current_user.credit_balance}
-        
-        await db.commit()
-        return {"status": payment.get("status", "pending"), "payment_id": payment["id"]}
-    
-    except AsaasError as e:
-        await log_billing_error(
-            db=db,
-            error_type="card_payment",
-            error_message=e.message,
-            user_id=current_user.id,
-            extra_data=e.to_dict()
-        )
-        raise HTTPException(status_code=400, detail=f"Erro ao processar pagamento: {e.message}")
-    except Exception as e:
-        await log_billing_error(
-            db=db,
-            error_type="card_payment",
-            error_message=str(e),
-            user_id=current_user.id,
-            extra_data={"package": request.package, "error_type": type(e).__name__}
-        )
-        raise HTTPException(status_code=400, detail=f"Erro ao processar pagamento: {str(e)}")
-
 @router.post("/create-pro-subscription")
 async def create_pro_subscription(
     request: CreateProSubscriptionRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    plan_type = request.plan_type or "pro"
-    if plan_type not in ["pro", "intermediate"]:
+    plan_type = request.plan_type or "basic"
+    if plan_type not in ["basic", "pro", "premium"]:
         raise HTTPException(status_code=400, detail="Tipo de plano invalido")
     
     if current_user.plan == plan_type:
@@ -306,12 +113,12 @@ async def create_pro_subscription(
     if request.billing_type not in ["PIX", "CREDIT_CARD"]:
         raise HTTPException(status_code=400, detail="Tipo de pagamento invalido")
     
-    if plan_type == "intermediate":
-        price = settings.INTERMEDIATE_MONTHLY_PRICE / 100
-        plan_label = "Intermediario"
-    else:
-        price = settings.PRO_MONTHLY_PRICE / 100
-        plan_label = "PRO"
+    plan_config = {
+        "basic": (settings.BASIC_MONTHLY_PRICE / 100, "Basico"),
+        "pro": (settings.PRO_MONTHLY_PRICE / 100, "PRO"),
+        "premium": (settings.PREMIUM_MONTHLY_PRICE / 100, "Premium"),
+    }
+    price, plan_label = plan_config[plan_type]
     
     try:
         cpf = request.holder_cpf if request.holder_cpf else None
@@ -400,8 +207,9 @@ async def create_pro_subscription(
             
             current_user.asaas_subscription_id = subscription["id"]
             current_user.plan = plan_type
-            if plan_type == "pro":
-                current_user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
+            current_user.simple_analyses_used = 0
+            current_user.full_analyses_used = 0
+            current_user.analyses_reset_at = datetime.utcnow()
             current_user.pro_started_at = datetime.utcnow()
             await db.commit()
             send_upgraded_to_pro_email(current_user.email, current_user.id)
@@ -442,7 +250,6 @@ async def cancel_subscription(
         user_email = current_user.email
         current_user.asaas_subscription_id = None
         current_user.plan = "free"
-        current_user.pro_analyses_remaining = 0
         await db.commit()
         
         send_subscription_cancelled_email(user_email, current_user.id)
@@ -563,7 +370,6 @@ async def asaas_webhook(
             try:
                 ref_data = json.loads(external_reference)
                 user_id = ref_data.get("user_id")
-                credits = ref_data.get("credits")
                 payment_type = ref_data.get("type")
                 
                 logger.info(f"[webhook] Processing payment for user_id={user_id}, type={payment_type}")
@@ -572,55 +378,23 @@ async def asaas_webhook(
                     result = await db.execute(select(User).where(User.id == int(user_id)))
                     user = result.scalar_one_or_none()
                     
-                    if user:
-                        if payment_type == "credits" and credits:
-                            existing = await db.execute(
-                                select(CreditTransaction).where(
-                                    CreditTransaction.transaction_type == "purchase",
-                                    CreditTransaction.description.contains(asaas_payment_id) if asaas_payment_id else False
-                                )
-                            )
-                            if existing.scalar_one_or_none():
-                                logger.info(f"[webhook] Payment {asaas_payment_id} already processed")
-                                return {"status": "already_processed"}
-                            
-                            user.credit_balance += int(credits)
-                            
-                            transaction = CreditTransaction(
-                                user_id=user.id,
-                                credits_added=int(credits),
-                                balance_after=user.credit_balance,
-                                transaction_type="purchase",
-                                description=f"Compra de {credits} creditos - {asaas_payment_id}"
-                            )
-                            db.add(transaction)
-                            await db.commit()
-                            
-                            logger.info(f"[webhook] Added {credits} credits to user_id={user_id}")
-                            send_credits_purchased_email(user.email, int(credits), user.credit_balance, user.id)
-                            await flush_email_logs(db)
-                            
-                            if db_payment:
-                                payment_value = payment.get("value", 0)
-                                if payment_value and float(payment_value) > 0:
-                                    await calculate_partner_commission(db, user, db_payment, float(payment_value))
-                            
-                            return {"status": "credits_added", "credits": credits}
-                        
-                        elif payment_type == "pro_subscription":
-                            sub_plan_type = ref_data.get("plan_type", "pro")
-                            if user.plan not in ["pro", "intermediate"] or user.plan != sub_plan_type:
+                    if user and payment_type == "pro_subscription":
+                            sub_plan_type = ref_data.get("plan_type", "basic")
+                            if user.plan != sub_plan_type:
                                 user.plan = sub_plan_type
-                                if sub_plan_type == "pro":
-                                    user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
+                                user.simple_analyses_used = 0
+                                user.full_analyses_used = 0
+                                user.analyses_reset_at = datetime.utcnow()
                                 user.pro_started_at = datetime.utcnow()
                                 
                                 if not user.asaas_subscription_id and user.asaas_customer_id:
                                     try:
-                                        from datetime import timedelta
-                                        next_month = datetime.utcnow() + timedelta(days=30)
-                                        sub_price = settings.PRO_MONTHLY_PRICE / 100 if sub_plan_type == "pro" else settings.INTERMEDIATE_MONTHLY_PRICE / 100
-                                        sub_label = "PRO" if sub_plan_type == "pro" else "Intermediario"
+                                        plan_prices = {
+                                            "basic": (settings.BASIC_MONTHLY_PRICE / 100, "Basico"),
+                                            "pro": (settings.PRO_MONTHLY_PRICE / 100, "PRO"),
+                                            "premium": (settings.PREMIUM_MONTHLY_PRICE / 100, "Premium"),
+                                        }
+                                        sub_price, sub_label = plan_prices.get(sub_plan_type, (settings.BASIC_MONTHLY_PRICE / 100, "Basico"))
                                         
                                         subscription = await asaas_service.create_subscription(
                                             customer_id=user.asaas_customer_id,
@@ -648,13 +422,14 @@ async def asaas_webhook(
                                     if payment_value and float(payment_value) > 0:
                                         await calculate_partner_commission(db, user, db_payment, float(payment_value))
                                 
-                                return {"status": "pro_activated"}
+                                return {"status": "plan_activated", "plan": sub_plan_type}
                             else:
-                                if sub_plan_type == "pro":
-                                    user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
+                                user.simple_analyses_used = 0
+                                user.full_analyses_used = 0
+                                user.analyses_reset_at = datetime.utcnow()
                                 await db.commit()
                                 logger.info(f"[webhook] {sub_plan_type} renewed for user_id={user_id}")
-                                send_subscription_renewed_email(user.email, settings.PRO_MONTHLY_ANALYSES, user.id)
+                                send_subscription_renewed_email(user.email, 0, user.id)
                                 await flush_email_logs(db)
                                 
                                 if db_payment:
@@ -662,7 +437,7 @@ async def asaas_webhook(
                                     if payment_value and float(payment_value) > 0:
                                         await calculate_partner_commission(db, user, db_payment, float(payment_value))
                                 
-                                return {"status": "pro_renewed"}
+                                return {"status": "plan_renewed"}
                             
             except json.JSONDecodeError:
                 logger.error(f"[webhook] Failed to parse externalReference: {external_reference}")
@@ -678,8 +453,8 @@ async def asaas_webhook(
                 if user_id and payment_type == "pro_subscription":
                     result = await db.execute(select(User).where(User.id == int(user_id)))
                     user = result.scalar_one_or_none()
-                    if user and user.plan == "pro":
-                        logger.warning(f"[webhook] Payment overdue for PRO user_id={user_id}")
+                    if user and user.plan in ["basic", "pro", "premium"]:
+                        logger.warning(f"[webhook] Payment overdue for {user.plan} user_id={user_id}")
             except json.JSONDecodeError:
                 pass
     
@@ -724,8 +499,7 @@ async def debug_pix_payment(
         result["step"] = "create_payment"
         external_reference = json.dumps({
             "user_id": current_user.id,
-            "credits": 10,
-            "type": "credits"
+            "type": "debug_pix"
         })
         
         payment = await asaas_service.create_pix_payment(
@@ -780,21 +554,35 @@ async def test_confirm_payment(
     db_payment.paid_at = datetime.utcnow()
     
     if db_payment.payment_type == "pro_subscription":
-        current_user.plan = "pro"
-        current_user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
+        plan_type = "basic"
+        if db_payment.amount and db_payment.amount >= 49:
+            plan_type = "premium"
+        elif db_payment.amount and db_payment.amount >= 19:
+            plan_type = "pro"
+        
+        current_user.plan = plan_type
+        current_user.simple_analyses_used = 0
+        current_user.full_analyses_used = 0
+        current_user.analyses_reset_at = datetime.utcnow()
         current_user.pro_started_at = datetime.utcnow()
         
         if not current_user.asaas_subscription_id and current_user.asaas_customer_id:
             try:
+                plan_prices = {
+                    "basic": (settings.BASIC_MONTHLY_PRICE / 100, "Basico"),
+                    "pro": (settings.PRO_MONTHLY_PRICE / 100, "PRO"),
+                    "premium": (settings.PREMIUM_MONTHLY_PRICE / 100, "Premium"),
+                }
+                sub_price, sub_label = plan_prices.get(plan_type, (settings.BASIC_MONTHLY_PRICE / 100, "Basico"))
                 subscription = await asaas_service.create_subscription(
                     customer_id=current_user.asaas_customer_id,
-                    value=settings.PRO_MONTHLY_PRICE / 100,
+                    value=sub_price,
                     billing_type="PIX",
-                    description="PicNutra PRO - Assinatura Mensal",
+                    description=f"PicNutra {sub_label} - Assinatura Mensal",
                     external_reference=json.dumps({
                         "user_id": current_user.id,
                         "type": "pro_subscription",
-                        "plan_type": "pro"
+                        "plan_type": plan_type
                     })
                 )
                 current_user.asaas_subscription_id = subscription.get("id")
@@ -808,41 +596,9 @@ async def test_confirm_payment(
         
         return {
             "status": "success",
-            "message": "Pagamento confirmado! Voce agora e PRO!",
-            "plan": "pro",
-            "pro_analyses_remaining": current_user.pro_analyses_remaining,
+            "message": f"Pagamento confirmado! Plano {plan_type} ativado!",
+            "plan": plan_type,
             "subscription_id": current_user.asaas_subscription_id
-        }
-    
-    elif db_payment.payment_type == "credits":
-        credits = 10
-        if db_payment.amount == 9.90:
-            credits = 10
-        elif db_payment.amount == 24.90:
-            credits = 30
-        elif db_payment.amount == 39.90:
-            credits = 50
-        
-        current_user.credit_balance += credits
-        
-        transaction = CreditTransaction(
-            user_id=current_user.id,
-            credits_added=credits,
-            balance_after=current_user.credit_balance,
-            transaction_type="purchase",
-            description=f"Compra de {credits} creditos (teste) - {payment_id}"
-        )
-        db.add(transaction)
-        await db.commit()
-        
-        send_credits_purchased_email(current_user.email, credits, current_user.credit_balance)
-        await flush_email_logs(db)
-        
-        return {
-            "status": "success",
-            "message": f"Pagamento confirmado! {credits} creditos adicionados!",
-            "credits_added": credits,
-            "new_balance": current_user.credit_balance
         }
     
     await db.commit()

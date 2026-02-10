@@ -24,42 +24,70 @@ class NutriOrchestrator:
         self.image_generator = ImageGenerationManager(openai_api_key)
     
     async def validate_credits(self, user: User, mode: str) -> tuple[bool, str]:
-        logger.info(f"[validate_credits] user_id={user.id}, mode={mode}, plan={user.plan}, pro_remaining={user.pro_analyses_remaining}")
-        if mode == "simple":
-            return True, "free_unlimited"
-        if user.plan == "pro" and user.pro_analyses_remaining > 0:
-            logger.info(f"[validate_credits] Using pro_quota for user_id={user.id}")
-            return True, "pro_quota"
-        cost = settings.CREDIT_COST_FULL
-        if user.credit_balance >= cost:
-            return True, "credits"
-        return False, f"Créditos insuficientes. Necessário: {cost}, Disponível: {user.credit_balance}"
+        from datetime import datetime, timedelta
+        logger.info(f"[validate_analysis] user_id={user.id}, mode={mode}, plan={user.plan}")
+        
+        if user.plan == "free":
+            if mode == "simple":
+                if user.trial_days_used < settings.TRIAL_MAX_DAYS:
+                    return True, "trial"
+                return False, "Seu período de teste expirou. Assine um plano para continuar."
+            return False, "Análise completa não disponível no plano gratuito. Assine o plano PRO ou PREMIUM."
+        
+        if user.plan == "basic":
+            if mode == "full":
+                return False, "Análise completa não disponível no plano Básico. Faça upgrade para PRO ou PREMIUM."
+            if user.simple_analyses_used < settings.BASIC_MONTHLY_SIMPLE:
+                return True, "basic_quota"
+            return False, f"Você atingiu o limite de {settings.BASIC_MONTHLY_SIMPLE} análises simples este mês. Faça upgrade para continuar."
+        
+        if user.plan == "pro":
+            if mode == "simple":
+                return True, "pro_unlimited_simple"
+            if user.full_analyses_used < settings.PRO_MONTHLY_FULL:
+                return True, "pro_quota"
+            return False, f"Você atingiu o limite de {settings.PRO_MONTHLY_FULL} análises completas este mês. Faça upgrade para PREMIUM."
+        
+        if user.plan == "premium":
+            if mode == "simple":
+                return True, "premium_unlimited_simple"
+            if user.full_analyses_used < settings.PREMIUM_MONTHLY_FULL:
+                return True, "premium_quota"
+            return False, f"Você atingiu o limite de {settings.PREMIUM_MONTHLY_FULL} análises completas este mês."
+        
+        return False, "Plano inválido."
     
     async def deduct_credits(self, db: AsyncSession, user: User, mode: str, source: str) -> int:
-        logger.info(f"[deduct_credits] user_id={user.id}, mode={mode}, source={source}, pro_remaining_before={user.pro_analyses_remaining}")
-        if source == "free_unlimited":
+        logger.info(f"[deduct_analysis] user_id={user.id}, mode={mode}, source={source}")
+        if source in ("trial", "pro_unlimited_simple", "premium_unlimited_simple"):
+            if source == "trial":
+                from datetime import date
+                today = date.today()
+                if user.last_active_date != today:
+                    user.trial_days_used += 1
+                    user.last_active_date = today
+                    if not user.trial_started:
+                        user.trial_started = True
             return 0
-        if source == "pro_quota":
-            user.pro_analyses_remaining -= 1
-            logger.info(f"[deduct_credits] Decremented pro_analyses_remaining to {user.pro_analyses_remaining}")
+        if source == "basic_quota":
+            user.simple_analyses_used += 1
             await db.commit()
             await db.refresh(user)
-            logger.info(f"[deduct_credits] After refresh: pro_remaining={user.pro_analyses_remaining}")
             return 0
-        cost = settings.CREDIT_COST_FULL
-        user.credit_balance -= cost
-        await db.commit()
-        await db.refresh(user)
-        return cost
+        if source in ("pro_quota", "premium_quota"):
+            user.full_analyses_used += 1
+            await db.commit()
+            await db.refresh(user)
+            return 0
+        return 0
     
     async def refund_credits(self, db: AsyncSession, user: User, mode: str, source: str):
-        if source == "free_unlimited":
+        if source in ("trial", "pro_unlimited_simple", "premium_unlimited_simple"):
             return
-        if source == "pro_quota":
-            user.pro_analyses_remaining += 1
-        else:
-            cost = settings.CREDIT_COST_FULL
-            user.credit_balance += cost
+        if source == "basic_quota":
+            user.simple_analyses_used = max(0, user.simple_analyses_used - 1)
+        elif source in ("pro_quota", "premium_quota"):
+            user.full_analyses_used = max(0, user.full_analyses_used - 1)
         await db.commit()
     
     async def run_analysis(

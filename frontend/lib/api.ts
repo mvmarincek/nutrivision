@@ -200,8 +200,9 @@ export interface User {
   pix_key?: string;
   phone?: string;
   plan: string;
-  credit_balance: number;
-  pro_analyses_remaining: number;
+  simple_analyses_used: number;
+  full_analyses_used: number;
+  trial_days_used: number;
   referral_code?: string;
   email_verified: boolean;
   is_admin: boolean;
@@ -324,14 +325,9 @@ export interface MealDetail {
 
 export interface BillingStatus {
   plan: string;
-  credit_balance: number;
-  pro_analyses_remaining: number;
+  simple_analyses_used: number;
+  full_analyses_used: number;
   has_subscription: boolean;
-}
-
-export interface CreditPackage {
-  credits: number;
-  price: number;
 }
 
 export interface ReferredUserInfo {
@@ -345,7 +341,6 @@ export interface ReferredUserInfo {
 
 export interface MyReferralsResponse {
   total_referred: number;
-  total_credits_earned: number;
   total_commission_earned: number;
   commission_balance: number;
   commission_rate: number;
@@ -556,15 +551,6 @@ export const billingApi = {
   getStatus: () =>
     api<BillingStatus>('/billing/status'),
   
-  getPackages: () =>
-    api<Record<string, CreditPackage>>('/billing/packages', { skipAuth: true }),
-  
-  createPixPayment: (packageId: string, cpf: string) =>
-    api<PixPaymentResponse>('/billing/create-pix-payment', { method: 'POST', body: { package: packageId, cpf } }),
-  
-  createCardPayment: (data: CardPaymentRequest) =>
-    api<{ status: string; credits_added?: number; new_balance?: number; payment_id?: string }>('/billing/create-card-payment', { method: 'POST', body: data }),
-  
   createProSubscription: (data: ProSubscriptionRequest) =>
     api<{ status: string; message?: string; payment_id?: string; pix_code?: string; pix_qr_code_base64?: string; boleto_url?: string }>('/billing/create-pro-subscription', { method: 'POST', body: data }),
   
@@ -575,12 +561,7 @@ export const billingApi = {
     api<PaymentStatusResponse>(`/billing/payment-status/${paymentId}`),
   
   testConfirmPayment: (paymentId: string) =>
-    api<{ status: string; message: string; plan?: string; credits_added?: number; new_balance?: number; subscription_id?: string }>(`/billing/test-confirm-payment/${paymentId}`, { method: 'POST' })
-};
-
-export const creditsApi = {
-  getBalance: () =>
-    api<{ credit_balance: number; pro_analyses_remaining: number }>('/credits/balance')
+    api<{ status: string; message: string; plan?: string; subscription_id?: string }>(`/billing/test-confirm-payment/${paymentId}`, { method: 'POST' })
 };
 
 export const feedbackApi = {
@@ -605,8 +586,9 @@ export interface AdminUser {
   cpf: string | null;
   phone: string | null;
   plan: string;
-  credit_balance: number;
-  pro_analyses_remaining: number;
+  simple_analyses_used: number;
+  full_analyses_used: number;
+  trial_days_used: number;
   email_verified: boolean;
   is_admin: boolean;
   created_at: string | null;

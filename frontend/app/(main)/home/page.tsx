@@ -8,8 +8,7 @@ import { mealsApi } from '@/lib/api';
 import { normalizeImageOrientation } from '@/lib/image-utils';
 import { 
   Upload, UtensilsCrossed, Cake, Coffee, Target, Crown, Zap, Sparkles, 
-  ArrowRight, X, FileText, Scale, Droplet, Check, Ban, CreditCard, Camera,
-  Infinity, ChefHat, Image as ImageIcon
+  ArrowRight, X, FileText, Scale, Droplet, Check, Camera
 } from 'lucide-react';
 import PageAds from '@/components/PageAds';
 
@@ -85,23 +84,7 @@ export default function HomePage() {
   const handleAnalyze = async () => {
     if (!imageFile) return;
 
-    const isFreeSimple = user?.plan === 'free' && mode === 'simple';
-    const cost = mode === 'full' ? 12 : 5;
-    
-    if (!isFreeSimple && user && user.credit_balance < cost && user.pro_analyses_remaining <= 0) {
-      showWarning(
-        `Você precisa de ${cost} créditos para esta análise, mas possui apenas ${user.credit_balance}. Compre mais créditos para continuar.`,
-        'Créditos insuficientes',
-        {
-          label: 'Comprar créditos',
-          onClick: () => {
-            clearFeedback();
-            router.push('/billing');
-          }
-        }
-      );
-      return;
-    }
+
 
     setPhase('uploading');
     clearFeedback();
@@ -135,12 +118,12 @@ export default function HomePage() {
             }
           }
         );
-      } else if (errorMessage.toLowerCase().includes('credito') || errorMessage.toLowerCase().includes('credit') || errorMessage.toLowerCase().includes('402')) {
+      } else if (errorMessage.toLowerCase().includes('credito') || errorMessage.toLowerCase().includes('credit') || errorMessage.toLowerCase().includes('402') || errorMessage.toLowerCase().includes('limite') || errorMessage.toLowerCase().includes('quota')) {
         showWarning(
-          'Você não possui créditos suficientes para esta análise. Compre mais créditos para continuar.',
-          'Créditos insuficientes',
+          'Você atingiu o limite de análises do seu plano. Faça upgrade para continuar.',
+          'Limite atingido',
           {
-            label: 'Comprar créditos',
+            label: 'Ver planos',
             onClick: () => {
               clearFeedback();
               router.push('/billing');
@@ -160,7 +143,7 @@ export default function HomePage() {
     }
   };
 
-  const cost = mode === 'full' ? 12 : 5;
+  const showAds = user?.plan === 'free' || user?.plan === 'basic';
 
   if (phase === 'loading_image' || phase === 'uploading') {
     return (
@@ -216,19 +199,42 @@ export default function HomePage() {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Crown className="w-5 h-5" />
-                  <span className="font-semibold">Análises PRO restantes</span>
+                  <span className="font-semibold">Analises completas</span>
                 </div>
                 <button 
                   onClick={() => refreshUser()}
                   className="font-bold text-lg bg-white/20 px-3 py-1 rounded-lg hover:bg-white/30 transition-all"
                 >
-                  {Math.min(user.pro_analyses_remaining, 90)}/90
+                  {user.full_analyses_used}/30
                 </button>
               </div>
               <div className="w-full bg-white/20 rounded-full h-2">
                 <div 
                   className="bg-white rounded-full h-2 transition-all" 
-                  style={{ width: `${Math.min((user.pro_analyses_remaining / 90) * 100, 100)}%` }}
+                  style={{ width: `${Math.min((user.full_analyses_used / 30) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {user?.plan === 'premium' && (
+            <div className="mb-6 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 rounded-2xl p-4 text-white">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Crown className="w-5 h-5" />
+                  <span className="font-semibold">Analises completas</span>
+                </div>
+                <button 
+                  onClick={() => refreshUser()}
+                  className="font-bold text-lg bg-white/20 px-3 py-1 rounded-lg hover:bg-white/30 transition-all"
+                >
+                  {user.full_analyses_used}/60
+                </button>
+              </div>
+              <div className="w-full bg-white/20 rounded-full h-2">
+                <div 
+                  className="bg-white rounded-full h-2 transition-all" 
+                  style={{ width: `${Math.min((user.full_analyses_used / 60) * 100, 100)}%` }}
                 />
               </div>
             </div>
@@ -273,7 +279,7 @@ export default function HomePage() {
               Tipo de análise
             </h3>
             <div className="space-y-3">
-              {user?.plan !== 'pro' && (
+              {!['pro', 'premium'].includes(user?.plan || '') && (
                 <button
                   onClick={() => setMode('simple')}
                   className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${
@@ -322,9 +328,9 @@ export default function HomePage() {
                       <span className={`font-bold text-lg ${mode === 'full' ? 'text-purple-700' : 'text-gray-700'}`}>
                         Análise Completa
                       </span>
-                      {user?.plan !== 'pro' && (
+                      {!['pro', 'premium'].includes(user?.plan || '') && (
                         <span className="bg-purple-100 text-purple-700 text-xs font-semibold px-3 py-1 rounded-full">
-                          12 créditos
+                          PRO
                         </span>
                       )}
                     </div>
@@ -466,17 +472,19 @@ export default function HomePage() {
           </button>
 
           <p className="text-center text-sm text-gray-400 mt-4">
-            {user?.plan === 'pro' 
-              ? 'Análise PRO inclusa no seu plano'
+            {['pro', 'premium'].includes(user?.plan || '')
+              ? `Analise inclusa no seu plano ${user?.plan?.toUpperCase()}`
               : user?.plan === 'free' && mode === 'simple' 
-                ? 'Análise rápida gratuita' 
-                : `Custo: ${cost} créditos - Saldo: ${user?.credit_balance || 0} créditos`
+                ? 'Analise rapida gratuita' 
+                : user?.plan === 'basic' && mode === 'simple'
+                  ? `Analises simples: ${user?.simple_analyses_used || 0}/30 usadas`
+                  : 'Analise completa requer plano PRO ou Premium'
             }
           </p>
         </div>
       </div>
 
-      {user?.plan !== 'pro' && (
+      {user?.plan === 'free' && (
         <div className="bg-white rounded-3xl shadow-2xl shadow-gray-200/50 overflow-hidden mb-6">
           <div className="bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 p-5">
             <div className="flex items-center gap-4">
@@ -484,31 +492,31 @@ export default function HomePage() {
                 <Crown className="w-7 h-7 text-yellow-300" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">Seja PRO</h3>
-                <p className="text-purple-100">90 análises completas por R$ 19,90/mês</p>
+                <h3 className="text-xl font-bold text-white">Faca upgrade</h3>
+                <p className="text-purple-100">Desbloqueie analises completas e muito mais</p>
               </div>
             </div>
           </div>
           
           <div className="p-6">
             <div className="space-y-3 mb-5">
-              <div className="flex items-center gap-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0">
-                  <Infinity className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-medium text-gray-700">Análises ilimitadas todos os meses</span>
+                <span className="font-medium text-gray-700">Basico: 30 analises simples/mes por R$ 9,90</span>
               </div>
               <div className="flex items-center gap-3 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                  <ImageIcon className="w-5 h-5 text-white" />
+                  <Crown className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-medium text-gray-700">Sugestão visual de prato otimizado</span>
+                <span className="font-medium text-gray-700">PRO: 30 completas + simples ilimitadas por R$ 19,90</span>
               </div>
-              <div className="flex items-center gap-3 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                  <Ban className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-medium text-gray-700">Sem propagandas no app</span>
+                <span className="font-medium text-gray-700">Premium: 60 completas + IA nutricionista por R$ 49,90</span>
               </div>
             </div>
 
@@ -517,20 +525,51 @@ export default function HomePage() {
               className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 text-white font-bold text-lg flex items-center justify-center gap-2 shadow-xl shadow-purple-200/50 hover:shadow-2xl hover:scale-[1.02] transition-all"
             >
               <Crown className="w-5 h-5" />
-              Assinar PRO
+              Ver Planos
             </button>
           </div>
         </div>
       )}
 
-      {user?.plan !== 'pro' && (
-        <button
-          onClick={() => router.push('/billing')}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold text-lg flex items-center justify-center gap-2 shadow-xl shadow-amber-200/50 hover:shadow-2xl hover:scale-[1.02] transition-all mb-6"
-        >
-          <CreditCard className="w-5 h-5" />
-          Comprar Créditos
-        </button>
+      {user?.plan === 'basic' && (
+        <div className="bg-white rounded-3xl shadow-2xl shadow-gray-200/50 overflow-hidden mb-6">
+          <div className="bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 p-5">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                <Crown className="w-7 h-7 text-yellow-300" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Faca upgrade</h3>
+                <p className="text-purple-100">Desbloqueie analises completas e IA</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <div className="space-y-3 mb-5">
+              <div className="flex items-center gap-3 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                  <Crown className="w-5 h-5 text-white" />
+                </div>
+                <span className="font-medium text-gray-700">PRO: 30 completas + ilimitadas por R$ 19,90</span>
+              </div>
+              <div className="flex items-center gap-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <span className="font-medium text-gray-700">Premium: 60 completas + IA por R$ 49,90</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => router.push('/billing')}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 text-white font-bold text-lg flex items-center justify-center gap-2 shadow-xl shadow-purple-200/50 hover:shadow-2xl hover:scale-[1.02] transition-all"
+            >
+              <Crown className="w-5 h-5" />
+              Fazer Upgrade
+            </button>
+          </div>
+        </div>
       )}
 
       <PageAds position="bottom" />

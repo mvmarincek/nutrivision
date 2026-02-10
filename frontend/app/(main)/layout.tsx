@@ -62,10 +62,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
                 PicNutra
               </span>
-              {user.plan === 'pro' && (
-                <div className="flex items-center gap-1 bg-gradient-to-r from-violet-500 to-purple-500 px-2 py-1 rounded-full shadow-sm ml-2">
+              {['basic', 'pro', 'premium'].includes(user.plan) && (
+                <div className={`flex items-center gap-1 px-2 py-1 rounded-full shadow-sm ml-2 ${
+                  user.plan === 'premium' ? 'bg-gradient-to-r from-amber-500 to-orange-500' :
+                  user.plan === 'pro' ? 'bg-gradient-to-r from-violet-500 to-purple-500' :
+                  'bg-gradient-to-r from-blue-500 to-cyan-500'
+                }`}>
                   <Crown className="w-3 h-3 text-white" />
-                  <span className="text-xs font-medium text-white">PRO</span>
+                  <span className="text-xs font-medium text-white">{user.plan.toUpperCase()}</span>
                 </div>
               )}
             </div>
@@ -77,21 +81,25 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
                 PicNutra
               </span>
-              {user.plan === 'pro' && (
-                <div className="flex items-center gap-1 bg-gradient-to-r from-violet-500 to-purple-500 px-2 py-1 rounded-full shadow-sm ml-2">
+              {['basic', 'pro', 'premium'].includes(user.plan) && (
+                <div className={`flex items-center gap-1 px-2 py-1 rounded-full shadow-sm ml-2 ${
+                  user.plan === 'premium' ? 'bg-gradient-to-r from-amber-500 to-orange-500' :
+                  user.plan === 'pro' ? 'bg-gradient-to-r from-violet-500 to-purple-500' :
+                  'bg-gradient-to-r from-blue-500 to-cyan-500'
+                }`}>
                   <Crown className="w-3 h-3 text-white" />
-                  <span className="text-xs font-medium text-white">PRO</span>
+                  <span className="text-xs font-medium text-white">{user.plan.toUpperCase()}</span>
                 </div>
               )}
             </Link>
           )}
           <div className="flex items-center gap-3">
             {/* <LanguageSelector /> */}
-            {user.plan !== 'pro' && (
+            {user.plan === 'free' && (
               <div className="flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-teal-50 px-3 py-1.5 rounded-full border border-emerald-100">
                 <Sparkles className="w-4 h-4 text-amber-500" />
                 <span className="text-sm font-medium text-emerald-700">
-                  {user.credit_balance} creditos
+                  Trial
                 </span>
               </div>
             )}

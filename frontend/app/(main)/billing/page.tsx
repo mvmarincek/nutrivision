@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
-import { billingApi, BillingStatus, CreditPackage } from '@/lib/api';
-import { CreditCard, Star, Zap, QrCode, Copy, Check, X, Crown, Loader2, ChevronLeft } from 'lucide-react';
+import { billingApi, BillingStatus } from '@/lib/api';
+import { CreditCard, Star, Zap, QrCode, Copy, Check, X, Crown, Loader2, ChevronLeft, Sparkles, Ban, Bot } from 'lucide-react';
 
 interface PixPaymentData {
   payment_id: string;
@@ -37,19 +37,13 @@ const initialCardForm: CardFormData = {
 
 export default function BillingPage() {
   const [billingStatus, setBillingStatus] = useState<BillingStatus | null>(null);
-  const [packages, setPackages] = useState<Record<string, CreditPackage>>({});
   const [loading, setLoading] = useState(true);
-  const [purchasing, setPurchasing] = useState<string | null>(null);
-  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
-  const [pixData, setPixData] = useState<PixPaymentData | null>(null);
   const [pixCopied, setPixCopied] = useState(false);
   const [pixCpf, setPixCpf] = useState('');
   const [checkingPayment, setCheckingPayment] = useState(false);
-  const [showCardForm, setShowCardForm] = useState(false);
   const [cardForm, setCardForm] = useState<CardFormData>(initialCardForm);
-  const [processingCard, setProcessingCard] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
-  const [selectedPlanType, setSelectedPlanType] = useState<'pro' | 'intermediate'>('pro');
+  const [selectedPlanType, setSelectedPlanType] = useState<'basic' | 'pro' | 'premium'>('pro');
   const [proPaymentMethod, setProPaymentMethod] = useState<'PIX' | 'CREDIT_CARD' | null>(null);
   const [proPixData, setProPixData] = useState<PixPaymentData | null>(null);
   const [processingPro, setProcessingPro] = useState(false);
@@ -64,8 +58,6 @@ export default function BillingPage() {
         await refreshUser();
         const status = await billingApi.getStatus();
         setBillingStatus(status);
-        const pkgs = await billingApi.getPackages();
-        setPackages(pkgs);
       } catch (err) {
         console.error(err);
       } finally {
@@ -79,24 +71,21 @@ export default function BillingPage() {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
-    const paymentData = pixData || proPixData;
-    if (paymentData) {
+    if (proPixData) {
       interval = setInterval(async () => {
         try {
           setCheckingPayment(true);
-          const status = await billingApi.getPaymentStatus(paymentData.payment_id);
+          const status = await billingApi.getPaymentStatus(proPixData.payment_id);
           if (status.confirmed) {
             clearInterval(interval);
             await refreshUser();
             const newStatus = await billingApi.getStatus();
             setBillingStatus(newStatus);
-            setPixData(null);
             setProPixData(null);
-            setSelectedPackage(null);
             setShowProModal(false);
             setProPaymentMethod(null);
             showSuccess(
-              pixData ? 'Pagamento confirmado! Seus créditos foram adicionados.' : 'Pagamento confirmado! Sua assinatura PRO foi ativada.',
+              'Pagamento confirmado! Sua assinatura foi ativada.',
               'Pagamento confirmado'
             );
           }
@@ -111,14 +100,7 @@ export default function BillingPage() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [pixData, proPixData, refreshUser]);
-
-  const handleSelectPackage = (pkgId: string) => {
-    setSelectedPackage(pkgId);
-    setPixData(null);
-    setShowCardForm(false);
-    setCardForm(initialCardForm);
-  };
+  }, [proPixData, refreshUser]);
 
   const formatCpf = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 11);
@@ -126,90 +108,6 @@ export default function BillingPage() {
     if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
     if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
     return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
-  };
-
-  const handlePixPayment = async () => {
-    if (!selectedPackage) return;
-    
-    const cpfDigits = pixCpf.replace(/\D/g, '');
-    if (cpfDigits.length !== 11) {
-      showWarning(
-        'Por favor, informe um CPF válido com 11 dígitos.',
-        'CPF obrigatório',
-        { label: 'Entendi', onClick: () => clearFeedback() }
-      );
-      return;
-    }
-    
-    setPurchasing(selectedPackage);
-
-    try {
-      const result = await billingApi.createPixPayment(selectedPackage, cpfDigits);
-      setPixData(result);
-    } catch (err) {
-      console.error(err);
-      showError(
-        'Não foi possível gerar o código PIX. Tente novamente.',
-        'Erro ao gerar PIX',
-        { label: 'Entendi', onClick: () => clearFeedback() }
-      );
-    } finally {
-      setPurchasing(null);
-    }
-  };
-
-  const handleCardPayment = async () => {
-    if (!selectedPackage) return;
-    
-    const expiryParts = cardForm.expiry.split('/');
-    const expiry_month = expiryParts[0] || '';
-    const expiry_year = expiryParts[1] ? '20' + expiryParts[1] : '';
-    
-    if (!cardForm.card_holder_name || !cardForm.card_number || !expiry_month || 
-        !expiry_year || !cardForm.cvv || !cardForm.holder_cpf || 
-        !cardForm.holder_phone || !cardForm.postal_code || !cardForm.address_number) {
-      showWarning(
-        'Por favor, preencha todos os campos obrigatórios do cartão.',
-        'Campos incompletos',
-        { label: 'Entendi', onClick: () => clearFeedback() }
-      );
-      return;
-    }
-
-    setProcessingCard(true);
-    try {
-      await billingApi.createCardPayment({
-        package: selectedPackage,
-        card_holder_name: cardForm.card_holder_name,
-        card_number: cardForm.card_number,
-        expiry_month,
-        expiry_year,
-        cvv: cardForm.cvv,
-        holder_cpf: cardForm.holder_cpf,
-        holder_phone: cardForm.holder_phone,
-        postal_code: cardForm.postal_code,
-        address_number: cardForm.address_number
-      });
-      await refreshUser();
-      const newStatus = await billingApi.getStatus();
-      setBillingStatus(newStatus);
-      setSelectedPackage(null);
-      setShowCardForm(false);
-      setCardForm(initialCardForm);
-      showSuccess(
-        'Pagamento aprovado! Seus créditos foram adicionados à sua conta.',
-        'Pagamento confirmado'
-      );
-    } catch (err: any) {
-      console.error(err);
-      showError(
-        err?.message || 'Não foi possível processar o pagamento com cartão. Verifique os dados e tente novamente.',
-        'Erro no pagamento',
-        { label: 'Entendi', onClick: () => clearFeedback() }
-      );
-    } finally {
-      setProcessingCard(false);
-    }
   };
 
   const handleProSubscription = async (billingType: 'PIX' | 'CREDIT_CARD') => {
@@ -222,7 +120,7 @@ export default function BillingPage() {
           !expiry_year || !cardForm.cvv || !cardForm.holder_cpf || 
           !cardForm.holder_phone || !cardForm.postal_code || !cardForm.address_number) {
         showWarning(
-          'Por favor, preencha todos os campos obrigatórios do cartão.',
+          'Por favor, preencha todos os campos obrigatorios do cartao.',
           'Campos incompletos',
           { label: 'Entendi', onClick: () => clearFeedback() }
         );
@@ -258,21 +156,22 @@ export default function BillingPage() {
         setProPaymentMethod(null);
         setCardForm(initialCardForm);
         showSuccess(
-          'Sua assinatura PRO foi ativada com sucesso! Aproveite os benefícios exclusivos.',
-          'Assinatura PRO ativada'
+          `Sua assinatura ${selectedPlanType.toUpperCase()} foi ativada com sucesso!`,
+          'Assinatura ativada'
         );
       } else if (result.pix_code && result.payment_id && result.pix_qr_code_base64) {
+        const prices: Record<string, number> = { basic: 9.90, pro: 19.90, premium: 49.90 };
         setProPixData({
           payment_id: result.payment_id,
           pix_code: result.pix_code,
           pix_qr_code_base64: result.pix_qr_code_base64,
-          value: selectedPlanType === 'intermediate' ? 9.90 : 19.90
+          value: prices[selectedPlanType] || 19.90
         });
       }
     } catch (err: any) {
       console.error(err);
       showError(
-        err?.message || 'Não foi possível criar a assinatura. Tente novamente.',
+        err?.message || 'Nao foi possivel criar a assinatura. Tente novamente.',
         'Erro na assinatura',
         { label: 'Entendi', onClick: () => clearFeedback() }
       );
@@ -291,13 +190,13 @@ export default function BillingPage() {
       const newStatus = await billingApi.getStatus();
       setBillingStatus(newStatus);
       showSuccess(
-        'Sua assinatura foi cancelada. Você ainda terá acesso até o final do período pago.',
+        'Sua assinatura foi cancelada. Voce ainda tera acesso ate o final do periodo pago.',
         'Assinatura cancelada'
       );
     } catch (err: any) {
       console.error(err);
       showError(
-        err?.message || 'Não foi possível cancelar a assinatura. Tente novamente.',
+        err?.message || 'Nao foi possivel cancelar a assinatura. Tente novamente.',
         'Erro ao cancelar',
         { label: 'Entendi', onClick: () => clearFeedback() }
       );
@@ -308,7 +207,7 @@ export default function BillingPage() {
 
   const handleCancelSubscription = () => {
     showWarning(
-      'Ao cancelar sua assinatura PRO, você perderá acesso aos benefícios exclusivos ao final do período atual. Tem certeza?',
+      'Ao cancelar sua assinatura, voce perdera acesso aos beneficios ao final do periodo atual. Tem certeza?',
       'Cancelar assinatura?',
       {
         label: 'Sim, cancelar',
@@ -333,9 +232,7 @@ export default function BillingPage() {
       await refreshUser();
       const newStatus = await billingApi.getStatus();
       setBillingStatus(newStatus);
-      setPixData(null);
       setProPixData(null);
-      setSelectedPackage(null);
       setShowProModal(false);
       setProPaymentMethod(null);
       showSuccess(result.message, 'Teste de Pagamento');
@@ -347,25 +244,11 @@ export default function BillingPage() {
     }
   };
 
-  const handleCloseModal = () => {
-    setSelectedPackage(null);
-    setPixData(null);
-    setShowCardForm(false);
-    setCardForm(initialCardForm);
-  };
-
   const handleCloseProModal = () => {
     setShowProModal(false);
     setProPaymentMethod(null);
     setProPixData(null);
     setCardForm(initialCardForm);
-  };
-
-  const formatPrice = (cents: number) => {
-    return (cents / 100).toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    });
   };
 
   const formatCardNumber = (value: string) => {
@@ -398,19 +281,8 @@ export default function BillingPage() {
     );
   }
 
-  const packageOrder = ['12', '36', '60', '120'];
-
-  const defaultPackages: Record<string, CreditPackage> = {
-    '12': { credits: 12, price: 490 },
-    '36': { credits: 36, price: 1290 },
-    '60': { credits: 60, price: 1990 },
-    '120': { credits: 120, price: 3490 }
-  };
-
-  const displayPackages = Object.keys(packages).length > 0 ? packages : defaultPackages;
-  const isPro = billingStatus?.plan === 'pro';
-  const isIntermediate = billingStatus?.plan === 'intermediate';
-  const hasPaidPlan = isPro || isIntermediate;
+  const currentPlan = billingStatus?.plan || 'free';
+  const hasPaidPlan = ['basic', 'pro', 'premium'].includes(currentPlan);
 
   const handleCardInputChange = (field: keyof CardFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
@@ -444,7 +316,7 @@ export default function BillingPage() {
     setCardForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const renderCardFormFields = (forSubscription: boolean) => (
+  const renderCardFormFields = () => (
     <div className="space-y-3">
       <input
         type="text"
@@ -507,11 +379,11 @@ export default function BillingPage() {
         />
       </div>
       <button
-        onClick={() => forSubscription ? handleProSubscription('CREDIT_CARD') : handleCardPayment()}
-        disabled={processingCard || processingPro}
+        onClick={() => handleProSubscription('CREDIT_CARD')}
+        disabled={processingPro}
         className="w-full bg-gradient-to-r from-violet-500 to-purple-500 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-purple-200"
       >
-        {(processingCard || processingPro) ? (
+        {processingPro ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
             Processando...
@@ -519,7 +391,7 @@ export default function BillingPage() {
         ) : (
           <>
             <CreditCard className="w-5 h-5" />
-            {forSubscription ? 'Assinar com Cartao' : 'Pagar com Cartao'}
+            Assinar com Cartao
           </>
         )}
       </button>
@@ -578,9 +450,74 @@ export default function BillingPage() {
           </p>
         )}
       </div>
-
     </>
   );
+
+  const planConfig = {
+    basic: {
+      name: 'Basico',
+      price: 'R$ 9,90',
+      color: 'from-blue-500 to-cyan-500',
+      colorLight: 'from-blue-50 to-cyan-50',
+      border: 'border-blue-200',
+      shadow: 'shadow-blue-200',
+      text: 'text-blue-600',
+      features: [
+        { icon: Zap, text: '30 analises simples por mes', included: true },
+        { icon: Ban, text: 'Com anuncios', included: true },
+        { icon: Star, text: 'Analise completa', included: false },
+        { icon: Bot, text: 'IA Nutricionista', included: false },
+      ]
+    },
+    pro: {
+      name: 'PRO',
+      price: 'R$ 19,90',
+      color: 'from-violet-500 to-purple-500',
+      colorLight: 'from-violet-50 to-purple-50',
+      border: 'border-violet-200',
+      shadow: 'shadow-purple-200',
+      text: 'text-violet-600',
+      features: [
+        { icon: Star, text: '30 analises completas por mes', included: true },
+        { icon: Zap, text: 'Analises simples ilimitadas', included: true },
+        { icon: Ban, text: 'Sem anuncios', included: true },
+        { icon: Bot, text: 'IA Nutricionista', included: false },
+      ]
+    },
+    premium: {
+      name: 'Premium',
+      price: 'R$ 49,90',
+      color: 'from-amber-500 to-orange-500',
+      colorLight: 'from-amber-50 to-orange-50',
+      border: 'border-amber-200',
+      shadow: 'shadow-amber-200',
+      text: 'text-amber-600',
+      features: [
+        { icon: Star, text: '60 analises completas por mes', included: true },
+        { icon: Zap, text: 'Analises simples ilimitadas', included: true },
+        { icon: Ban, text: 'Sem anuncios', included: true },
+        { icon: Bot, text: 'IA Nutricionista inclusa', included: true },
+      ]
+    }
+  };
+
+  const getUsageInfo = () => {
+    const simple = billingStatus?.simple_analyses_used || 0;
+    const full = billingStatus?.full_analyses_used || 0;
+
+    if (currentPlan === 'basic') {
+      return { simpleUsed: simple, simpleLimit: 30, fullUsed: 0, fullLimit: 0 };
+    }
+    if (currentPlan === 'pro') {
+      return { simpleUsed: 0, simpleLimit: -1, fullUsed: full, fullLimit: 30 };
+    }
+    if (currentPlan === 'premium') {
+      return { simpleUsed: 0, simpleLimit: -1, fullUsed: full, fullLimit: 60 };
+    }
+    return { simpleUsed: 0, simpleLimit: 0, fullUsed: 0, fullLimit: 0 };
+  };
+
+  const usage = getUsageInfo();
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -593,35 +530,51 @@ export default function BillingPage() {
               <CreditCard className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">{hasPaidPlan ? 'Meu Plano' : 'Planos e Creditos'}</h1>
-              <p className="text-emerald-100">Gerencie seu plano e créditos</p>
+              <h1 className="text-2xl font-bold text-white">{hasPaidPlan ? 'Meu Plano' : 'Planos'}</h1>
+              <p className="text-emerald-100">Gerencie seu plano e assinatura</p>
             </div>
           </div>
         </div>
       </div>
 
       {hasPaidPlan && billingStatus?.has_subscription && (
-        <div className={`${isPro ? 'bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500' : 'bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500'} rounded-2xl shadow-xl ${isPro ? 'shadow-purple-200/50' : 'shadow-cyan-200/50'} p-6 mb-6 text-white`}>
+        <div className={`bg-gradient-to-r ${planConfig[currentPlan as keyof typeof planConfig]?.color || 'from-violet-500 to-purple-500'} rounded-2xl shadow-xl ${planConfig[currentPlan as keyof typeof planConfig]?.shadow || 'shadow-purple-200'}/50 p-6 mb-6 text-white`}>
           <div className="flex items-center gap-3 mb-4">
             <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
               <Crown className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold">{isPro ? 'Voce e PRO!' : 'Plano Intermediario'}</h2>
-              <p className="text-sm text-white/90">{isPro ? 'Aproveite todos os beneficios exclusivos' : 'Analise completa sem IA'}</p>
+              <h2 className="text-2xl font-bold">Plano {planConfig[currentPlan as keyof typeof planConfig]?.name || currentPlan}</h2>
+              <p className="text-sm text-white/90">Aproveite todos os beneficios</p>
             </div>
           </div>
           
-          {isPro && (
+          {(currentPlan === 'pro' || currentPlan === 'premium') && (
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-4">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm">Analises completas restantes</span>
-                <span className="font-bold text-lg">{Math.min(billingStatus.pro_analyses_remaining, 90)}/90</span>
+                <span className="text-sm">Analises completas usadas</span>
+                <span className="font-bold text-lg">{usage.fullUsed}/{usage.fullLimit}</span>
               </div>
               <div className="w-full bg-white/20 rounded-full h-2">
                 <div 
                   className="bg-white rounded-full h-2 transition-all" 
-                  style={{ width: `${Math.min((billingStatus.pro_analyses_remaining / 90) * 100, 100)}%` }}
+                  style={{ width: `${Math.min((usage.fullUsed / usage.fullLimit) * 100, 100)}%` }}
+                />
+              </div>
+              <p className="text-xs text-white/70 mt-2">Renova todo mes automaticamente</p>
+            </div>
+          )}
+
+          {currentPlan === 'basic' && (
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm">Analises simples usadas</span>
+                <span className="font-bold text-lg">{usage.simpleUsed}/{usage.simpleLimit}</span>
+              </div>
+              <div className="w-full bg-white/20 rounded-full h-2">
+                <div 
+                  className="bg-white rounded-full h-2 transition-all" 
+                  style={{ width: `${Math.min((usage.simpleUsed / usage.simpleLimit) * 100, 100)}%` }}
                 />
               </div>
               <p className="text-xs text-white/70 mt-2">Renova todo mes automaticamente</p>
@@ -632,21 +585,30 @@ export default function BillingPage() {
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
               <Zap className="w-5 h-5 mx-auto mb-1" />
               <p className="text-xs">Analises simples</p>
-              <p className="font-bold">Ilimitadas</p>
+              <p className="font-bold">{currentPlan === 'basic' ? `${usage.simpleUsed}/30` : 'Ilimitadas'}</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
               <Star className="w-5 h-5 mx-auto mb-1" />
-              <p className="text-xs">{isPro ? 'Analise com IA' : 'Analise completa'}</p>
-              <p className="font-bold">{isPro ? 'Inclusa' : 'Inclusa'}</p>
+              <p className="text-xs">Analises completas</p>
+              <p className="font-bold">{currentPlan === 'basic' ? 'N/A' : `${usage.fullUsed}/${usage.fullLimit}`}</p>
             </div>
           </div>
 
-          {isIntermediate && (
+          {currentPlan === 'basic' && (
             <button
               onClick={() => { setSelectedPlanType('pro'); setShowProModal(true); }}
               className="w-full py-3 rounded-xl bg-white/20 text-white text-sm font-medium hover:bg-white/30 transition-all mb-3"
             >
               Fazer upgrade para PRO (R$ 19,90/mes)
+            </button>
+          )}
+
+          {(currentPlan === 'basic' || currentPlan === 'pro') && (
+            <button
+              onClick={() => { setSelectedPlanType('premium'); setShowProModal(true); }}
+              className="w-full py-3 rounded-xl bg-white/20 text-white text-sm font-medium hover:bg-white/30 transition-all mb-3"
+            >
+              Fazer upgrade para Premium (R$ 49,90/mes)
             </button>
           )}
           
@@ -661,37 +623,28 @@ export default function BillingPage() {
       )}
 
       {hasPaidPlan && (
-        <div className={`bg-gradient-to-br ${isPro ? 'from-violet-50 via-purple-50 to-fuchsia-50 border-purple-200 shadow-purple-100/50' : 'from-blue-50 via-cyan-50 to-teal-50 border-cyan-200 shadow-cyan-100/50'} rounded-2xl p-6 mb-6 border shadow-lg`}>
+        <div className={`bg-gradient-to-br ${planConfig[currentPlan as keyof typeof planConfig]?.colorLight || 'from-violet-50 to-purple-50'} rounded-2xl p-6 mb-6 border ${planConfig[currentPlan as keyof typeof planConfig]?.border || 'border-purple-200'} shadow-lg`}>
           <div className="flex items-center gap-4 mb-5">
-            <div className={`w-14 h-14 rounded-2xl ${isPro ? 'bg-gradient-to-br from-violet-500 to-purple-600 shadow-purple-200' : 'bg-gradient-to-br from-blue-500 to-cyan-600 shadow-cyan-200'} flex items-center justify-center shadow-lg`}>
+            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${planConfig[currentPlan as keyof typeof planConfig]?.color || 'from-violet-500 to-purple-500'} flex items-center justify-center shadow-lg ${planConfig[currentPlan as keyof typeof planConfig]?.shadow || 'shadow-purple-200'}`}>
               <Crown className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900">{isPro ? 'Assinante PRO' : 'Plano Intermediario'}</h3>
-              <p className="text-sm text-gray-600">{isPro ? 'Aproveite todos os beneficios exclusivos' : 'Analise completa de alimentos'}</p>
+              <h3 className="text-xl font-bold text-gray-900">Plano {planConfig[currentPlan as keyof typeof planConfig]?.name || currentPlan}</h3>
+              <p className="text-sm text-gray-600">{planConfig[currentPlan as keyof typeof planConfig]?.price || ''}/mes</p>
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4 mb-5">
-            <div className="bg-white/80 rounded-xl p-4 border border-purple-100 shadow-sm">
-              <div className="flex items-center gap-2 mb-2">
-                <Zap className="w-5 h-5 text-emerald-500" />
-                <span className="font-semibold text-gray-800">Analises Simples</span>
+          <div className="space-y-2">
+            {planConfig[currentPlan as keyof typeof planConfig]?.features.map((feat, i) => (
+              <div key={i} className="flex items-center gap-2">
+                {feat.included ? (
+                  <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                ) : (
+                  <X className="w-4 h-4 text-gray-300 flex-shrink-0" />
+                )}
+                <span className={`text-sm ${feat.included ? 'text-gray-700' : 'text-gray-400'}`}>{feat.text}</span>
               </div>
-              <p className="text-2xl font-bold text-emerald-600">Ilimitadas</p>
-            </div>
-            <div className="bg-white/80 rounded-xl p-4 border border-purple-100 shadow-sm">
-              <div className="flex items-center gap-2 mb-2">
-                <Star className="w-5 h-5 text-amber-500" />
-                <span className="font-semibold text-gray-800">{isPro ? 'Analises PRO' : 'Analise Completa'}</span>
-              </div>
-              <p className="text-2xl font-bold text-purple-600">{isPro ? `${Math.min(billingStatus?.pro_analyses_remaining || 90, 90)}/mes` : 'Inclusa'}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-            <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-            <p className="text-sm text-emerald-800">{isPro ? 'Voce nao precisa comprar creditos! Tudo esta incluido no seu plano.' : 'Analise completa inclusa. Faca upgrade para PRO para ter IA e sem anuncios!'}</p>
+            ))}
           </div>
         </div>
       )}
@@ -701,30 +654,27 @@ export default function BillingPage() {
           <div className="bg-white rounded-2xl shadow-lg shadow-gray-100/50 p-6 mb-6 border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-sm text-gray-600">Seu saldo</p>
-                <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{billingStatus?.credit_balance || 0}</p>
-                <p className="text-sm text-gray-500">creditos</p>
+                <p className="text-sm text-gray-600">Plano atual</p>
+                <p className="text-2xl font-bold text-gray-900">Gratuito</p>
+                <p className="text-sm text-gray-500">Trial de 7 dias</p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-gray-600">Plano atual</p>
-                <p className="font-semibold capitalize text-gray-900">
-                  {billingStatus?.plan === 'free' ? 'Gratuito' : billingStatus?.plan || 'Gratuito'}
+                <p className="text-sm text-gray-600">Dias usados</p>
+                <p className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                  {user?.trial_days_used || 0}/7
                 </p>
               </div>
             </div>
 
             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-100">
-              <p className="text-sm text-gray-600 mb-2">Custo por analise:</p>
-              <div className="flex gap-4">
-                <div className="flex items-center">
-                  <Zap className="w-4 h-4 text-emerald-500 mr-1" />
-                  <span className="text-sm font-medium text-emerald-600">Simples: Gratis</span>
-                </div>
-                <div className="flex items-center">
-                  <Star className="w-4 h-4 text-amber-500 mr-1" />
-                  <span className="text-sm">Completa: 12 creditos</span>
-                </div>
+              <p className="text-sm text-gray-600 mb-1">Periodo de teste</p>
+              <div className="w-full bg-emerald-100 rounded-full h-2">
+                <div 
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full h-2 transition-all" 
+                  style={{ width: `${Math.min(((user?.trial_days_used || 0) / 7) * 100, 100)}%` }}
+                />
               </div>
+              <p className="text-xs text-gray-500 mt-1">Apenas analises simples disponiveis</p>
             </div>
           </div>
 
@@ -750,7 +700,8 @@ export default function BillingPage() {
               <ul className="text-sm space-y-1 text-gray-600 mb-3">
                 <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> Analise simples de alimentos</li>
                 <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> 7 dias de uso efetivo</li>
-                <li className="flex items-center gap-2"><X className="w-4 h-4 text-gray-300" /> Sem analise com IA</li>
+                <li className="flex items-center gap-2"><X className="w-4 h-4 text-gray-300" /> Sem analise completa</li>
+                <li className="flex items-center gap-2"><X className="w-4 h-4 text-gray-300" /> Sem IA nutricionista</li>
               </ul>
               <div className="bg-emerald-100 rounded-xl p-2 text-center">
                 <p className="text-xs text-emerald-700 font-medium">Plano atual</p>
@@ -760,27 +711,27 @@ export default function BillingPage() {
             <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-5 border-2 border-blue-200 relative">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <Star className="w-5 h-5 text-blue-600" />
+                  <Zap className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900">Intermediario</h3>
-                  <p className="text-sm text-gray-500">Analise completa</p>
+                  <h3 className="font-bold text-gray-900">Basico</h3>
+                  <p className="text-sm text-gray-500">30 analises simples/mes</p>
                 </div>
                 <div className="ml-auto text-right">
                   <p className="text-2xl font-bold text-blue-600">R$ 9,90<span className="text-sm font-normal text-gray-500">/mes</span></p>
                 </div>
               </div>
               <ul className="text-sm space-y-1 text-gray-600 mb-3">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-500" /> Analise completa (tabela nutricional)</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-500" /> Uso ilimitado</li>
-                <li className="flex items-center gap-2"><X className="w-4 h-4 text-gray-300" /> Sem analise com IA</li>
-                <li className="flex items-center gap-2"><X className="w-4 h-4 text-gray-300" /> Com anuncios</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-500" /> 30 analises simples por mes</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-500" /> Com anuncios</li>
+                <li className="flex items-center gap-2"><X className="w-4 h-4 text-gray-300" /> Sem analise completa</li>
+                <li className="flex items-center gap-2"><X className="w-4 h-4 text-gray-300" /> Sem IA nutricionista</li>
               </ul>
               <button
-                onClick={() => { setSelectedPlanType('intermediate'); setShowProModal(true); }}
+                onClick={() => { setSelectedPlanType('basic'); setShowProModal(true); }}
                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-xl font-bold hover:shadow-lg hover:scale-[1.02] transition-all shadow-lg shadow-blue-200"
               >
-                Assinar Intermediario
+                Assinar Basico
               </button>
             </div>
 
@@ -794,17 +745,17 @@ export default function BillingPage() {
                 </div>
                 <div>
                   <h3 className="font-bold">Plano PRO</h3>
-                  <p className="text-sm opacity-90">Completo com IA</p>
+                  <p className="text-sm opacity-90">30 completas + simples ilimitadas</p>
                 </div>
                 <div className="ml-auto text-right">
                   <p className="text-2xl font-bold">R$ 19,90<span className="text-sm font-normal opacity-80">/mes</span></p>
                 </div>
               </div>
               <ul className="text-sm mb-3 space-y-1 text-white/90">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> 90 analises completas por mes</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Analise com IA inclusa</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> 30 analises completas por mes</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Analises simples ilimitadas</li>
                 <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Sem anuncios</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Suporte prioritario</li>
+                <li className="flex items-center gap-2"><X className="w-4 h-4 opacity-50" /> Sem IA nutricionista</li>
               </ul>
               <button
                 onClick={() => { setSelectedPlanType('pro'); setShowProModal(true); }}
@@ -813,133 +764,38 @@ export default function BillingPage() {
                 Assinar PRO
               </button>
             </div>
-          </div>
 
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg flex items-center justify-center">
-              <Zap className="w-4 h-4 text-amber-600" />
+            <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 rounded-2xl shadow-xl shadow-amber-200/50 p-5 text-white relative">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-md">
+                Completo
+              </span>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold">Premium</h3>
+                  <p className="text-sm opacity-90">60 completas + IA nutricionista</p>
+                </div>
+                <div className="ml-auto text-right">
+                  <p className="text-2xl font-bold">R$ 49,90<span className="text-sm font-normal opacity-80">/mes</span></p>
+                </div>
+              </div>
+              <ul className="text-sm mb-3 space-y-1 text-white/90">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> 60 analises completas por mes</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Analises simples ilimitadas</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Sem anuncios</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> IA Nutricionista inclusa</li>
+              </ul>
+              <button
+                onClick={() => { setSelectedPlanType('premium'); setShowProModal(true); }}
+                className="w-full bg-white text-orange-600 py-3 rounded-xl font-bold hover:bg-orange-50 hover:scale-[1.02] transition-all shadow-lg"
+              >
+                Assinar Premium
+              </button>
             </div>
-            Comprar Creditos
-          </h2>
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            {packageOrder.map((pkgId) => {
-              const pkg = displayPackages[pkgId];
-              if (!pkg) return null;
-              const isPopular = pkgId === '36';
-              
-              return (
-                <button
-                  key={pkgId}
-                  onClick={() => handleSelectPackage(pkgId)}
-                  className={`bg-white rounded-2xl shadow-lg p-4 relative text-left transition-all hover:shadow-xl hover:scale-[1.02] ${
-                    isPopular ? 'border-2 border-emerald-400 shadow-emerald-100' : 'border border-gray-100'
-                  } ${selectedPackage === pkgId ? 'ring-2 ring-emerald-400 shadow-emerald-100' : ''}`}
-                >
-                  {isPopular && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-md">
-                      Popular
-                    </span>
-                  )}
-                  <div className="text-center mb-3">
-                    <p className="text-2xl font-bold text-gray-900">{pkg.credits}</p>
-                    <p className="text-gray-500 text-sm">creditos</p>
-                  </div>
-                  <p className="text-center text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-1">
-                    {formatPrice(pkg.price)}
-                  </p>
-                  <p className="text-center text-xs text-gray-500">
-                    {Math.floor(pkg.credits / 12)} analise(s) completa(s)
-                  </p>
-                </button>
-              );
-            })}
           </div>
         </>
-      )}
-
-      {!hasPaidPlan && selectedPackage && !pixData && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Forma de Pagamento</h3>
-              <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <p className="text-gray-600 mb-4">
-              Pacote: <strong className="text-emerald-600">{displayPackages[selectedPackage]?.credits} créditos</strong> - {formatPrice(displayPackages[selectedPackage]?.price || 0)}
-            </p>
-
-            {!showCardForm ? (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    CPF (obrigatorio para PIX)
-                  </label>
-                  <input
-                    type="text"
-                    value={pixCpf}
-                    onChange={(e) => setPixCpf(formatCpf(e.target.value))}
-                    placeholder="000.000.000-00"
-                    className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-400 transition-all"
-                  />
-                </div>
-                
-                <button
-                  onClick={handlePixPayment}
-                  disabled={purchasing === selectedPackage}
-                  className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 shadow-lg shadow-emerald-200"
-                >
-                  <QrCode className="w-5 h-5" />
-                  {purchasing === selectedPackage ? 'Gerando PIX...' : 'Pagar com PIX'}
-                </button>
-                
-                <div className="relative flex items-center my-2">
-                  <div className="flex-grow border-t border-gray-200"></div>
-                  <span className="px-3 text-xs text-gray-400">ou</span>
-                  <div className="flex-grow border-t border-gray-200"></div>
-                </div>
-                
-                <button
-                  onClick={() => setShowCardForm(true)}
-                  className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-violet-500 to-purple-500 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all shadow-lg shadow-purple-200"
-                >
-                  <CreditCard className="w-5 h-5" />
-                  Pagar com Cartao
-                </button>
-                
-                <p className="text-center text-xs text-gray-400">
-                  Pagamento seguro - créditos liberados na hora
-                </p>
-              </div>
-            ) : (
-              <>
-                <button
-                  onClick={() => setShowCardForm(false)}
-                  className="text-sm text-gray-500 hover:text-gray-700 mb-4 flex items-center gap-1"
-                >
-                  <ChevronLeft className="w-4 h-4" /> Voltar
-                </button>
-                {renderCardFormFields(false)}
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {!hasPaidPlan && pixData && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Pague com PIX</h3>
-              <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <PixDisplay data={pixData} onCopy={() => handleCopyPix(pixData.pix_code)} checking={checkingPayment} />
-          </div>
-        </div>
       )}
 
       {showProModal && (
@@ -947,18 +803,18 @@ export default function BillingPage() {
           <div className="bg-white rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold flex items-center gap-2 text-gray-900">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${selectedPlanType === 'pro' ? 'bg-gradient-to-br from-violet-500 to-purple-600' : 'bg-gradient-to-br from-blue-500 to-cyan-600'}`}>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${planConfig[selectedPlanType]?.color || 'from-violet-500 to-purple-500'}`}>
                   <Crown className="w-4 h-4 text-white" />
                 </div>
-                {selectedPlanType === 'pro' ? 'Assinar PRO' : 'Assinar Intermediario'}
+                Assinar {planConfig[selectedPlanType]?.name || selectedPlanType}
               </h3>
               <button onClick={handleCloseProModal} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className={`text-center text-2xl font-bold bg-gradient-to-r ${selectedPlanType === 'pro' ? 'from-violet-600 to-purple-600' : 'from-blue-600 to-cyan-600'} bg-clip-text text-transparent mb-4`}>
-              R$ {selectedPlanType === 'pro' ? '19,90' : '9,90'}<span className="text-base font-normal text-gray-500">/mes</span>
+            <p className={`text-center text-2xl font-bold bg-gradient-to-r ${planConfig[selectedPlanType]?.color || 'from-violet-600 to-purple-600'} bg-clip-text text-transparent mb-4`}>
+              {planConfig[selectedPlanType]?.price || 'R$ 19,90'}<span className="text-base font-normal text-gray-500">/mes</span>
             </p>
 
             {!proPaymentMethod && !proPixData && (
@@ -1017,13 +873,13 @@ export default function BillingPage() {
                       setProcessingPro(true);
                       try {
                         const result = await billingApi.createProSubscription({ billing_type: 'PIX', plan_type: selectedPlanType, holder_cpf: cpfDigits });
-                        console.log('PIX subscription result:', result);
                         if (result.pix_code && result.payment_id && result.pix_qr_code_base64) {
+                          const prices: Record<string, number> = { basic: 9.90, pro: 19.90, premium: 49.90 };
                           setProPixData({
                             payment_id: result.payment_id,
                             pix_code: result.pix_code,
                             pix_qr_code_base64: result.pix_qr_code_base64,
-                            value: selectedPlanType === 'intermediate' ? 9.90 : 19.90
+                            value: prices[selectedPlanType] || 19.90
                           });
                         } else if (result.status === 'pending' && !result.pix_code) {
                           showError('O PIX ainda esta sendo gerado. Aguarde alguns segundos e tente novamente.', 'Aguarde', { label: 'Entendi', onClick: () => clearFeedback() });
@@ -1053,7 +909,7 @@ export default function BillingPage() {
                 >
                   <ChevronLeft className="w-4 h-4" /> Voltar
                 </button>
-                {renderCardFormFields(true)}
+                {renderCardFormFields()}
               </>
             )}
 

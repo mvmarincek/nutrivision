@@ -67,36 +67,21 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks, db:
         password_hash=get_password_hash(user_data.password),
         name=user_data.name,
         phone=user_data.phone,
-        credit_balance=36,
-        referral_code=referral_code,
-        referred_by=referrer.id if referrer else None,
-        email_verified=False,
-        email_verification_token=verification_token
+        credit_balance=0,
     )
     db.add(user)
     await db.commit()
     await db.refresh(user)
     
     if referrer:
-        referrer.credit_balance += 12
-        
         referral_record = Referral(
             referrer_id=referrer.id,
             referred_id=user.id,
-            credits_awarded=12
+            credits_awarded=0
         )
         db.add(referral_record)
         await db.commit()
         await db.refresh(referrer)
-        
-        background_tasks.add_task(
-            send_referral_activated_email,
-            referrer.email,
-            user.email,
-            12,
-            referrer.credit_balance,
-            referrer.id
-        )
     
     background_tasks.add_task(send_email_verification, user.email, verification_token, user.id)
     
@@ -138,7 +123,7 @@ async def register_partner(partner_data: PartnerCreate, background_tasks: Backgr
         razao_social=partner_data.razao_social,
         user_type="pj",
         commission_rate=0.30,
-        credit_balance=36,
+        credit_balance=0,
         referral_code=referral_code,
         email_verified=False,
         email_verification_token=verification_token

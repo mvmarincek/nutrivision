@@ -22,20 +22,15 @@ class Settings(BaseSettings):
     CLOUDINARY_API_KEY: str = ""
     CLOUDINARY_API_SECRET: str = ""
     
-    CREDIT_COST_SIMPLE: int = 1
-    CREDIT_COST_FULL: int = 12
-    PRO_MONTHLY_ANALYSES: int = 90
-    
-    INTERMEDIATE_MONTHLY_PRICE: int = 990
-    PRO_MONTHLY_PRICE: int = 1990
     TRIAL_MAX_DAYS: int = 7
     
-    CREDIT_PACKAGES: dict = {
-        "12": {"credits": 12, "price": 490},
-        "36": {"credits": 36, "price": 1290},
-        "60": {"credits": 60, "price": 1990},
-        "120": {"credits": 120, "price": 3490}
-    }
+    BASIC_MONTHLY_PRICE: int = 990
+    PRO_MONTHLY_PRICE: int = 1990
+    PREMIUM_MONTHLY_PRICE: int = 4990
+    
+    BASIC_MONTHLY_SIMPLE: int = 30
+    PRO_MONTHLY_FULL: int = 30
+    PREMIUM_MONTHLY_FULL: int = 60
     
     class Config:
         env_file = ".env"

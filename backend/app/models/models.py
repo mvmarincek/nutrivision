@@ -6,8 +6,9 @@ from app.db.database import Base
 
 class PlanType(str, enum.Enum):
     FREE = "free"
-    INTERMEDIATE = "intermediate"
+    BASIC = "basic"
     PRO = "pro"
+    PREMIUM = "premium"
 
 class JobStatus(str, enum.Enum):
     RECEIVED = "received"
@@ -45,6 +46,9 @@ class User(Base):
     trial_days_used = Column(Integer, default=0)
     last_active_date = Column(Date, nullable=True)
     credit_balance = Column(Integer, default=0)
+    simple_analyses_used = Column(Integer, default=0)
+    full_analyses_used = Column(Integer, default=0)
+    analyses_reset_at = Column(DateTime, nullable=True)
     asaas_customer_id = Column(String(255), nullable=True)
     asaas_subscription_id = Column(String(255), nullable=True)
     pro_analyses_remaining = Column(Integer, default=0)

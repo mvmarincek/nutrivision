@@ -167,16 +167,11 @@ async def analyze_meal(
     if not meal:
         raise HTTPException(status_code=404, detail="Refeição não encontrada")
     
-    is_free_simple = current_user.plan == "free" and request.mode == "simple"
-    cost = settings.CREDIT_COST_FULL if request.mode == "full" else settings.CREDIT_COST_SIMPLE
-    has_pro_quota = current_user.plan == "pro" and current_user.pro_analyses_remaining > 0
-    has_credits = current_user.credit_balance >= cost
-    
-    if not is_free_simple and not has_pro_quota and not has_credits:
-        raise HTTPException(
-            status_code=402, 
-            detail=f"Créditos insuficientes. Necessário: {cost}, Disponível: {current_user.credit_balance}"
-        )
+    from app.agents.orchestrator import NutriOrchestrator
+    _orch = NutriOrchestrator()
+    can_analyze, _source = await _orch.validate_credits(current_user, request.mode)
+    if not can_analyze:
+        raise HTTPException(status_code=402, detail=_source)
     
     meal.status = MealStatus.ANALYZING.value
     meal.mode = request.mode

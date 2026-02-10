@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { authApi, partnerApi, MyReferralsResponse, PartnerDashboard, CommissionItem } from '@/lib/api';
-import { Users, TrendingUp, Gift, Copy, Check, Building2, User, Crown, DollarSign, Wallet, ArrowDownToLine, KeyRound } from 'lucide-react';
+import { Users, TrendingUp, Copy, Check, Building2, User, Crown, DollarSign, Wallet, ArrowDownToLine, KeyRound } from 'lucide-react';
 
 export default function IndicacoesPage() {
   const { user } = useAuth();
@@ -118,7 +118,7 @@ export default function IndicacoesPage() {
           <p className="text-sm text-gray-500">
             {isPJ
               ? 'Acompanhe seus indicados e comissoes (30%)'
-              : 'Indique amigos e ganhe comissao de 10% + creditos'}
+              : 'Indique amigos e ganhe comissao de 10%'}
           </p>
         </div>
       </div>
@@ -154,18 +154,7 @@ export default function IndicacoesPage() {
         </div>
       </div>
 
-      {!isPJ && (
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Gift className="w-5 h-5 text-violet-500" />
-            <div>
-              <p className="text-sm font-medium text-gray-800">Creditos bonus por indicacao</p>
-              <p className="text-xs text-gray-500">Voce ganha 12 creditos por cada amigo que se cadastra</p>
-            </div>
-          </div>
-          <p className="text-xl font-bold text-violet-600">{data?.total_credits_earned || 0}</p>
-        </div>
-      )}
+
 
       <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
