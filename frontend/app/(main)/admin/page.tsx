@@ -54,6 +54,8 @@ export default function AdminPage() {
   const [errorPage, setErrorPage] = useState(1);
   const [errorPages, setErrorPages] = useState(1);
   const [errorFilter, setErrorFilter] = useState<'all' | 'unresolved'>('unresolved');
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user && !user.is_admin) {
@@ -88,8 +90,35 @@ export default function AdminPage() {
       console.error(err);
     } finally {
       setLoading(false);
+      setLastUpdated(new Date());
     }
   };
+
+  const refreshDashboard = async () => {
+    setRefreshing(true);
+    try {
+      const [statsData, chartsData] = await Promise.all([
+        adminApi.getStats(),
+        adminApi.getCharts()
+      ]);
+      setStats(statsData);
+      setCharts(chartsData);
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.is_admin && activeTab === 'dashboard') {
+      const interval = setInterval(() => {
+        refreshDashboard();
+      }, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [user, activeTab]);
 
   const searchUsers = async () => {
     try {
@@ -330,6 +359,19 @@ export default function AdminPage() {
 
       {activeTab === 'dashboard' && stats && (
         <>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 text-sm text-gray-400">
+            {lastUpdated && <span>Atualizado {lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>}
+          </div>
+          <button
+            onClick={refreshDashboard}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-orange-600 bg-orange-50 rounded-xl hover:bg-orange-100 transition-all disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'Atualizando...' : 'Atualizar'}
+          </button>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white rounded-2xl p-5 shadow-lg shadow-gray-100/50 border border-gray-100">
             <div className="flex items-center gap-3">

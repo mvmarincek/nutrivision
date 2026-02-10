@@ -81,70 +81,81 @@ async def get_chart_data(
     db: AsyncSession = Depends(get_db)
 ):
     today = datetime.utcnow().date()
-    
+    start_date = today - timedelta(days=29)
+
+    revenue_rows = (await db.execute(
+        select(
+            func.date(Payment.paid_at).label("day"),
+            Payment.payment_type,
+            func.sum(Payment.amount).label("total")
+        )
+        .where(Payment.status == "confirmed")
+        .where(func.date(Payment.paid_at) >= start_date)
+        .group_by(func.date(Payment.paid_at), Payment.payment_type)
+    )).all()
+
+    revenue_map: dict = {}
+    for row in revenue_rows:
+        day_key = str(row.day)
+        if day_key not in revenue_map:
+            revenue_map[day_key] = {"credits": 0.0, "subscriptions": 0.0}
+        if row.payment_type == "credits":
+            revenue_map[day_key]["credits"] = float(row.total or 0)
+        elif row.payment_type == "subscription":
+            revenue_map[day_key]["subscriptions"] = float(row.total or 0)
+
+    user_rows = (await db.execute(
+        select(
+            func.date(User.created_at).label("day"),
+            func.count(User.id).filter(User.referred_by == None).label("organic"),
+            func.count(User.id).filter(User.referred_by != None).label("referred")
+        )
+        .where(func.date(User.created_at) >= start_date)
+        .group_by(func.date(User.created_at))
+    )).all()
+
+    user_map: dict = {}
+    for row in user_rows:
+        user_map[str(row.day)] = {"organic": row.organic or 0, "referred": row.referred or 0}
+
+    meal_rows = (await db.execute(
+        select(
+            func.date(Meal.created_at).label("day"),
+            func.count(Meal.id).label("count")
+        )
+        .where(func.date(Meal.created_at) >= start_date)
+        .group_by(func.date(Meal.created_at))
+    )).all()
+
+    meal_map: dict = {}
+    for row in meal_rows:
+        meal_map[str(row.day)] = row.count or 0
+
     revenue_by_day = []
     users_by_day = []
     meals_by_day = []
-    
     for i in range(29, -1, -1):
         day = today - timedelta(days=i)
         day_str = day.strftime("%d/%m")
-        
-        credits_revenue = await db.scalar(
-            select(func.sum(Payment.amount))
-            .where(Payment.status == "confirmed")
-            .where(Payment.payment_type == "credits")
-            .where(func.date(Payment.paid_at) == day)
-        ) or 0
-        
-        subscription_revenue = await db.scalar(
-            select(func.sum(Payment.amount))
-            .where(Payment.status == "confirmed")
-            .where(Payment.payment_type == "subscription")
-            .where(func.date(Payment.paid_at) == day)
-        ) or 0
-        
-        revenue_by_day.append({
-            "date": day_str,
-            "credits": float(credits_revenue),
-            "subscriptions": float(subscription_revenue)
-        })
-        
-        organic_users = await db.scalar(
-            select(func.count(User.id))
-            .where(func.date(User.created_at) == day)
-            .where(User.referred_by == None)
-        ) or 0
-        
-        referred_users = await db.scalar(
-            select(func.count(User.id))
-            .where(func.date(User.created_at) == day)
-            .where(User.referred_by != None)
-        ) or 0
-        
-        users_by_day.append({
-            "date": day_str, 
-            "organic": organic_users,
-            "referred": referred_users
-        })
-        
-        meals_count = await db.scalar(
-            select(func.count(Meal.id)).where(func.date(Meal.created_at) == day)
-        ) or 0
-        meals_by_day.append({"date": day_str, "count": meals_count})
-    
+        day_key = str(day)
+        rev = revenue_map.get(day_key, {"credits": 0.0, "subscriptions": 0.0})
+        revenue_by_day.append({"date": day_str, "credits": rev["credits"], "subscriptions": rev["subscriptions"]})
+        usr = user_map.get(day_key, {"organic": 0, "referred": 0})
+        users_by_day.append({"date": day_str, "organic": usr["organic"], "referred": usr["referred"]})
+        meals_by_day.append({"date": day_str, "count": meal_map.get(day_key, 0)})
+
     total_credits_revenue = await db.scalar(
         select(func.sum(Payment.amount))
         .where(Payment.status == "confirmed")
         .where(Payment.payment_type == "credits")
     ) or 0
-    
+
     total_subscription_revenue = await db.scalar(
         select(func.sum(Payment.amount))
         .where(Payment.status == "confirmed")
         .where(Payment.payment_type == "subscription")
     ) or 0
-    
+
     conversion_rate = 0
     total_users = await db.scalar(select(func.count(User.id)))
     paying_users = await db.scalar(
@@ -153,22 +164,22 @@ async def get_chart_data(
     )
     if total_users and total_users > 0:
         conversion_rate = round((paying_users / total_users) * 100, 1)
-    
+
     avg_revenue_per_user = 0
     if paying_users and paying_users > 0:
         total_revenue = await db.scalar(
             select(func.sum(Payment.amount)).where(Payment.status == "confirmed")
         ) or 0
         avg_revenue_per_user = round(total_revenue / paying_users, 2)
-    
+
     active_subscriptions = await db.scalar(
         select(func.count(User.id))
         .where(User.plan == "pro")
         .where(User.asaas_subscription_id != None)
     )
-    
+
     total_referrals = await db.scalar(select(func.count(Referral.id))) or 0
-    
+
     referred_who_paid = await db.scalar(
         select(func.count(func.distinct(Payment.user_id)))
         .where(Payment.status == "confirmed")
@@ -176,7 +187,7 @@ async def get_chart_data(
             select(Referral.referred_id)
         ))
     ) or 0
-    
+
     return {
         "revenue_by_day": revenue_by_day,
         "users_by_day": users_by_day,
