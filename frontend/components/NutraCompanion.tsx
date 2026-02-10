@@ -238,42 +238,9 @@ export default function NutraCompanion() {
   if (pathname === '/admin') return null;
 
   return (
-    <div className="fixed bottom-20 right-3 z-40 flex flex-col items-end gap-2"
+    <div className="fixed top-20 right-3 z-40 flex flex-col items-end gap-2"
       style={{ pointerEvents: 'none' }}
     >
-      {bubbleAnimating && !minimized && (
-        <div
-          className={`pointer-events-auto transition-all duration-400 ${
-            showBubble
-              ? 'opacity-100 translate-y-0 scale-100'
-              : 'opacity-0 translate-y-4 scale-95'
-          }`}
-          style={{ transformOrigin: 'bottom right' }}
-        >
-          <div className="relative bg-white rounded-2xl rounded-br-sm shadow-xl border border-emerald-100/80 px-4 py-3 max-w-[250px]">
-            <div className="flex items-start gap-2">
-              <p className="text-[13px] text-gray-700 leading-relaxed flex-1 font-medium">{bubbleText}</p>
-              <button
-                onClick={handleDismiss}
-                className="text-gray-300 hover:text-gray-500 transition-colors flex-shrink-0 -mt-0.5 -mr-1"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            {bubbleAction && (
-              <button
-                onClick={bubbleAction.onClick}
-                className="mt-2 flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
-              >
-                {bubbleAction.label}
-                <ChevronRight className="w-3 h-3" />
-              </button>
-            )}
-            <div className="absolute -bottom-[6px] right-5 w-3 h-3 bg-white border-r border-b border-emerald-100/80 rotate-45" />
-          </div>
-        </div>
-      )}
-
       <button
         onClick={handleAvatarTap}
         className="pointer-events-auto group relative focus:outline-none"
@@ -297,6 +264,39 @@ export default function NutraCompanion() {
           <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white animate-pulse" />
         )}
       </button>
+
+      {bubbleAnimating && !minimized && (
+        <div
+          className={`pointer-events-auto transition-all duration-400 ${
+            showBubble
+              ? 'opacity-100 translate-y-0 scale-100'
+              : 'opacity-0 -translate-y-4 scale-95'
+          }`}
+          style={{ transformOrigin: 'top right' }}
+        >
+          <div className="relative bg-white rounded-2xl rounded-tr-sm shadow-xl border border-emerald-100/80 px-4 py-3 max-w-[250px]">
+            <div className="absolute -top-[6px] right-5 w-3 h-3 bg-white border-l border-t border-emerald-100/80 rotate-45" />
+            <div className="flex items-start gap-2">
+              <p className="text-[13px] text-gray-700 leading-relaxed flex-1 font-medium">{bubbleText}</p>
+              <button
+                onClick={handleDismiss}
+                className="text-gray-300 hover:text-gray-500 transition-colors flex-shrink-0 -mt-0.5 -mr-1"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            {bubbleAction && (
+              <button
+                onClick={bubbleAction.onClick}
+                className="mt-2 flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+              >
+                {bubbleAction.label}
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <style jsx global>{`
         @keyframes nutra-wiggle {
