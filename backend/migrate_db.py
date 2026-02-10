@@ -92,6 +92,11 @@ async def migrate():
                 ('welcome_credits', '36', 'Creditos de bonus para novos usuarios'),
                 ('referral_credits', '12', 'Creditos por indicacao')
             ON CONFLICT (key) DO NOTHING""",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS cnpj VARCHAR(18)",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS razao_social VARCHAR(255)",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS user_type VARCHAR(10) DEFAULT 'pf'",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS commission_rate FLOAT DEFAULT 0.10",
+            "CREATE INDEX IF NOT EXISTS ix_users_cnpj ON users(cnpj)",
         ]
         
         for sql in migrations:

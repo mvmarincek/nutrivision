@@ -578,6 +578,14 @@ export default function ProfilePage() {
                 <p className="text-xs text-center text-gray-500 mt-2">Escaneie para se cadastrar</p>
               </div>
             </div>
+            <button
+              onClick={() => router.push('/indicacoes')}
+              className="w-full mt-4 py-3 rounded-2xl font-medium text-sm bg-gradient-to-r from-violet-50 to-purple-50 text-violet-700 border border-violet-200 hover:shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              <TrendingUp className="w-4 h-4" />
+              Ver painel de indicacoes
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </>
         ) : (
           <div className="bg-gray-50 rounded-2xl p-4 text-center">

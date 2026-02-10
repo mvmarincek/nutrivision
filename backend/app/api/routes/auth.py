@@ -4,7 +4,7 @@ from sqlalchemy import select, func
 from pydantic import BaseModel
 from app.db.database import get_db
 from app.models.models import User, Referral, Payment
-from app.schemas.schemas import UserCreate, UserLogin, TokenResponse, UserResponse
+from app.schemas.schemas import UserCreate, UserLogin, TokenResponse, UserResponse, PartnerCreate, MyReferralsResponse, ReferredUserInfo
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, decode_refresh_token, get_current_user
 from app.services.email_service import send_welcome_email, send_password_reset_email, send_referral_activated_email, send_email_verification, send_email_verified_success
 import secrets
@@ -107,16 +107,54 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks, db:
         user=UserResponse.model_validate(user)
     )
 
-@router.get("/my-referrals")
-async def get_my_referrals(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    total_referred = await db.scalar(
-        select(func.count(Referral.id)).where(Referral.referrer_id == current_user.id)
-    ) or 0
+@router.post("/register-partner", response_model=TokenResponse)
+async def register_partner(partner_data: PartnerCreate, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).where(User.email == partner_data.email))
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email ja cadastrado")
     
-    return {"total_referred": total_referred}
+    cnpj_clean = partner_data.cnpj.replace(".", "").replace("/", "").replace("-", "")
+    result_cnpj = await db.execute(select(User).where(User.cnpj == partner_data.cnpj))
+    if result_cnpj.scalar_one_or_none():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="CNPJ ja cadastrado")
+    
+    referral_code = "PJ" + generate_referral_code()[:6]
+    while True:
+        check = await db.execute(select(User).where(User.referral_code == referral_code))
+        if not check.scalar_one_or_none():
+            break
+        referral_code = "PJ" + generate_referral_code()[:6]
+    
+    verification_token = secrets.token_urlsafe(32)
+    
+    user = User(
+        email=partner_data.email,
+        password_hash=get_password_hash(partner_data.password),
+        name=partner_data.name,
+        phone=partner_data.phone,
+        cnpj=partner_data.cnpj,
+        razao_social=partner_data.razao_social,
+        user_type="pj",
+        commission_rate=0.30,
+        credit_balance=36,
+        referral_code=referral_code,
+        email_verified=False,
+        email_verification_token=verification_token
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    
+    background_tasks.add_task(send_email_verification, user.email, verification_token, user.id)
+    
+    access_token = create_access_token(data={"sub": str(user.id)})
+    refresh_token = create_refresh_token(user.id)
+    
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        user=UserResponse.model_validate(user)
+    )
 
 @router.post("/login", response_model=TokenResponse)
 async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
@@ -137,17 +175,6 @@ async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
         refresh_token=refresh_token,
         user=UserResponse.model_validate(user)
     )
-
-@router.get("/my-referrals")
-async def get_my_referrals(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    total_referred = await db.scalar(
-        select(func.count(Referral.id)).where(Referral.referrer_id == current_user.id)
-    ) or 0
-    
-    return {"total_referred": total_referred}
 
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_tokens(request: RefreshTokenRequest, db: AsyncSession = Depends(get_db)):
@@ -271,6 +298,37 @@ async def resend_verification(request: ResendVerificationRequest, background_tas
     
     return {"message": "Email de verificação reenviado!"}
 
+@router.get("/my-referrals", response_model=MyReferralsResponse)
+async def get_my_referrals(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Referral).where(Referral.referrer_id == current_user.id)
+    )
+    referrals = result.scalars().all()
+    
+    referred_users = []
+    total_credits = 0
+    for ref in referrals:
+        total_credits += ref.credits_awarded
+        user_result = await db.execute(select(User).where(User.id == ref.referred_id))
+        referred_user = user_result.scalar_one_or_none()
+        if referred_user:
+            referred_users.append(ReferredUserInfo(
+                id=referred_user.id,
+                name=referred_user.name,
+                email=referred_user.email,
+                plan=referred_user.plan,
+                created_at=ref.created_at
+            ))
+    
+    return MyReferralsResponse(
+        total_referred=len(referrals),
+        total_credits_earned=total_credits,
+        commission_rate=current_user.commission_rate,
+        referral_code=current_user.referral_code,
+        user_type=current_user.user_type or "pf",
+        referred_users=referred_users
+    )
+
 @router.get("/debug-pro")
 async def debug_pro_status(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.id == current_user.id))
@@ -339,14 +397,3 @@ async def create_test_user(db: AsyncSession = Depends(get_db)):
         refresh_token=refresh_token,
         user=UserResponse.model_validate(user)
     )
-
-@router.get("/my-referrals")
-async def get_my_referrals(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    total_referred = await db.scalar(
-        select(func.count(Referral.id)).where(Referral.referrer_id == current_user.id)
-    ) or 0
-    
-    return {"total_referred": total_referred}

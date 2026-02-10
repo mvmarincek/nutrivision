@@ -192,6 +192,10 @@ export interface User {
   email: string;
   name?: string;
   cpf?: string;
+  cnpj?: string;
+  razao_social?: string;
+  user_type: string;
+  commission_rate: number;
   phone?: string;
   plan: string;
   credit_balance: number;
@@ -328,9 +332,29 @@ export interface CreditPackage {
   price: number;
 }
 
+export interface ReferredUserInfo {
+  id: number;
+  name?: string;
+  email: string;
+  plan: string;
+  created_at: string;
+}
+
+export interface MyReferralsResponse {
+  total_referred: number;
+  total_credits_earned: number;
+  commission_rate: number;
+  referral_code?: string;
+  user_type: string;
+  referred_users: ReferredUserInfo[];
+}
+
 export const authApi = {
   register: (email: string, password: string, name?: string, phone?: string, referral_code?: string) =>
     api<TokenResponse>('/auth/register', { method: 'POST', body: { email, password, name, phone, referral_code }, skipAuth: true }),
+  
+  registerPartner: (email: string, password: string, name: string, cnpj: string, razao_social: string, phone?: string) =>
+    api<TokenResponse>('/auth/register-partner', { method: 'POST', body: { email, password, name, cnpj, razao_social, phone }, skipAuth: true }),
   
   login: (email: string, password: string) =>
     api<TokenResponse>('/auth/login', { method: 'POST', body: { email, password }, skipAuth: true }),
@@ -357,7 +381,7 @@ export const authApi = {
     api<User>('/auth/me'),
   
   getMyReferrals: () =>
-    api<{ total_referred: number }>('/auth/my-referrals')
+    api<MyReferralsResponse>('/auth/my-referrals')
 };
 
 export const profileApi = {

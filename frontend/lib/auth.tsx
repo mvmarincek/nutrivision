@@ -9,6 +9,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name?: string, phone?: string, referralCode?: string) => Promise<void>;
+  registerPartner: (email: string, password: string, name: string, cnpj: string, razao_social: string, phone?: string) => Promise<void>;
   logout: () => void;
   updateUser: (user: User) => void;
   refreshUser: () => Promise<void>;
@@ -88,6 +89,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(true);
   };
 
+  const registerPartner = async (email: string, password: string, name: string, cnpj: string, razao_social: string, phone?: string) => {
+    const response = await authApi.registerPartner(email, password, name, cnpj, razao_social, phone);
+    
+    setAccessToken(response.access_token);
+    localStorage.setItem('refreshToken', response.refresh_token);
+    localStorage.setItem('user', JSON.stringify(response.user));
+    
+    setUser(response.user);
+    setIsAuthenticated(true);
+  };
+
   const updateUser = (updatedUser: User) => {
     setUser(updatedUser);
     localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -100,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated,
       login, 
       register, 
+      registerPartner,
       logout, 
       updateUser, 
       refreshUser 

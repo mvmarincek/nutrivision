@@ -9,6 +9,14 @@ class UserCreate(BaseModel):
     phone: Optional[str] = None
     referral_code: Optional[str] = None
 
+class PartnerCreate(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    cnpj: str
+    razao_social: str
+    phone: Optional[str] = None
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
@@ -18,6 +26,10 @@ class UserResponse(BaseModel):
     email: str
     name: Optional[str] = None
     cpf: Optional[str] = None
+    cnpj: Optional[str] = None
+    razao_social: Optional[str] = None
+    user_type: str = "pf"
+    commission_rate: float = 0.10
     phone: Optional[str] = None
     plan: str
     credit_balance: int
@@ -161,3 +173,21 @@ class BillingStatusResponse(BaseModel):
 class CreditBalanceResponse(BaseModel):
     credit_balance: int
     pro_analyses_remaining: int
+
+class ReferredUserInfo(BaseModel):
+    id: int
+    name: Optional[str] = None
+    email: str
+    plan: str
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class MyReferralsResponse(BaseModel):
+    total_referred: int
+    total_credits_earned: int
+    commission_rate: float
+    referral_code: Optional[str] = None
+    user_type: str = "pf"
+    referred_users: List[ReferredUserInfo] = []
