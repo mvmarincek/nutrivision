@@ -13,8 +13,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/partner", tags=["partner"])
 
 async def get_pj_user(current_user: User = Depends(get_current_user)):
-    if current_user.user_type != "pj":
-        raise HTTPException(status_code=403, detail="Acesso restrito a parceiros PJ")
     return current_user
 
 @router.get("/dashboard")
@@ -53,7 +51,7 @@ async def partner_dashboard(
         "total_revenue_generated": float(total_revenue),
         "total_commission_earned": float(total_commission),
         "commission_balance": float(partner.commission_balance or 0),
-        "commission_rate": partner.commission_rate or 0.30,
+        "commission_rate": partner.commission_rate or (0.30 if partner.user_type == "pj" else 0.10),
         "pending_commissions": pending,
         "paid_commissions": paid,
         "referral_code": partner.referral_code,

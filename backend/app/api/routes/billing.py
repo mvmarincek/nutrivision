@@ -486,7 +486,7 @@ async def get_payment_status(
         raise HTTPException(status_code=400, detail=f"Erro ao verificar status: {str(e)}")
 
 async def calculate_partner_commission(db: AsyncSession, user: User, db_payment, payment_amount: float):
-    """Calculate 30% commission for PJ partner who referred this user"""
+    """Calculate commission for referrer: 30% for PJ partners, 10% for PF users"""
     try:
         if not user.referred_by:
             return
@@ -494,7 +494,7 @@ async def calculate_partner_commission(db: AsyncSession, user: User, db_payment,
         partner_result = await db.execute(select(User).where(User.id == user.referred_by))
         partner = partner_result.scalar_one_or_none()
         
-        if not partner or partner.user_type != "pj":
+        if not partner:
             return
         
         existing = await db.execute(

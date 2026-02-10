@@ -8,7 +8,7 @@ import { Users, TrendingUp, Gift, Copy, Check, Building2, User, Crown, DollarSig
 export default function IndicacoesPage() {
   const { user } = useAuth();
   const [data, setData] = useState<MyReferralsResponse | null>(null);
-  const [partnerData, setPartnerData] = useState<PartnerDashboard | null>(null);
+  const [dashboard, setDashboard] = useState<PartnerDashboard | null>(null);
   const [commissions, setCommissions] = useState<CommissionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [linkCopiado, setLinkCopiado] = useState(false);
@@ -30,18 +30,15 @@ export default function IndicacoesPage() {
 
   const loadData = async () => {
     try {
-      const referrals = await authApi.getMyReferrals();
+      const [referrals, dashboardData, commissionsResult] = await Promise.all([
+        authApi.getMyReferrals(),
+        partnerApi.getDashboard(),
+        partnerApi.getCommissions()
+      ]);
       setData(referrals);
-      
-      if (isPJ) {
-        const [dashboard, commissionsResult] = await Promise.all([
-          partnerApi.getDashboard(),
-          partnerApi.getCommissions()
-        ]);
-        setPartnerData(dashboard);
-        setCommissions(commissionsResult.commissions);
-        setPixKey(dashboard.pix_key || '');
-      }
+      setDashboard(dashboardData);
+      setCommissions(commissionsResult.commissions);
+      setPixKey(dashboardData.pix_key || '');
     } catch (err) {
       console.error('Erro ao carregar dados:', err);
     } finally {
@@ -100,14 +97,18 @@ export default function IndicacoesPage() {
     );
   }
 
+  const accentFrom = isPJ ? 'from-violet-500' : 'from-emerald-500';
+  const accentTo = isPJ ? 'to-purple-500' : 'to-teal-500';
+  const accentBg = isPJ ? 'shadow-violet-200' : 'shadow-emerald-200';
+  const accentText = isPJ ? 'text-violet-500' : 'text-emerald-500';
+  const accentBorder = isPJ ? 'border-violet-200' : 'border-emerald-200';
+  const accentBgLight = isPJ ? 'from-violet-50 to-purple-50' : 'from-emerald-50 to-teal-50';
+  const commissionPct = dashboard ? (dashboard.commission_rate * 100).toFixed(0) : (isPJ ? '30' : '10');
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-3 mb-2">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${
-          isPJ
-            ? 'bg-gradient-to-br from-violet-500 to-purple-500 shadow-violet-200'
-            : 'bg-gradient-to-br from-emerald-500 to-teal-500 shadow-emerald-200'
-        }`}>
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg bg-gradient-to-br ${accentFrom} ${accentTo} ${accentBg}`}>
           {isPJ ? <Building2 className="w-6 h-6 text-white" /> : <Users className="w-6 h-6 text-white" />}
         </div>
         <div>
@@ -115,7 +116,9 @@ export default function IndicacoesPage() {
             {isPJ ? 'Painel do Parceiro' : 'Minhas Indicacoes'}
           </h1>
           <p className="text-sm text-gray-500">
-            {isPJ ? 'Acompanhe seus indicados e comissoes' : 'Indique amigos e ganhe creditos'}
+            {isPJ
+              ? 'Acompanhe seus indicados e comissoes (30%)'
+              : 'Indique amigos e ganhe comissao de 10% + creditos'}
           </p>
         </div>
       </div>
@@ -128,106 +131,93 @@ export default function IndicacoesPage() {
         </div>
       )}
 
-      {isPJ && partnerData ? (
-        <>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-              <Users className="w-5 h-5 mx-auto mb-1.5 text-violet-500" />
-              <p className="text-2xl font-bold text-gray-900">{partnerData.total_referred}</p>
-              <p className="text-xs text-gray-500">Indicados</p>
-            </div>
-            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-              <DollarSign className="w-5 h-5 mx-auto mb-1.5 text-emerald-500" />
-              <p className="text-2xl font-bold text-gray-900">R${partnerData.total_revenue_generated.toFixed(2)}</p>
-              <p className="text-xs text-gray-500">Receita gerada</p>
-            </div>
-            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-              <TrendingUp className="w-5 h-5 mx-auto mb-1.5 text-amber-500" />
-              <p className="text-2xl font-bold text-gray-900">R${partnerData.total_commission_earned.toFixed(2)}</p>
-              <p className="text-xs text-gray-500">Comissao total ({(partnerData.commission_rate * 100).toFixed(0)}%)</p>
-            </div>
-            <div className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl p-4 shadow-sm text-center text-white">
-              <Wallet className="w-5 h-5 mx-auto mb-1.5 text-white/80" />
-              <p className="text-2xl font-bold">R${partnerData.commission_balance.toFixed(2)}</p>
-              <p className="text-xs text-white/70">Saldo disponivel</p>
-            </div>
-          </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+          <Users className={`w-5 h-5 mx-auto mb-1.5 ${accentText}`} />
+          <p className="text-2xl font-bold text-gray-900">{dashboard?.total_referred || data?.total_referred || 0}</p>
+          <p className="text-xs text-gray-500">Indicados</p>
+        </div>
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+          <DollarSign className="w-5 h-5 mx-auto mb-1.5 text-emerald-500" />
+          <p className="text-2xl font-bold text-gray-900">R${(dashboard?.total_revenue_generated || 0).toFixed(2)}</p>
+          <p className="text-xs text-gray-500">Receita gerada</p>
+        </div>
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+          <TrendingUp className="w-5 h-5 mx-auto mb-1.5 text-amber-500" />
+          <p className="text-2xl font-bold text-gray-900">R${(dashboard?.total_commission_earned || 0).toFixed(2)}</p>
+          <p className="text-xs text-gray-500">Comissao total ({commissionPct}%)</p>
+        </div>
+        <div className={`bg-gradient-to-br ${accentFrom} ${isPJ ? 'to-purple-600' : 'to-teal-600'} rounded-2xl p-4 shadow-sm text-center text-white`}>
+          <Wallet className="w-5 h-5 mx-auto mb-1.5 text-white/80" />
+          <p className="text-2xl font-bold">R${(dashboard?.commission_balance || 0).toFixed(2)}</p>
+          <p className="text-xs text-white/70">Saldo disponivel</p>
+        </div>
+      </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                <KeyRound className="w-4 h-4 text-violet-500" />
-                Chave PIX para saque
-              </h3>
-              {!showPixInput && pixKey && (
-                <button
-                  onClick={() => setShowPixInput(true)}
-                  className="text-xs text-violet-600 hover:underline"
-                >
-                  Alterar
-                </button>
-              )}
+      {!isPJ && (
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Gift className="w-5 h-5 text-violet-500" />
+            <div>
+              <p className="text-sm font-medium text-gray-800">Creditos bonus por indicacao</p>
+              <p className="text-xs text-gray-500">Voce ganha 12 creditos por cada amigo que se cadastra</p>
             </div>
-            
-            {showPixInput || !pixKey ? (
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={pixKey}
-                  onChange={(e) => setPixKey(e.target.value)}
-                  placeholder="CPF, CNPJ, email ou telefone"
-                  className="flex-1 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-200 text-sm"
-                />
-                <button
-                  onClick={handleSavePixKey}
-                  disabled={savingPix || !pixKey.trim()}
-                  className="px-4 py-2.5 bg-violet-500 text-white rounded-xl text-sm font-medium hover:bg-violet-600 disabled:opacity-50"
-                >
-                  {savingPix ? 'Salvando...' : 'Salvar'}
-                </button>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-600 bg-gray-50 px-4 py-2.5 rounded-xl">{pixKey}</p>
-            )}
-
-            <button
-              onClick={handleWithdraw}
-              disabled={withdrawing || (partnerData.commission_balance < 10)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-violet-200 transition-all disabled:opacity-50 disabled:hover:shadow-none"
-            >
-              <ArrowDownToLine className="w-4 h-4" />
-              {withdrawing ? 'Processando...' : `Solicitar Saque (R$${partnerData.commission_balance.toFixed(2)})`}
-            </button>
-            {partnerData.commission_balance < 10 && (
-              <p className="text-xs text-gray-400 text-center">Saldo minimo para saque: R$10,00</p>
-            )}
           </div>
-        </>
-      ) : (
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-            <Users className="w-6 h-6 mx-auto mb-2 text-emerald-500" />
-            <p className="text-2xl font-bold text-gray-900">{data?.total_referred || 0}</p>
-            <p className="text-xs text-gray-500">Indicados</p>
-          </div>
-          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-            <Gift className="w-6 h-6 mx-auto mb-2 text-violet-500" />
-            <p className="text-2xl font-bold text-gray-900">{data?.total_credits_earned || 0}</p>
-            <p className="text-xs text-gray-500">Creditos ganhos</p>
-          </div>
-          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-            <TrendingUp className="w-6 h-6 mx-auto mb-2 text-amber-500" />
-            <p className="text-2xl font-bold text-gray-900">{((data?.commission_rate || 0) * 100).toFixed(0)}%</p>
-            <p className="text-xs text-gray-500">Comissao</p>
-          </div>
+          <p className="text-xl font-bold text-violet-600">{data?.total_credits_earned || 0}</p>
         </div>
       )}
 
-      <div className={`rounded-2xl p-5 border shadow-sm ${
-        isPJ
-          ? 'bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200'
-          : 'bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200'
-      }`}>
+      <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+            <KeyRound className={`w-4 h-4 ${accentText}`} />
+            Chave PIX para saque
+          </h3>
+          {!showPixInput && pixKey && (
+            <button
+              onClick={() => setShowPixInput(true)}
+              className={`text-xs ${isPJ ? 'text-violet-600' : 'text-emerald-600'} hover:underline`}
+            >
+              Alterar
+            </button>
+          )}
+        </div>
+        
+        {showPixInput || !pixKey ? (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={pixKey}
+              onChange={(e) => setPixKey(e.target.value)}
+              placeholder="CPF, CNPJ, email ou telefone"
+              className="flex-1 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-200 text-sm"
+            />
+            <button
+              onClick={handleSavePixKey}
+              disabled={savingPix || !pixKey.trim()}
+              className={`px-4 py-2.5 ${isPJ ? 'bg-violet-500 hover:bg-violet-600' : 'bg-emerald-500 hover:bg-emerald-600'} text-white rounded-xl text-sm font-medium disabled:opacity-50`}
+            >
+              {savingPix ? 'Salvando...' : 'Salvar'}
+            </button>
+          </div>
+        ) : (
+          <p className="text-sm text-gray-600 bg-gray-50 px-4 py-2.5 rounded-xl">{pixKey}</p>
+        )}
+
+        <button
+          onClick={handleWithdraw}
+          disabled={withdrawing || (dashboard?.commission_balance || 0) < 10}
+          className={`w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r ${accentFrom} ${isPJ ? 'to-purple-600 hover:shadow-violet-200' : 'to-teal-600 hover:shadow-emerald-200'} text-white rounded-xl font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:hover:shadow-none`}
+        >
+          <ArrowDownToLine className="w-4 h-4" />
+          {withdrawing ? 'Processando...' : `Solicitar Saque (R$${(dashboard?.commission_balance || 0).toFixed(2)})`}
+        </button>
+        {(dashboard?.commission_balance || 0) < 10 && (
+          <p className="text-xs text-gray-400 text-center">Saldo minimo para saque: R$10,00</p>
+        )}
+      </div>
+
+      <div className={`rounded-2xl p-5 border shadow-sm bg-gradient-to-r ${accentBgLight} ${accentBorder}`}>
         <h3 className="font-semibold text-gray-800 mb-3">Seu link de indicacao</h3>
         <div className="flex items-center gap-2">
           <input
@@ -241,9 +231,7 @@ export default function IndicacoesPage() {
             className={`px-5 py-3 rounded-xl font-medium flex items-center gap-2 transition-all ${
               linkCopiado
                 ? 'bg-emerald-500 text-white'
-                : isPJ
-                  ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:shadow-lg hover:shadow-purple-200'
-                  : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg hover:shadow-emerald-200'
+                : `bg-gradient-to-r ${accentFrom} ${accentTo} text-white hover:shadow-lg ${accentBg}`
             }`}
           >
             {linkCopiado ? <><Check className="w-4 h-4" /> Copiado!</> : <><Copy className="w-4 h-4" /> Copiar</>}
@@ -258,39 +246,35 @@ export default function IndicacoesPage() {
             />
           </div>
         </div>
-        {isPJ && (
-          <p className="text-xs text-violet-600 mt-3 text-center">
-            Codigo de parceiro: <span className="font-bold">{user?.referral_code}</span>
-          </p>
-        )}
+        <p className={`text-xs ${isPJ ? 'text-violet-600' : 'text-emerald-600'} mt-3 text-center`}>
+          Seu codigo: <span className="font-bold">{user?.referral_code}</span>
+        </p>
       </div>
 
-      {isPJ && (
-        <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
-          <button
-            onClick={() => setActiveTab('indicados')}
-            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-              activeTab === 'indicados'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Indicados
-          </button>
-          <button
-            onClick={() => setActiveTab('comissoes')}
-            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-              activeTab === 'comissoes'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Comissoes ({commissions.length})
-          </button>
-        </div>
-      )}
+      <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
+        <button
+          onClick={() => setActiveTab('indicados')}
+          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'indicados'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Indicados
+        </button>
+        <button
+          onClick={() => setActiveTab('comissoes')}
+          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'comissoes'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Comissoes ({commissions.length})
+        </button>
+      </div>
 
-      {(!isPJ || activeTab === 'indicados') && (
+      {activeTab === 'indicados' && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
             <h3 className="font-semibold text-gray-800">Pessoas indicadas</h3>
@@ -316,7 +300,7 @@ export default function IndicacoesPage() {
                         <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">Free</span>
                       )}
                     </div>
-                    {isPJ && ref.total_paid > 0 && (
+                    {ref.total_paid > 0 && (
                       <p className="text-xs text-emerald-600 mt-1 font-medium">R${ref.total_paid.toFixed(2)}</p>
                     )}
                     <p className="text-xs text-gray-400 mt-1">
@@ -336,7 +320,7 @@ export default function IndicacoesPage() {
         </div>
       )}
 
-      {isPJ && activeTab === 'comissoes' && (
+      {activeTab === 'comissoes' && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
             <h3 className="font-semibold text-gray-800">Historico de comissoes</h3>
@@ -345,8 +329,8 @@ export default function IndicacoesPage() {
             <div className="divide-y divide-gray-50">
               {commissions.map((c) => (
                 <div key={c.id} className="px-5 py-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-violet-600" />
+                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${isPJ ? 'from-violet-100 to-purple-100' : 'from-emerald-100 to-teal-100'} flex items-center justify-center`}>
+                    <DollarSign className={`w-5 h-5 ${isPJ ? 'text-violet-600' : 'text-emerald-600'}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-900 truncate">{c.referred_user_name || c.referred_user_email}</p>
