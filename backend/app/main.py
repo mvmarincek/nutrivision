@@ -11,7 +11,7 @@ import logging
 
 from app.db.database import init_db, async_session
 from app.core.config import settings
-from app.api.routes import auth, profile, meals, jobs, billing, credits, feedback, admin, motivacional
+from app.api.routes import auth, profile, meals, jobs, billing, credits, feedback, admin, motivacional, chat
 from app.models.models import ErrorLog
 
 logger = logging.getLogger(__name__)
@@ -59,6 +59,7 @@ app.include_router(credits.router)
 app.include_router(feedback.router)
 app.include_router(admin.router)
 app.include_router(motivacional.router)
+app.include_router(chat.router)
 
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
@@ -338,6 +339,22 @@ async def run_migration():
             created_at TIMESTAMP DEFAULT NOW()
         )""",
         "CREATE INDEX IF NOT EXISTS ix_motivational_posts_user_date ON motivational_posts(user_id, post_date)",
+        """CREATE TABLE IF NOT EXISTS chat_conversations (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) NOT NULL,
+            title VARCHAR(255),
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW()
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_chat_conversations_user ON chat_conversations(user_id)",
+        """CREATE TABLE IF NOT EXISTS chat_messages (
+            id SERIAL PRIMARY KEY,
+            conversation_id INTEGER REFERENCES chat_conversations(id) NOT NULL,
+            role VARCHAR(20) NOT NULL,
+            content TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_chat_messages_conversation ON chat_messages(conversation_id)",
     ]
     
     results = []

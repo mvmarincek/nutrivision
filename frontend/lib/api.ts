@@ -717,3 +717,42 @@ export const adminApi = {
   resendVerificationEmail: (userId: number) =>
     api<{ success: boolean; message: string }>(`/admin/users/${userId}/resend-verification`, { method: 'POST' })
 };
+
+export interface ChatConversationItem {
+  id: number;
+  title: string;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface ChatMessageItem {
+  id: number;
+  role: string;
+  content: string;
+  created_at: string | null;
+}
+
+export interface ChatConversationDetail {
+  id: number;
+  title: string;
+  messages: ChatMessageItem[];
+}
+
+export interface ChatSendResponse {
+  conversation_id: number;
+  message: ChatMessageItem;
+}
+
+export const chatApi = {
+  listConversations: () =>
+    api<ChatConversationItem[]>('/chat/conversations'),
+  
+  getConversation: (conversationId: number) =>
+    api<ChatConversationDetail>(`/chat/conversations/${conversationId}`),
+  
+  sendMessage: (message: string, conversationId?: number) =>
+    api<ChatSendResponse>('/chat/send', { method: 'POST', body: { message, conversation_id: conversationId } }),
+  
+  deleteConversation: (conversationId: number) =>
+    api<{ success: boolean }>(`/chat/conversations/${conversationId}`, { method: 'DELETE' })
+};
