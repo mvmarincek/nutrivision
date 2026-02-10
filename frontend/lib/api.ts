@@ -703,7 +703,7 @@ export const adminApi = {
     api<{ success: boolean; plan: string }>(`/admin/users/${userId}/remove-pro`, { method: 'POST' }),
   
   resetProAnalyses: (userId: number) =>
-    api<{ success: boolean; pro_analyses_remaining: number }>(`/admin/users/${userId}/reset-pro-analyses`, { method: 'POST' }),
+    api<{ success: boolean }>(`/admin/users/${userId}/reset-pro-analyses`, { method: 'POST' }),
   
   deleteUser: (userId: number) =>
     api<{ success: boolean; message: string }>(`/admin/users/${userId}`, { method: 'DELETE' }),

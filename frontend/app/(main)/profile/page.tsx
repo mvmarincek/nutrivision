@@ -264,9 +264,6 @@ export default function ProfilePage() {
             <div className="ml-4 flex-1">
               <p className="font-semibold text-gray-900">{user?.email}</p>
               <p className="text-sm text-gray-500 capitalize">Plano {user?.plan || 'Free'}</p>
-              {user?.credit_balance !== undefined && user.credit_balance > 0 && (
-                <p className="text-xs text-emerald-600 font-medium">{user.credit_balance} creditos disponiveis</p>
-              )}
             </div>
           </div>
 

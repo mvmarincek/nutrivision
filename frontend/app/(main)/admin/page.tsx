@@ -275,7 +275,7 @@ export default function AdminPage() {
     if (!confirm('Resetar analises PRO para 90?')) return;
     try {
       const result = await adminApi.resetProAnalyses(userId);
-      showSuccess(`Análises resetadas para ${result.pro_analyses_remaining}!`, 'Sucesso');
+      showSuccess(`Análises resetadas!`, 'Sucesso');
       searchUsers();
     } catch (err) {
       showError('Erro ao resetar analises', 'Erro');
@@ -703,7 +703,7 @@ export default function AdminPage() {
                       </span>
                     </td>
                     <td className="px-4 py-4 text-gray-700">
-                      {u.plan === 'pro' ? `${u.pro_analyses_remaining} analises` : `${u.credit_balance} creditos`}
+                      {u.simple_analyses_used} simples / {u.full_analyses_used} completas
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">{formatDate(u.created_at)}</td>
                     <td className="px-4 py-4">
@@ -1021,8 +1021,8 @@ export default function AdminPage() {
 
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-4 text-center border border-emerald-100">
-                <p className="text-2xl font-bold text-emerald-600">{selectedUser.user.credit_balance}</p>
-                <p className="text-xs text-gray-500">Creditos</p>
+                <p className="text-2xl font-bold text-emerald-600">{selectedUser.user.simple_analyses_used}/{selectedUser.user.full_analyses_used}</p>
+                <p className="text-xs text-gray-500">Simples/Completas</p>
               </div>
               <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 text-center border border-blue-100">
                 <p className="text-2xl font-bold text-blue-600">{selectedUser.meals_count}</p>
