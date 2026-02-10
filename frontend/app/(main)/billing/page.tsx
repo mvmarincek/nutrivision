@@ -5,7 +5,6 @@ import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
 import { billingApi, BillingStatus, CreditPackage } from '@/lib/api';
 import { CreditCard, Star, Zap, QrCode, Copy, Check, X, Crown, Loader2, ChevronLeft } from 'lucide-react';
-import PageAds from '@/components/PageAds';
 
 interface PixPaymentData {
   payment_id: string;
@@ -728,8 +727,6 @@ export default function BillingPage() {
               </div>
             </div>
           </div>
-
-          <PageAds position="inline" />
 
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-violet-100 to-purple-100 rounded-lg flex items-center justify-center">

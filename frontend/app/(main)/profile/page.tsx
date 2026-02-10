@@ -6,7 +6,6 @@ import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
 import { profileApi, feedbackApi, billingApi, mealsApi, authApi, MealStats } from '@/lib/api';
 import { Save, User, ArrowRight, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera, Crown, Loader2, Flame, TrendingUp, Calendar, Trophy } from 'lucide-react';
-import PageAds from '@/components/PageAds';
 import BowlLogo from '@/components/BowlLogo';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -317,8 +316,6 @@ export default function ProfilePage() {
             </div>
           )}
 
-          <PageAds position="inline" />
-
           <div className="mb-6">
             <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
               <div className="w-6 h-6 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-lg flex items-center justify-center">
@@ -593,8 +590,6 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
-
-      <PageAds position="bottom" />
     </div>
   );
 }
