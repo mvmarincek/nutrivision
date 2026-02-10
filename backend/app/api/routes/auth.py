@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from pydantic import BaseModel
 from app.db.database import get_db
-from app.models.models import User, Referral, Payment
+from app.models.models import User, Referral, Payment, Commission
 from app.schemas.schemas import UserCreate, UserLogin, TokenResponse, UserResponse, PartnerCreate, MyReferralsResponse, ReferredUserInfo
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, decode_refresh_token, get_current_user
 from app.services.email_service import send_welcome_email, send_password_reset_email, send_referral_activated_email, send_email_verification, send_email_verified_success
@@ -314,20 +314,34 @@ async def get_my_referrals(current_user: User = Depends(get_current_user), db: A
         user_result = await db.execute(select(User).where(User.id == ref.referred_id))
         referred_user = user_result.scalar_one_or_none()
         if referred_user:
+            total_paid_result = await db.scalar(
+                select(func.sum(Payment.amount))
+                .where(Payment.user_id == referred_user.id)
+                .where(Payment.status == "confirmed")
+            ) or 0.0
             referred_users.append(ReferredUserInfo(
                 id=referred_user.id,
                 name=referred_user.name,
                 email=referred_user.email,
                 plan=referred_user.plan,
+                total_paid=float(total_paid_result),
                 created_at=ref.created_at
             ))
+    
+    total_commission_earned = await db.scalar(
+        select(func.sum(Commission.commission_amount))
+        .where(Commission.partner_id == current_user.id)
+    ) or 0.0
     
     return MyReferralsResponse(
         total_referred=len(referrals),
         total_credits_earned=total_credits,
+        total_commission_earned=float(total_commission_earned),
+        commission_balance=float(current_user.commission_balance or 0),
         commission_rate=current_user.commission_rate,
         referral_code=current_user.referral_code,
         user_type=current_user.user_type or "pf",
+        pix_key=current_user.pix_key,
         referred_users=referred_users
     )
 

@@ -196,6 +196,8 @@ export interface User {
   razao_social?: string;
   user_type: string;
   commission_rate: number;
+  commission_balance: number;
+  pix_key?: string;
   phone?: string;
   plan: string;
   credit_balance: number;
@@ -337,16 +339,42 @@ export interface ReferredUserInfo {
   name?: string;
   email: string;
   plan: string;
+  total_paid: number;
   created_at: string;
 }
 
 export interface MyReferralsResponse {
   total_referred: number;
   total_credits_earned: number;
+  total_commission_earned: number;
+  commission_balance: number;
   commission_rate: number;
   referral_code?: string;
   user_type: string;
+  pix_key?: string;
   referred_users: ReferredUserInfo[];
+}
+
+export interface PartnerDashboard {
+  total_referred: number;
+  total_revenue_generated: number;
+  total_commission_earned: number;
+  commission_balance: number;
+  commission_rate: number;
+  pending_commissions: number;
+  paid_commissions: number;
+  referral_code: string;
+  pix_key?: string;
+}
+
+export interface CommissionItem {
+  id: number;
+  referred_user_name?: string;
+  referred_user_email: string;
+  payment_amount: number;
+  commission_amount: number;
+  status: string;
+  created_at: string;
 }
 
 export const authApi = {
@@ -382,6 +410,20 @@ export const authApi = {
   
   getMyReferrals: () =>
     api<MyReferralsResponse>('/auth/my-referrals'),
+};
+
+export const partnerApi = {
+  getDashboard: () =>
+    api<PartnerDashboard>('/partner/dashboard'),
+
+  getCommissions: () =>
+    api<{ commissions: CommissionItem[] }>('/partner/commissions'),
+
+  updatePixKey: (pix_key: string) =>
+    api<{ message: string; pix_key: string }>('/partner/update-pix-key', { method: 'POST', body: { pix_key } }),
+
+  withdraw: (pix_key: string) =>
+    api<{ message: string; amount: number; pix_key: string; status: string }>('/partner/withdraw', { method: 'POST', body: { pix_key } }),
 };
 
 export const profileApi = {

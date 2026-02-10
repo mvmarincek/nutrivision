@@ -7,7 +7,7 @@ from typing import Optional
 from datetime import datetime, timedelta
 from app.db.database import get_db
 from app.core.security import get_current_user
-from app.models.models import User, Payment, CreditTransaction, Meal, Referral, EmailLog, EmailSettings, ErrorLog
+from app.models.models import User, Payment, CreditTransaction, Meal, Referral, EmailLog, EmailSettings, ErrorLog, Commission
 import csv
 import io
 
@@ -56,6 +56,22 @@ async def get_dashboard_stats(
         select(func.count(Payment.id)).where(Payment.status == "pending")
     )
     
+    total_partners = await db.scalar(
+        select(func.count(User.id)).where(User.user_type == "pj")
+    ) or 0
+    
+    total_commission_pending = await db.scalar(
+        select(func.sum(Commission.commission_amount)).where(Commission.status == "pending")
+    ) or 0.0
+    
+    total_commission_paid = await db.scalar(
+        select(func.sum(Commission.commission_amount)).where(Commission.status == "paid")
+    ) or 0.0
+    
+    partner_revenue = await db.scalar(
+        select(func.sum(Commission.payment_amount))
+    ) or 0.0
+    
     return {
         "users": {
             "total": total_users,
@@ -72,7 +88,13 @@ async def get_dashboard_stats(
             "total": total_meals,
             "today": meals_today
         },
-        "pending_payments": pending_payments
+        "pending_payments": pending_payments,
+        "partners": {
+            "total": total_partners,
+            "commission_pending": float(total_commission_pending),
+            "commission_paid": float(total_commission_paid),
+            "revenue_from_referrals": float(partner_revenue)
+        }
     }
 
 @router.get("/charts")
@@ -188,6 +210,14 @@ async def get_chart_data(
         ))
     ) or 0
 
+    total_partner_commissions = await db.scalar(
+        select(func.sum(Commission.commission_amount))
+    ) or 0.0
+    
+    total_partner_revenue = await db.scalar(
+        select(func.sum(Commission.payment_amount))
+    ) or 0.0
+    
     return {
         "revenue_by_day": revenue_by_day,
         "users_by_day": users_by_day,
@@ -200,7 +230,9 @@ async def get_chart_data(
             "paying_users": paying_users,
             "active_subscriptions": active_subscriptions,
             "total_referrals": total_referrals,
-            "referred_who_paid": referred_who_paid
+            "referred_who_paid": referred_who_paid,
+            "total_partner_commissions": float(total_partner_commissions),
+            "total_partner_revenue": float(total_partner_revenue)
         }
     }
 

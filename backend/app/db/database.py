@@ -82,6 +82,20 @@ async def run_migrations(conn):
             updated_at TIMESTAMP DEFAULT NOW()
         )""",
         "UPDATE users SET is_admin = TRUE WHERE email = 'mvmarincek@gmail.com'",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS commission_balance FLOAT DEFAULT 0.0",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS pix_key VARCHAR(255)",
+        """CREATE TABLE IF NOT EXISTS commissions (
+            id SERIAL PRIMARY KEY,
+            partner_id INTEGER REFERENCES users(id) NOT NULL,
+            referred_user_id INTEGER REFERENCES users(id) NOT NULL,
+            payment_id INTEGER REFERENCES payments(id) NOT NULL,
+            payment_amount FLOAT NOT NULL,
+            commission_amount FLOAT NOT NULL,
+            commission_rate FLOAT DEFAULT 0.30,
+            status VARCHAR(20) DEFAULT 'pending',
+            paid_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT NOW()
+        )""",
     ]
     
     for sql in migrations:

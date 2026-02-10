@@ -2,14 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
-import { authApi, MyReferralsResponse } from '@/lib/api';
-import { Users, TrendingUp, Gift, Copy, Check, Building2, User, Crown } from 'lucide-react';
+import { authApi, partnerApi, MyReferralsResponse, PartnerDashboard, CommissionItem } from '@/lib/api';
+import { Users, TrendingUp, Gift, Copy, Check, Building2, User, Crown, DollarSign, Wallet, ArrowDownToLine, KeyRound } from 'lucide-react';
 
 export default function IndicacoesPage() {
   const { user } = useAuth();
   const [data, setData] = useState<MyReferralsResponse | null>(null);
+  const [partnerData, setPartnerData] = useState<PartnerDashboard | null>(null);
+  const [commissions, setCommissions] = useState<CommissionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [linkCopiado, setLinkCopiado] = useState(false);
+  const [pixKey, setPixKey] = useState('');
+  const [showPixInput, setShowPixInput] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [savingPix, setSavingPix] = useState(false);
+  const [message, setMessage] = useState('');
+  const [activeTab, setActiveTab] = useState<'indicados' | 'comissoes'>('indicados');
 
   const isPJ = user?.user_type === 'pj';
   const referralLink = user?.referral_code
@@ -17,15 +25,25 @@ export default function IndicacoesPage() {
     : '';
 
   useEffect(() => {
-    loadReferrals();
+    loadData();
   }, []);
 
-  const loadReferrals = async () => {
+  const loadData = async () => {
     try {
-      const result = await authApi.getMyReferrals();
-      setData(result);
+      const referrals = await authApi.getMyReferrals();
+      setData(referrals);
+      
+      if (isPJ) {
+        const [dashboard, commissionsResult] = await Promise.all([
+          partnerApi.getDashboard(),
+          partnerApi.getCommissions()
+        ]);
+        setPartnerData(dashboard);
+        setCommissions(commissionsResult.commissions);
+        setPixKey(dashboard.pix_key || '');
+      }
     } catch (err) {
-      console.error('Erro ao carregar indicacoes:', err);
+      console.error('Erro ao carregar dados:', err);
     } finally {
       setLoading(false);
     }
@@ -36,6 +54,41 @@ export default function IndicacoesPage() {
       navigator.clipboard.writeText(referralLink);
       setLinkCopiado(true);
       setTimeout(() => setLinkCopiado(false), 2000);
+    }
+  };
+
+  const handleSavePixKey = async () => {
+    if (!pixKey.trim()) return;
+    setSavingPix(true);
+    try {
+      await partnerApi.updatePixKey(pixKey.trim());
+      setMessage('Chave PIX salva com sucesso!');
+      setShowPixInput(false);
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      setMessage('Erro ao salvar chave PIX');
+      setTimeout(() => setMessage(''), 3000);
+    } finally {
+      setSavingPix(false);
+    }
+  };
+
+  const handleWithdraw = async () => {
+    if (!pixKey.trim()) {
+      setShowPixInput(true);
+      return;
+    }
+    setWithdrawing(true);
+    try {
+      const result = await partnerApi.withdraw(pixKey.trim());
+      setMessage(result.message);
+      await loadData();
+      setTimeout(() => setMessage(''), 5000);
+    } catch (err: any) {
+      setMessage(err?.message || 'Erro ao solicitar saque');
+      setTimeout(() => setMessage(''), 3000);
+    } finally {
+      setWithdrawing(false);
     }
   };
 
@@ -67,23 +120,108 @@ export default function IndicacoesPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-          <Users className="w-6 h-6 mx-auto mb-2 text-emerald-500" />
-          <p className="text-2xl font-bold text-gray-900">{data?.total_referred || 0}</p>
-          <p className="text-xs text-gray-500">Indicados</p>
+      {message && (
+        <div className={`rounded-xl p-3 text-sm font-medium text-center ${
+          message.includes('Erro') ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'
+        }`}>
+          {message}
         </div>
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-          <Gift className="w-6 h-6 mx-auto mb-2 text-violet-500" />
-          <p className="text-2xl font-bold text-gray-900">{data?.total_credits_earned || 0}</p>
-          <p className="text-xs text-gray-500">Creditos ganhos</p>
+      )}
+
+      {isPJ && partnerData ? (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+              <Users className="w-5 h-5 mx-auto mb-1.5 text-violet-500" />
+              <p className="text-2xl font-bold text-gray-900">{partnerData.total_referred}</p>
+              <p className="text-xs text-gray-500">Indicados</p>
+            </div>
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+              <DollarSign className="w-5 h-5 mx-auto mb-1.5 text-emerald-500" />
+              <p className="text-2xl font-bold text-gray-900">R${partnerData.total_revenue_generated.toFixed(2)}</p>
+              <p className="text-xs text-gray-500">Receita gerada</p>
+            </div>
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+              <TrendingUp className="w-5 h-5 mx-auto mb-1.5 text-amber-500" />
+              <p className="text-2xl font-bold text-gray-900">R${partnerData.total_commission_earned.toFixed(2)}</p>
+              <p className="text-xs text-gray-500">Comissao total ({(partnerData.commission_rate * 100).toFixed(0)}%)</p>
+            </div>
+            <div className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl p-4 shadow-sm text-center text-white">
+              <Wallet className="w-5 h-5 mx-auto mb-1.5 text-white/80" />
+              <p className="text-2xl font-bold">R${partnerData.commission_balance.toFixed(2)}</p>
+              <p className="text-xs text-white/70">Saldo disponivel</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                <KeyRound className="w-4 h-4 text-violet-500" />
+                Chave PIX para saque
+              </h3>
+              {!showPixInput && pixKey && (
+                <button
+                  onClick={() => setShowPixInput(true)}
+                  className="text-xs text-violet-600 hover:underline"
+                >
+                  Alterar
+                </button>
+              )}
+            </div>
+            
+            {showPixInput || !pixKey ? (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={pixKey}
+                  onChange={(e) => setPixKey(e.target.value)}
+                  placeholder="CPF, CNPJ, email ou telefone"
+                  className="flex-1 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-200 text-sm"
+                />
+                <button
+                  onClick={handleSavePixKey}
+                  disabled={savingPix || !pixKey.trim()}
+                  className="px-4 py-2.5 bg-violet-500 text-white rounded-xl text-sm font-medium hover:bg-violet-600 disabled:opacity-50"
+                >
+                  {savingPix ? 'Salvando...' : 'Salvar'}
+                </button>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600 bg-gray-50 px-4 py-2.5 rounded-xl">{pixKey}</p>
+            )}
+
+            <button
+              onClick={handleWithdraw}
+              disabled={withdrawing || (partnerData.commission_balance < 10)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-violet-200 transition-all disabled:opacity-50 disabled:hover:shadow-none"
+            >
+              <ArrowDownToLine className="w-4 h-4" />
+              {withdrawing ? 'Processando...' : `Solicitar Saque (R$${partnerData.commission_balance.toFixed(2)})`}
+            </button>
+            {partnerData.commission_balance < 10 && (
+              <p className="text-xs text-gray-400 text-center">Saldo minimo para saque: R$10,00</p>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+            <Users className="w-6 h-6 mx-auto mb-2 text-emerald-500" />
+            <p className="text-2xl font-bold text-gray-900">{data?.total_referred || 0}</p>
+            <p className="text-xs text-gray-500">Indicados</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+            <Gift className="w-6 h-6 mx-auto mb-2 text-violet-500" />
+            <p className="text-2xl font-bold text-gray-900">{data?.total_credits_earned || 0}</p>
+            <p className="text-xs text-gray-500">Creditos ganhos</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
+            <TrendingUp className="w-6 h-6 mx-auto mb-2 text-amber-500" />
+            <p className="text-2xl font-bold text-gray-900">{((data?.commission_rate || 0) * 100).toFixed(0)}%</p>
+            <p className="text-xs text-gray-500">Comissao</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-          <TrendingUp className="w-6 h-6 mx-auto mb-2 text-amber-500" />
-          <p className="text-2xl font-bold text-gray-900">{((data?.commission_rate || 0) * 100).toFixed(0)}%</p>
-          <p className="text-xs text-gray-500">Comissao</p>
-        </div>
-      </div>
+      )}
 
       <div className={`rounded-2xl p-5 border shadow-sm ${
         isPJ
@@ -127,46 +265,120 @@ export default function IndicacoesPage() {
         )}
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <h3 className="font-semibold text-gray-800">Pessoas indicadas</h3>
+      {isPJ && (
+        <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
+          <button
+            onClick={() => setActiveTab('indicados')}
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+              activeTab === 'indicados'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Indicados
+          </button>
+          <button
+            onClick={() => setActiveTab('comissoes')}
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+              activeTab === 'comissoes'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Comissoes ({commissions.length})
+          </button>
         </div>
-        {data?.referred_users && data.referred_users.length > 0 ? (
-          <div className="divide-y divide-gray-50">
-            {data.referred_users.map((ref) => (
-              <div key={ref.id} className="px-5 py-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
-                  <User className="w-5 h-5 text-emerald-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 truncate">{ref.name || 'Sem nome'}</p>
-                  <p className="text-sm text-gray-500 truncate">{ref.email}</p>
-                </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-1">
-                    {ref.plan === 'pro' ? (
-                      <span className="inline-flex items-center gap-1 bg-gradient-to-r from-violet-100 to-purple-100 text-violet-700 text-xs font-medium px-2 py-1 rounded-full">
-                        <Crown className="w-3 h-3" /> PRO
-                      </span>
-                    ) : (
-                      <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">Free</span>
-                    )}
+      )}
+
+      {(!isPJ || activeTab === 'indicados') && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <h3 className="font-semibold text-gray-800">Pessoas indicadas</h3>
+          </div>
+          {data?.referred_users && data.referred_users.length > 0 ? (
+            <div className="divide-y divide-gray-50">
+              {data.referred_users.map((ref) => (
+                <div key={ref.id} className="px-5 py-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+                    <User className="w-5 h-5 text-emerald-600" />
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {new Date(ref.created_at).toLocaleDateString('pt-BR')}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">{ref.name || 'Sem nome'}</p>
+                    <p className="text-sm text-gray-500 truncate">{ref.email}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center gap-1">
+                      {ref.plan === 'pro' ? (
+                        <span className="inline-flex items-center gap-1 bg-gradient-to-r from-violet-100 to-purple-100 text-violet-700 text-xs font-medium px-2 py-1 rounded-full">
+                          <Crown className="w-3 h-3" /> PRO
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">Free</span>
+                      )}
+                    </div>
+                    {isPJ && ref.total_paid > 0 && (
+                      <p className="text-xs text-emerald-600 mt-1 font-medium">R${ref.total_paid.toFixed(2)}</p>
+                    )}
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(ref.created_at).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          ) : (
+            <div className="px-5 py-12 text-center">
+              <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p className="text-gray-500 font-medium">Nenhum indicado ainda</p>
+              <p className="text-sm text-gray-400 mt-1">Compartilhe seu link para comecar a indicar</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {isPJ && activeTab === 'comissoes' && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <h3 className="font-semibold text-gray-800">Historico de comissoes</h3>
           </div>
-        ) : (
-          <div className="px-5 py-12 text-center">
-            <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p className="text-gray-500 font-medium">Nenhum indicado ainda</p>
-            <p className="text-sm text-gray-400 mt-1">Compartilhe seu link para comecar a indicar</p>
-          </div>
-        )}
-      </div>
+          {commissions.length > 0 ? (
+            <div className="divide-y divide-gray-50">
+              {commissions.map((c) => (
+                <div key={c.id} className="px-5 py-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-violet-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">{c.referred_user_name || c.referred_user_email}</p>
+                    <p className="text-sm text-gray-500">Pagamento: R${c.payment_amount.toFixed(2)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-emerald-600">+R${c.commission_amount.toFixed(2)}</p>
+                    <span className={`inline-block text-xs px-2 py-0.5 rounded-full mt-1 ${
+                      c.status === 'paid'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : c.status === 'withdrawal_requested'
+                          ? 'bg-amber-100 text-amber-700'
+                          : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {c.status === 'paid' ? 'Pago' : c.status === 'withdrawal_requested' ? 'Saque solicitado' : 'Pendente'}
+                    </span>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(c.created_at).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="px-5 py-12 text-center">
+              <DollarSign className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p className="text-gray-500 font-medium">Nenhuma comissao ainda</p>
+              <p className="text-sm text-gray-400 mt-1">Comissoes aparecerao quando seus indicados fizerem pagamentos</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

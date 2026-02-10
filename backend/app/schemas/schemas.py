@@ -30,6 +30,8 @@ class UserResponse(BaseModel):
     razao_social: Optional[str] = None
     user_type: str = "pf"
     commission_rate: float = 0.10
+    commission_balance: float = 0.0
+    pix_key: Optional[str] = None
     phone: Optional[str] = None
     plan: str
     credit_balance: int
@@ -178,6 +180,7 @@ class ReferredUserInfo(BaseModel):
     name: Optional[str] = None
     email: str
     plan: str
+    total_paid: float = 0.0
     created_at: datetime
     
     class Config:
@@ -186,7 +189,36 @@ class ReferredUserInfo(BaseModel):
 class MyReferralsResponse(BaseModel):
     total_referred: int
     total_credits_earned: int
+    total_commission_earned: float = 0.0
+    commission_balance: float = 0.0
     commission_rate: float
     referral_code: Optional[str] = None
     user_type: str = "pf"
+    pix_key: Optional[str] = None
     referred_users: List[ReferredUserInfo] = []
+
+class CommissionInfo(BaseModel):
+    id: int
+    referred_user_name: Optional[str] = None
+    referred_user_email: str
+    payment_amount: float
+    commission_amount: float
+    status: str
+    created_at: datetime
+
+class PartnerDashboardResponse(BaseModel):
+    total_referred: int
+    total_revenue_generated: float
+    total_commission_earned: float
+    commission_balance: float
+    commission_rate: float
+    pending_commissions: int
+    paid_commissions: int
+    referral_code: str
+    pix_key: Optional[str] = None
+
+class WithdrawRequest(BaseModel):
+    pix_key: str
+
+class UpdatePixKeyRequest(BaseModel):
+    pix_key: str

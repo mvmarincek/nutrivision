@@ -9,7 +9,7 @@ import logging
 import traceback
 
 from app.db.database import get_db
-from app.models.models import User, CreditTransaction, Payment, ErrorLog
+from app.models.models import User, CreditTransaction, Payment, ErrorLog, Commission
 from app.core.security import get_current_user
 from app.core.config import settings
 from app.services.asaas_service import asaas_service, AsaasError
@@ -485,6 +485,48 @@ async def get_payment_status(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erro ao verificar status: {str(e)}")
 
+async def calculate_partner_commission(db: AsyncSession, user: User, db_payment, payment_amount: float):
+    """Calculate 30% commission for PJ partner who referred this user"""
+    try:
+        if not user.referred_by:
+            return
+        
+        partner_result = await db.execute(select(User).where(User.id == user.referred_by))
+        partner = partner_result.scalar_one_or_none()
+        
+        if not partner or partner.user_type != "pj":
+            return
+        
+        existing = await db.execute(
+            select(Commission).where(
+                Commission.partner_id == partner.id,
+                Commission.referred_user_id == user.id,
+                Commission.payment_id == db_payment.id
+            )
+        )
+        if existing.scalar_one_or_none():
+            return
+        
+        commission_rate = partner.commission_rate or 0.30
+        commission_amount = round(payment_amount * commission_rate, 2)
+        
+        commission = Commission(
+            partner_id=partner.id,
+            referred_user_id=user.id,
+            payment_id=db_payment.id,
+            payment_amount=payment_amount,
+            commission_amount=commission_amount,
+            commission_rate=commission_rate,
+            status="pending"
+        )
+        db.add(commission)
+        partner.commission_balance = (partner.commission_balance or 0) + commission_amount
+        await db.commit()
+        
+        logger.info(f"[commission] Partner {partner.id} earned R${commission_amount:.2f} from user {user.id} payment of R${payment_amount:.2f}")
+    except Exception as e:
+        logger.error(f"[commission] Error calculating commission: {e}")
+
 @router.post("/webhook")
 async def asaas_webhook(
     request: Request,
@@ -557,6 +599,12 @@ async def asaas_webhook(
                             logger.info(f"[webhook] Added {credits} credits to user_id={user_id}")
                             send_credits_purchased_email(user.email, int(credits), user.credit_balance, user.id)
                             await flush_email_logs(db)
+                            
+                            if db_payment:
+                                payment_value = payment.get("value", 0)
+                                if payment_value and float(payment_value) > 0:
+                                    await calculate_partner_commission(db, user, db_payment, float(payment_value))
+                            
                             return {"status": "credits_added", "credits": credits}
                         
                         elif payment_type == "pro_subscription":
@@ -594,6 +642,12 @@ async def asaas_webhook(
                                 logger.info(f"[webhook] {sub_plan_type} activated for user_id={user_id}")
                                 send_upgraded_to_pro_email(user.email, user.id)
                                 await flush_email_logs(db)
+                                
+                                if db_payment:
+                                    payment_value = payment.get("value", 0)
+                                    if payment_value and float(payment_value) > 0:
+                                        await calculate_partner_commission(db, user, db_payment, float(payment_value))
+                                
                                 return {"status": "pro_activated"}
                             else:
                                 if sub_plan_type == "pro":
@@ -602,6 +656,12 @@ async def asaas_webhook(
                                 logger.info(f"[webhook] {sub_plan_type} renewed for user_id={user_id}")
                                 send_subscription_renewed_email(user.email, settings.PRO_MONTHLY_ANALYSES, user.id)
                                 await flush_email_logs(db)
+                                
+                                if db_payment:
+                                    payment_value = payment.get("value", 0)
+                                    if payment_value and float(payment_value) > 0:
+                                        await calculate_partner_commission(db, user, db_payment, float(payment_value))
+                                
                                 return {"status": "pro_renewed"}
                             
             except json.JSONDecodeError:

@@ -52,6 +52,8 @@ class User(Base):
     pro_expires_at = Column(DateTime, nullable=True)
     referral_code = Column(String(20), unique=True, nullable=True, index=True)
     referred_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    commission_balance = Column(Float, default=0.0)
+    pix_key = Column(String(255), nullable=True)
     email_verified = Column(Boolean, default=False)
     email_verification_token = Column(String(64), nullable=True)
     public_share_token = Column(String(64), unique=True, nullable=True, index=True)
@@ -65,6 +67,7 @@ class User(Base):
     credit_transactions = relationship("CreditTransaction", back_populates="user")
     payments = relationship("Payment", back_populates="user")
     referrals = relationship("Referral", back_populates="referrer", foreign_keys="Referral.referrer_id")
+    commissions = relationship("Commission", back_populates="partner", foreign_keys="Commission.partner_id")
 
 class Profile(Base):
     __tablename__ = "profiles"
@@ -264,3 +267,20 @@ class ChatMessage(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     conversation = relationship("ChatConversation", back_populates="messages")
+
+class Commission(Base):
+    __tablename__ = "commissions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    partner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    referred_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    payment_id = Column(Integer, ForeignKey("payments.id"), nullable=False)
+    payment_amount = Column(Float, nullable=False)
+    commission_amount = Column(Float, nullable=False)
+    commission_rate = Column(Float, default=0.30)
+    status = Column(String(20), default="pending")
+    paid_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    partner = relationship("User", back_populates="commissions", foreign_keys=[partner_id])
+    payment = relationship("Payment", backref="commission")
