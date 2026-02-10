@@ -229,3 +229,15 @@ class ErrorLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     
     user = relationship("User", backref="error_logs")
+
+class MotivationalPost(Base):
+    __tablename__ = "motivational_posts"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    post_date = Column(Date, nullable=False, index=True)
+    content = Column(Text, nullable=False)
+    image_url = Column(String(500), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User", backref="motivational_posts")

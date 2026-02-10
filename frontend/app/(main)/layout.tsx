@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
-import { Home, History, Sparkles, User, LogOut, Crown } from 'lucide-react';
+import { Home, History, Sparkles, User, LogOut, Crown, Heart } from 'lucide-react';
 import Footer from '@/components/Footer';
 import BowlLogo from '@/components/BowlLogo';
 import InstallPWAButton from '@/components/InstallPWAButton';
@@ -42,6 +42,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   const navItems = [
     { href: '/home', icon: Home, label: t('nav.analyze') },
+    { href: '/motivacional', icon: Heart, label: t('nav.motivacional') },
     { href: '/history', icon: History, label: t('nav.history') },
     { href: '/billing', icon: Sparkles, label: t('nav.credits') },
     { href: '/profile', icon: User, label: t('nav.profile') },

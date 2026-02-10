@@ -11,7 +11,7 @@ import logging
 
 from app.db.database import init_db, async_session
 from app.core.config import settings
-from app.api.routes import auth, profile, meals, jobs, billing, credits, feedback, admin
+from app.api.routes import auth, profile, meals, jobs, billing, credits, feedback, admin, motivacional
 from app.models.models import ErrorLog
 
 logger = logging.getLogger(__name__)
@@ -58,6 +58,7 @@ app.include_router(billing.router)
 app.include_router(credits.router)
 app.include_router(feedback.router)
 app.include_router(admin.router)
+app.include_router(motivacional.router)
 
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
@@ -328,6 +329,15 @@ async def run_migration():
         )""",
         "CREATE INDEX IF NOT EXISTS ix_error_logs_error_type ON error_logs(error_type)",
         "CREATE INDEX IF NOT EXISTS ix_error_logs_created_at ON error_logs(created_at)",
+        """CREATE TABLE IF NOT EXISTS motivational_posts (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) NOT NULL,
+            post_date DATE NOT NULL,
+            content TEXT NOT NULL,
+            image_url VARCHAR(500),
+            created_at TIMESTAMP DEFAULT NOW()
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_motivational_posts_user_date ON motivational_posts(user_id, post_date)",
     ]
     
     results = []

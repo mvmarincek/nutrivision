@@ -8,6 +8,7 @@ import { useFeedback } from '@/lib/feedback';
 import { authApi } from '@/lib/api';
 import { Gift, Mail, CheckCircle, Lock, ArrowRight, User, Phone, RefreshCw } from 'lucide-react';
 import BowlLogo from '@/components/BowlLogo';
+import GoogleLoginButton from '@/components/GoogleLoginButton';
 
 function RegisterContent() {
   const [email, setEmail] = useState('');
@@ -20,7 +21,7 @@ function RegisterContent() {
   const [registered, setRegistered] = useState(false);
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const { showError, showWarning, showSuccess, clearFeedback } = useFeedback();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -248,6 +249,27 @@ function RegisterContent() {
         )}
 
         <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-8 border border-gray-100">
+          <div className="mb-5">
+            <GoogleLoginButton
+              onSuccess={async (token) => {
+                try {
+                  await loginWithGoogle(token, referralCode || undefined);
+                  router.push('/home');
+                } catch (err: any) {
+                  showError(err.message || 'Erro ao cadastrar com Google', 'Erro');
+                }
+              }}
+              label="Cadastrar com Google"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-sm text-gray-400 font-medium">ou preencha o formulario</span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+
           <div className="mb-5">
             <label className="block text-sm font-semibold text-gray-700 mb-2">Nome completo</label>
             <div className="relative">

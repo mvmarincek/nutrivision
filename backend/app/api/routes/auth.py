@@ -4,9 +4,13 @@ from sqlalchemy import select, func
 from pydantic import BaseModel
 from app.db.database import get_db
 from app.models.models import User, Referral, Payment
-from app.schemas.schemas import UserCreate, UserLogin, TokenResponse, UserResponse, PartnerCreate, MyReferralsResponse, ReferredUserInfo
+from app.schemas.schemas import UserCreate, UserLogin, GoogleAuthRequest, TokenResponse, UserResponse, PartnerCreate, MyReferralsResponse, ReferredUserInfo
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, decode_refresh_token, get_current_user
 from app.services.email_service import send_welcome_email, send_password_reset_email, send_referral_activated_email, send_email_verification, send_email_verified_success
+from app.core.config import settings
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
+import httpx
 import secrets
 import string
 from datetime import datetime, timedelta
@@ -146,6 +150,105 @@ async def register_partner(partner_data: PartnerCreate, background_tasks: Backgr
     await db.refresh(user)
     
     background_tasks.add_task(send_email_verification, user.email, verification_token, user.id)
+    
+    access_token = create_access_token(data={"sub": str(user.id)})
+    refresh_token = create_refresh_token(user.id)
+    
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        user=UserResponse.model_validate(user)
+    )
+
+@router.post("/google", response_model=TokenResponse)
+async def google_auth(request: GoogleAuthRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
+    email = None
+    name = ""
+    
+    try:
+        idinfo = google_id_token.verify_oauth2_token(
+            request.id_token, 
+            google_requests.Request(), 
+            settings.GOOGLE_CLIENT_ID
+        )
+        email = idinfo.get("email")
+        name = idinfo.get("name", "")
+    except Exception:
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    "https://www.googleapis.com/oauth2/v3/userinfo",
+                    headers={"Authorization": f"Bearer {request.id_token}"}
+                )
+                if resp.status_code == 200:
+                    userinfo = resp.json()
+                    email = userinfo.get("email")
+                    name = userinfo.get("name", "")
+        except Exception:
+            pass
+    
+    if not email:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token Google invalido")
+    
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+    
+    if user:
+        access_token = create_access_token(data={"sub": str(user.id)})
+        refresh_token = create_refresh_token(user.id)
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            user=UserResponse.model_validate(user)
+        )
+    
+    referrer = None
+    if request.referral_code:
+        referrer_result = await db.execute(
+            select(User).where(User.referral_code == request.referral_code.upper())
+        )
+        referrer = referrer_result.scalar_one_or_none()
+    
+    referral_code = generate_referral_code()
+    while True:
+        check = await db.execute(select(User).where(User.referral_code == referral_code))
+        if not check.scalar_one_or_none():
+            break
+        referral_code = generate_referral_code()
+    
+    user = User(
+        email=email,
+        password_hash="GOOGLE_OAUTH",
+        name=name,
+        credit_balance=36,
+        referral_code=referral_code,
+        referred_by=referrer.id if referrer else None,
+        email_verified=True
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    
+    if referrer:
+        referrer.credit_balance += 12
+        referral_record = Referral(
+            referrer_id=referrer.id,
+            referred_id=user.id,
+            credits_awarded=12
+        )
+        db.add(referral_record)
+        await db.commit()
+        await db.refresh(referrer)
+        background_tasks.add_task(
+            send_referral_activated_email,
+            referrer.email,
+            user.email,
+            12,
+            referrer.credit_balance,
+            referrer.id
+        )
+    
+    background_tasks.add_task(send_welcome_email, user.email, user.id)
     
     access_token = create_access_token(data={"sub": str(user.id)})
     refresh_token = create_refresh_token(user.id)

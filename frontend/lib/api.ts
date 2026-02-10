@@ -381,7 +381,10 @@ export const authApi = {
     api<User>('/auth/me'),
   
   getMyReferrals: () =>
-    api<MyReferralsResponse>('/auth/my-referrals')
+    api<MyReferralsResponse>('/auth/my-referrals'),
+  
+  googleAuth: (id_token: string, referral_code?: string) =>
+    api<TokenResponse>('/auth/google', { method: 'POST', body: { id_token, referral_code }, skipAuth: true })
 };
 
 export const profileApi = {
