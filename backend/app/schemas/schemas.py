@@ -168,7 +168,6 @@ class BillingStatusResponse(BaseModel):
     plan: str
     credit_balance: int
     pro_analyses_remaining: int
-    stripe_customer_id: Optional[str]
 
 class CreditBalanceResponse(BaseModel):
     credit_balance: int

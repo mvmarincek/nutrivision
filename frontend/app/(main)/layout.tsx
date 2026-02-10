@@ -9,6 +9,7 @@ import Footer from '@/components/Footer';
 import BowlLogo from '@/components/BowlLogo';
 import InstallPWAButton from '@/components/InstallPWAButton';
 import LanguageSelector from '@/components/LanguageSelector';
+import NutraCompanion from '@/components/NutraCompanion';
 import { useLanguage } from '@/lib/i18n';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -113,6 +114,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       </main>
 
       <Footer />
+
+      <NutraCompanion />
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-emerald-100 shadow-lg">
         <div className="container mx-auto px-4">
