@@ -59,6 +59,7 @@ class PaymentStatusResponse(BaseModel):
 
 class BillingStatusResponse(BaseModel):
     plan: str
+    trial_days_used: int
     simple_analyses_used: int
     full_analyses_used: int
     has_subscription: bool
@@ -67,6 +68,7 @@ class BillingStatusResponse(BaseModel):
 async def get_billing_status(current_user: User = Depends(get_current_user)):
     return BillingStatusResponse(
         plan=current_user.plan,
+        trial_days_used=current_user.trial_days_used or 0,
         simple_analyses_used=current_user.simple_analyses_used or 0,
         full_analyses_used=current_user.full_analyses_used or 0,
         has_subscription=bool(current_user.asaas_subscription_id)

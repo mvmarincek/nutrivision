@@ -325,6 +325,7 @@ export interface MealDetail {
 
 export interface BillingStatus {
   plan: string;
+  trial_days_used: number;
   simple_analyses_used: number;
   full_analyses_used: number;
   has_subscription: boolean;

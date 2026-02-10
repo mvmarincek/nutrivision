@@ -96,6 +96,16 @@ async def run_migrations(conn):
             paid_at TIMESTAMP,
             created_at TIMESTAMP DEFAULT NOW()
         )""",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_started BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_days_used INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active_date DATE",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS simple_analyses_used INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS full_analyses_used INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS analyses_reset_at TIMESTAMP",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS cnpj VARCHAR(18)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS razao_social VARCHAR(255)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS user_type VARCHAR(10) DEFAULT 'pf'",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS commission_rate FLOAT DEFAULT 0.10",
     ]
     
     for sql in migrations:

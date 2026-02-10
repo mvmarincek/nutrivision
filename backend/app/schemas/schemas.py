@@ -34,6 +34,7 @@ class UserResponse(BaseModel):
     pix_key: Optional[str] = None
     phone: Optional[str] = None
     plan: str
+    trial_days_used: int = 0
     simple_analyses_used: int = 0
     full_analyses_used: int = 0
     referral_code: Optional[str] = None

@@ -100,6 +100,9 @@ async def migrate():
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_started BOOLEAN DEFAULT FALSE",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_days_used INTEGER DEFAULT 0",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active_date DATE",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS simple_analyses_used INTEGER DEFAULT 0",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS full_analyses_used INTEGER DEFAULT 0",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS analyses_reset_at TIMESTAMP",
         ]
         
         for sql in migrations:
