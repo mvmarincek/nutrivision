@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { AlertCircle, Mail, Lock, ArrowRight } from 'lucide-react';
 import BowlLogo from '@/components/BowlLogo';
-import GoogleLoginButton from '@/components/GoogleLoginButton';
 
 let globalErrorModal = {
   open: false,
@@ -109,7 +108,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, loginWithGoogle } = useAuth();
+  const { login } = useAuth();
   const router = useRouter();
   const errorState = useGlobalErrorModal();
 
@@ -227,25 +226,6 @@ export default function LoginPage() {
               </>
             )}
           </button>
-
-          <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-sm text-gray-400 font-medium">ou</span>
-            <div className="flex-1 h-px bg-gray-200" />
-          </div>
-
-          <GoogleLoginButton
-            onSuccess={async (token) => {
-              try {
-                await loginWithGoogle(token);
-                router.push('/home');
-              } catch (err: any) {
-                setGlobalError('Erro ao entrar com Google', err.message || 'Tente novamente');
-              }
-            }}
-            label="Entrar com Google"
-            disabled={loading || errorState.open}
-          />
 
           <p className="text-center mt-6 text-gray-500">
             Nao tem conta?{' '}

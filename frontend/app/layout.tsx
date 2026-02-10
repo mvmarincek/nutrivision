@@ -4,7 +4,6 @@ import './globals.css';
 import { AuthProvider } from '@/lib/auth';
 import { FeedbackProvider } from '@/lib/feedback';
 import { LanguageProvider } from '@/lib/i18n';
-import { GoogleOAuthWrapper } from '@/components/GoogleOAuthWrapper';
 import FeedbackModal from '@/components/FeedbackModal';
 import Script from 'next/script';
 
@@ -40,11 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className}>
         <LanguageProvider>
           <FeedbackProvider>
-            <GoogleOAuthWrapper>
               <AuthProvider>
                 {children}
               </AuthProvider>
-            </GoogleOAuthWrapper>
             <FeedbackModal />
           </FeedbackProvider>
         </LanguageProvider>

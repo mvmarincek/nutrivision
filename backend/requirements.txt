@@ -17,4 +17,3 @@ aiofiles>=23.2.1
 email-validator>=2.0.0
 resend>=0.7.0
 cloudinary>=1.36.0
-google-auth>=2.0.0

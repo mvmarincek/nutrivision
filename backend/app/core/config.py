@@ -7,7 +7,6 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 43200
     OPENAI_API_KEY: str = ""
-    GOOGLE_CLIENT_ID: str = ""
     FRONTEND_URL: str = "http://localhost:3000"
     BACKEND_URL: str = "https://picnutra-api.onrender.com"
     UPLOAD_DIR: str = "./uploads"

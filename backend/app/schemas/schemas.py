@@ -21,10 +21,6 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
-class GoogleAuthRequest(BaseModel):
-    id_token: str
-    referral_code: Optional[str] = None
-
 class UserResponse(BaseModel):
     id: int
     email: str

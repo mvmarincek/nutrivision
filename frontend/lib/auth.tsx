@@ -8,7 +8,6 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: (idToken: string, referralCode?: string) => Promise<void>;
   register: (email: string, password: string, name?: string, phone?: string, referralCode?: string) => Promise<void>;
   registerPartner: (email: string, password: string, name: string, cnpj: string, razao_social: string, phone?: string) => Promise<void>;
   logout: () => void;
@@ -79,17 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(true);
   };
 
-  const loginWithGoogle = async (idToken: string, referralCode?: string) => {
-    const response = await authApi.googleAuth(idToken, referralCode);
-    
-    setAccessToken(response.access_token);
-    localStorage.setItem('refreshToken', response.refresh_token);
-    localStorage.setItem('user', JSON.stringify(response.user));
-    
-    setUser(response.user);
-    setIsAuthenticated(true);
-  };
-
   const register = async (email: string, password: string, name?: string, phone?: string, referralCode?: string) => {
     const response = await authApi.register(email, password, name, phone, referralCode);
     
@@ -123,7 +111,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading, 
       isAuthenticated,
       login,
-      loginWithGoogle,
       register, 
       registerPartner,
       logout, 
