@@ -3,6 +3,8 @@
 import { useGoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
 
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+
 interface GoogleLoginButtonProps {
   onSuccess: (token: string) => Promise<void>;
   label?: string;
@@ -20,7 +22,7 @@ function GoogleIcon() {
   );
 }
 
-export default function GoogleLoginButton({ onSuccess, label = 'Entrar com Google', disabled = false }: GoogleLoginButtonProps) {
+function GoogleLoginButtonInner({ onSuccess, label = 'Entrar com Google', disabled = false }: GoogleLoginButtonProps) {
   const [loading, setLoading] = useState(false);
 
   const googleLogin = useGoogleLogin({
@@ -54,4 +56,12 @@ export default function GoogleLoginButton({ onSuccess, label = 'Entrar com Googl
       {label}
     </button>
   );
+}
+
+export default function GoogleLoginButton(props: GoogleLoginButtonProps) {
+  if (!GOOGLE_CLIENT_ID) {
+    return null;
+  }
+
+  return <GoogleLoginButtonInner {...props} />;
 }
