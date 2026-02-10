@@ -340,7 +340,7 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-sm">PRO</h3>
-                  <p className="text-xs text-purple-200">R$ 49,90/mês</p>
+                  <p className="text-xs text-purple-200">R$ 19,90/mês</p>
                 </div>
               </div>
               

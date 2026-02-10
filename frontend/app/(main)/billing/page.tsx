@@ -50,6 +50,7 @@ export default function BillingPage() {
   const [cardForm, setCardForm] = useState<CardFormData>(initialCardForm);
   const [processingCard, setProcessingCard] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
+  const [selectedPlanType, setSelectedPlanType] = useState<'pro' | 'intermediate'>('pro');
   const [proPaymentMethod, setProPaymentMethod] = useState<'PIX' | 'CREDIT_CARD' | null>(null);
   const [proPixData, setProPixData] = useState<PixPaymentData | null>(null);
   const [processingPro, setProcessingPro] = useState(false);
@@ -232,7 +233,7 @@ export default function BillingPage() {
 
     setProcessingPro(true);
     try {
-      const request: any = { billing_type: billingType };
+      const request: any = { billing_type: billingType, plan_type: selectedPlanType };
       
       if (billingType === 'CREDIT_CARD') {
         Object.assign(request, {
@@ -266,7 +267,7 @@ export default function BillingPage() {
           payment_id: result.payment_id,
           pix_code: result.pix_code,
           pix_qr_code_base64: result.pix_qr_code_base64,
-          value: 49.90
+          value: selectedPlanType === 'intermediate' ? 9.90 : 19.90
         });
       }
     } catch (err: any) {
@@ -409,6 +410,8 @@ export default function BillingPage() {
 
   const displayPackages = Object.keys(packages).length > 0 ? packages : defaultPackages;
   const isPro = billingStatus?.plan === 'pro';
+  const isIntermediate = billingStatus?.plan === 'intermediate';
+  const hasPaidPlan = isPro || isIntermediate;
 
   const handleCardInputChange = (field: keyof CardFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
@@ -591,51 +594,62 @@ export default function BillingPage() {
               <CreditCard className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">{isPro ? 'Meu Plano' : 'Creditos'}</h1>
+              <h1 className="text-2xl font-bold text-white">{hasPaidPlan ? 'Meu Plano' : 'Planos e Creditos'}</h1>
               <p className="text-emerald-100">Gerencie seu plano e créditos</p>
             </div>
           </div>
         </div>
       </div>
 
-      {isPro && billingStatus?.has_subscription && (
-        <div className="bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 rounded-2xl shadow-xl shadow-purple-200/50 p-6 mb-6 text-white">
+      {hasPaidPlan && billingStatus?.has_subscription && (
+        <div className={`${isPro ? 'bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500' : 'bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500'} rounded-2xl shadow-xl ${isPro ? 'shadow-purple-200/50' : 'shadow-cyan-200/50'} p-6 mb-6 text-white`}>
           <div className="flex items-center gap-3 mb-4">
             <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
               <Crown className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold">Você é PRO!</h2>
-              <p className="text-sm text-white/90">Aproveite todos os benefícios exclusivos</p>
+              <h2 className="text-2xl font-bold">{isPro ? 'Voce e PRO!' : 'Plano Intermediario'}</h2>
+              <p className="text-sm text-white/90">{isPro ? 'Aproveite todos os beneficios exclusivos' : 'Analise completa sem IA'}</p>
             </div>
           </div>
           
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm">Análises completas restantes</span>
-              <span className="font-bold text-lg">{Math.min(billingStatus.pro_analyses_remaining, 90)}/90</span>
+          {isPro && (
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm">Analises completas restantes</span>
+                <span className="font-bold text-lg">{Math.min(billingStatus.pro_analyses_remaining, 90)}/90</span>
+              </div>
+              <div className="w-full bg-white/20 rounded-full h-2">
+                <div 
+                  className="bg-white rounded-full h-2 transition-all" 
+                  style={{ width: `${Math.min((billingStatus.pro_analyses_remaining / 90) * 100, 100)}%` }}
+                />
+              </div>
+              <p className="text-xs text-white/70 mt-2">Renova todo mes automaticamente</p>
             </div>
-            <div className="w-full bg-white/20 rounded-full h-2">
-              <div 
-                className="bg-white rounded-full h-2 transition-all" 
-                style={{ width: `${Math.min((billingStatus.pro_analyses_remaining / 90) * 100, 100)}%` }}
-              />
-            </div>
-            <p className="text-xs text-white/70 mt-2">Renova todo mês automaticamente</p>
-          </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
               <Zap className="w-5 h-5 mx-auto mb-1" />
-              <p className="text-xs">Análises simples</p>
+              <p className="text-xs">Analises simples</p>
               <p className="font-bold">Ilimitadas</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 text-center">
               <Star className="w-5 h-5 mx-auto mb-1" />
-              <p className="text-xs">Suporte</p>
-              <p className="font-bold">Prioritário</p>
+              <p className="text-xs">{isPro ? 'Analise com IA' : 'Analise completa'}</p>
+              <p className="font-bold">{isPro ? 'Inclusa' : 'Inclusa'}</p>
             </div>
           </div>
+
+          {isIntermediate && (
+            <button
+              onClick={() => { setSelectedPlanType('pro'); setShowProModal(true); }}
+              className="w-full py-3 rounded-xl bg-white/20 text-white text-sm font-medium hover:bg-white/30 transition-all mb-3"
+            >
+              Fazer upgrade para PRO (R$ 19,90/mes)
+            </button>
+          )}
           
           <button
             onClick={handleCancelSubscription}
@@ -647,15 +661,15 @@ export default function BillingPage() {
         </div>
       )}
 
-      {isPro && (
-        <div className="bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 rounded-2xl p-6 mb-6 border border-purple-200 shadow-lg shadow-purple-100/50">
+      {hasPaidPlan && (
+        <div className={`bg-gradient-to-br ${isPro ? 'from-violet-50 via-purple-50 to-fuchsia-50 border-purple-200 shadow-purple-100/50' : 'from-blue-50 via-cyan-50 to-teal-50 border-cyan-200 shadow-cyan-100/50'} rounded-2xl p-6 mb-6 border shadow-lg`}>
           <div className="flex items-center gap-4 mb-5">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-200">
+            <div className={`w-14 h-14 rounded-2xl ${isPro ? 'bg-gradient-to-br from-violet-500 to-purple-600 shadow-purple-200' : 'bg-gradient-to-br from-blue-500 to-cyan-600 shadow-cyan-200'} flex items-center justify-center shadow-lg`}>
               <Crown className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900">Assinante PRO</h3>
-              <p className="text-sm text-gray-600">Aproveite todos os benefícios exclusivos</p>
+              <h3 className="text-xl font-bold text-gray-900">{isPro ? 'Assinante PRO' : 'Plano Intermediario'}</h3>
+              <p className="text-sm text-gray-600">{isPro ? 'Aproveite todos os beneficios exclusivos' : 'Analise completa de alimentos'}</p>
             </div>
           </div>
           
@@ -663,53 +677,53 @@ export default function BillingPage() {
             <div className="bg-white/80 rounded-xl p-4 border border-purple-100 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <Zap className="w-5 h-5 text-emerald-500" />
-                <span className="font-semibold text-gray-800">Análises Simples</span>
+                <span className="font-semibold text-gray-800">Analises Simples</span>
               </div>
               <p className="text-2xl font-bold text-emerald-600">Ilimitadas</p>
             </div>
             <div className="bg-white/80 rounded-xl p-4 border border-purple-100 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <Star className="w-5 h-5 text-amber-500" />
-                <span className="font-semibold text-gray-800">Análises PRO</span>
+                <span className="font-semibold text-gray-800">{isPro ? 'Analises PRO' : 'Analise Completa'}</span>
               </div>
-              <p className="text-2xl font-bold text-purple-600">{Math.min(billingStatus?.pro_analyses_remaining || 90, 90)}<span className="text-sm font-normal text-gray-500">/mês</span></p>
+              <p className="text-2xl font-bold text-purple-600">{isPro ? `${Math.min(billingStatus?.pro_analyses_remaining || 90, 90)}/mes` : 'Inclusa'}</p>
             </div>
           </div>
           
           <div className="flex items-center gap-2 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
             <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-            <p className="text-sm text-emerald-800">Você não precisa comprar créditos! Tudo está incluído no seu plano.</p>
+            <p className="text-sm text-emerald-800">{isPro ? 'Voce nao precisa comprar creditos! Tudo esta incluido no seu plano.' : 'Analise completa inclusa. Faca upgrade para PRO para ter IA e sem anuncios!'}</p>
           </div>
         </div>
       )}
 
-      {!isPro && (
+      {!hasPaidPlan && (
         <>
           <div className="bg-white rounded-2xl shadow-lg shadow-gray-100/50 p-6 mb-6 border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-gray-600">Seu saldo</p>
                 <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{billingStatus?.credit_balance || 0}</p>
-                <p className="text-sm text-gray-500">créditos</p>
+                <p className="text-sm text-gray-500">creditos</p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-600">Plano atual</p>
                 <p className="font-semibold capitalize text-gray-900">
-                  {billingStatus?.plan || 'Free'}
+                  {billingStatus?.plan === 'free' ? 'Gratuito' : billingStatus?.plan || 'Gratuito'}
                 </p>
               </div>
             </div>
 
             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-100">
-              <p className="text-sm text-gray-600 mb-2">Custo por análise:</p>
+              <p className="text-sm text-gray-600 mb-2">Custo por analise:</p>
               <div className="flex gap-4">
                 <div className="flex items-center">
                   <Zap className="w-4 h-4 text-emerald-500 mr-1" />
-                  <span className="text-sm font-medium text-emerald-600">Simples: Grátis</span>
+                  <span className="text-sm font-medium text-emerald-600">Simples: Gratis</span>
                 </div>
                 <div className="flex items-center">
                   <Star className="w-4 h-4 text-amber-500 mr-1" />
-                  <span className="text-sm">Completa: 12 créditos</span>
+                  <span className="text-sm">Completa: 12 creditos</span>
                 </div>
               </div>
             </div>
@@ -717,35 +731,98 @@ export default function BillingPage() {
 
           <PageAds position="inline" />
 
-          <div className="bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 rounded-2xl shadow-xl shadow-purple-200/50 p-6 mb-6 text-white">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <Crown className="w-6 h-6" />
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-violet-100 to-purple-100 rounded-lg flex items-center justify-center">
+              <Crown className="w-4 h-4 text-violet-600" />
+            </div>
+            Escolha seu Plano
+          </h2>
+
+          <div className="space-y-4 mb-6">
+            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-5 border-2 border-emerald-200">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">Gratuito</h3>
+                  <p className="text-sm text-gray-500">7 dias de teste</p>
+                </div>
+                <span className="ml-auto text-lg font-bold text-emerald-600">Gratis</span>
               </div>
-              <div>
-                <h2 className="text-xl font-bold">Plano PRO</h2>
-                <p className="text-sm opacity-90">Análises simples ilimitadas</p>
+              <ul className="text-sm space-y-1 text-gray-600 mb-3">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> Analise simples de alimentos</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> 7 dias de uso efetivo</li>
+                <li className="flex items-center gap-2"><X className="w-4 h-4 text-gray-300" /> Sem analise com IA</li>
+              </ul>
+              <div className="bg-emerald-100 rounded-xl p-2 text-center">
+                <p className="text-xs text-emerald-700 font-medium">Plano atual</p>
               </div>
             </div>
-            <p className="text-3xl font-bold mb-2">R$ 49,90<span className="text-lg font-normal">/mês</span></p>
-            <ul className="text-sm mb-4 space-y-1 text-white/90">
-              <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Análises simples ilimitadas</li>
-              <li className="flex items-center gap-2"><Check className="w-4 h-4" /> 60 análises completas por mês</li>
-              <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Suporte prioritário</li>
-            </ul>
-            <button
-              onClick={() => setShowProModal(true)}
-              className="w-full bg-white text-purple-600 py-3 rounded-xl font-bold hover:bg-purple-50 hover:scale-[1.02] transition-all shadow-lg"
-            >
-              Assinar PRO
-            </button>
+
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-5 border-2 border-blue-200 relative">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Star className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">Intermediario</h3>
+                  <p className="text-sm text-gray-500">Analise completa</p>
+                </div>
+                <div className="ml-auto text-right">
+                  <p className="text-2xl font-bold text-blue-600">R$ 9,90<span className="text-sm font-normal text-gray-500">/mes</span></p>
+                </div>
+              </div>
+              <ul className="text-sm space-y-1 text-gray-600 mb-3">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-500" /> Analise completa (tabela nutricional)</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-500" /> Uso ilimitado</li>
+                <li className="flex items-center gap-2"><X className="w-4 h-4 text-gray-300" /> Sem analise com IA</li>
+                <li className="flex items-center gap-2"><X className="w-4 h-4 text-gray-300" /> Com anuncios</li>
+              </ul>
+              <button
+                onClick={() => { setSelectedPlanType('intermediate'); setShowProModal(true); }}
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-xl font-bold hover:shadow-lg hover:scale-[1.02] transition-all shadow-lg shadow-blue-200"
+              >
+                Assinar Intermediario
+              </button>
+            </div>
+
+            <div className="bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 rounded-2xl shadow-xl shadow-purple-200/50 p-5 text-white relative">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-md">
+                Mais popular
+              </span>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <Crown className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold">Plano PRO</h3>
+                  <p className="text-sm opacity-90">Completo com IA</p>
+                </div>
+                <div className="ml-auto text-right">
+                  <p className="text-2xl font-bold">R$ 19,90<span className="text-sm font-normal opacity-80">/mes</span></p>
+                </div>
+              </div>
+              <ul className="text-sm mb-3 space-y-1 text-white/90">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> 90 analises completas por mes</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Analise com IA inclusa</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Sem anuncios</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Suporte prioritario</li>
+              </ul>
+              <button
+                onClick={() => { setSelectedPlanType('pro'); setShowProModal(true); }}
+                className="w-full bg-white text-purple-600 py-3 rounded-xl font-bold hover:bg-purple-50 hover:scale-[1.02] transition-all shadow-lg"
+              >
+                Assinar PRO
+              </button>
+            </div>
           </div>
 
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg flex items-center justify-center">
               <Zap className="w-4 h-4 text-amber-600" />
             </div>
-            Comprar Créditos
+            Comprar Creditos
           </h2>
           <div className="grid grid-cols-2 gap-4 mb-8">
             {packageOrder.map((pkgId) => {
@@ -768,13 +845,13 @@ export default function BillingPage() {
                   )}
                   <div className="text-center mb-3">
                     <p className="text-2xl font-bold text-gray-900">{pkg.credits}</p>
-                    <p className="text-gray-500 text-sm">créditos</p>
+                    <p className="text-gray-500 text-sm">creditos</p>
                   </div>
                   <p className="text-center text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-1">
                     {formatPrice(pkg.price)}
                   </p>
                   <p className="text-center text-xs text-gray-500">
-                    {Math.floor(pkg.credits / 12)} análise(s) completa(s)
+                    {Math.floor(pkg.credits / 12)} analise(s) completa(s)
                   </p>
                 </button>
               );
@@ -783,7 +860,7 @@ export default function BillingPage() {
         </>
       )}
 
-      {!isPro && selectedPackage && !pixData && (
+      {!hasPaidPlan && selectedPackage && !pixData && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex justify-between items-center mb-4">
@@ -854,7 +931,7 @@ export default function BillingPage() {
         </div>
       )}
 
-      {!isPro && pixData && (
+      {!hasPaidPlan && pixData && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl">
             <div className="flex justify-between items-center mb-4">
@@ -873,18 +950,18 @@ export default function BillingPage() {
           <div className="bg-white rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold flex items-center gap-2 text-gray-900">
-                <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${selectedPlanType === 'pro' ? 'bg-gradient-to-br from-violet-500 to-purple-600' : 'bg-gradient-to-br from-blue-500 to-cyan-600'}`}>
                   <Crown className="w-4 h-4 text-white" />
                 </div>
-                Assinar PRO
+                {selectedPlanType === 'pro' ? 'Assinar PRO' : 'Assinar Intermediario'}
               </h3>
               <button onClick={handleCloseProModal} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-center text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent mb-4">
-              R$ 49,90<span className="text-base font-normal text-gray-500">/mes</span>
+            <p className={`text-center text-2xl font-bold bg-gradient-to-r ${selectedPlanType === 'pro' ? 'from-violet-600 to-purple-600' : 'from-blue-600 to-cyan-600'} bg-clip-text text-transparent mb-4`}>
+              R$ {selectedPlanType === 'pro' ? '19,90' : '9,90'}<span className="text-base font-normal text-gray-500">/mes</span>
             </p>
 
             {!proPaymentMethod && !proPixData && (
@@ -942,14 +1019,14 @@ export default function BillingPage() {
                       }
                       setProcessingPro(true);
                       try {
-                        const result = await billingApi.createProSubscription({ billing_type: 'PIX', holder_cpf: cpfDigits });
+                        const result = await billingApi.createProSubscription({ billing_type: 'PIX', plan_type: selectedPlanType, holder_cpf: cpfDigits });
                         console.log('PIX subscription result:', result);
                         if (result.pix_code && result.payment_id && result.pix_qr_code_base64) {
                           setProPixData({
                             payment_id: result.payment_id,
                             pix_code: result.pix_code,
                             pix_qr_code_base64: result.pix_qr_code_base64,
-                            value: 49.90
+                            value: selectedPlanType === 'intermediate' ? 9.90 : 19.90
                           });
                         } else if (result.status === 'pending' && !result.pix_code) {
                           showError('O PIX ainda esta sendo gerado. Aguarde alguns segundos e tente novamente.', 'Aguarde', { label: 'Entendi', onClick: () => clearFeedback() });

@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     CREDIT_COST_FULL: int = 12
     PRO_MONTHLY_ANALYSES: int = 90
     
+    INTERMEDIATE_MONTHLY_PRICE: int = 990
+    PRO_MONTHLY_PRICE: int = 1990
+    TRIAL_MAX_DAYS: int = 7
+    
     CREDIT_PACKAGES: dict = {
         "12": {"credits": 12, "price": 490},
         "36": {"credits": 36, "price": 1290},

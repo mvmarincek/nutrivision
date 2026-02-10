@@ -485,7 +485,7 @@ export default function HomePage() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-white">Seja PRO</h3>
-                <p className="text-purple-100">90 análises completas por R$ 49,90/mês</p>
+                <p className="text-purple-100">90 análises completas por R$ 19,90/mês</p>
               </div>
             </div>
           </div>

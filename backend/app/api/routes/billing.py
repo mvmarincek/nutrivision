@@ -58,6 +58,7 @@ class CreateCardPaymentRequest(BaseModel):
 
 class CreateProSubscriptionRequest(BaseModel):
     billing_type: str
+    plan_type: str = "pro"
     card_holder_name: Optional[str] = None
     card_number: Optional[str] = None
     expiry_month: Optional[str] = None
@@ -295,11 +296,22 @@ async def create_pro_subscription(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    if current_user.plan == "pro":
-        raise HTTPException(status_code=400, detail="Voce ja e assinante PRO")
+    plan_type = request.plan_type or "pro"
+    if plan_type not in ["pro", "intermediate"]:
+        raise HTTPException(status_code=400, detail="Tipo de plano invalido")
+    
+    if current_user.plan == plan_type:
+        raise HTTPException(status_code=400, detail=f"Voce ja e assinante {plan_type.upper()}")
     
     if request.billing_type not in ["PIX", "CREDIT_CARD"]:
         raise HTTPException(status_code=400, detail="Tipo de pagamento invalido")
+    
+    if plan_type == "intermediate":
+        price = settings.INTERMEDIATE_MONTHLY_PRICE / 100
+        plan_label = "Intermediario"
+    else:
+        price = settings.PRO_MONTHLY_PRICE / 100
+        plan_label = "PRO"
     
     try:
         cpf = request.holder_cpf if request.holder_cpf else None
@@ -310,14 +322,15 @@ async def create_pro_subscription(
         
         external_reference = json.dumps({
             "user_id": current_user.id,
-            "type": "pro_subscription"
+            "type": "pro_subscription",
+            "plan_type": plan_type
         })
         
         if request.billing_type == "PIX":
             payment = await asaas_service.create_pix_payment(
                 customer_id=customer_id,
-                value=49.90,
-                description="PicNutra PRO - Primeira mensalidade",
+                value=price,
+                description=f"PicNutra {plan_label} - Primeira mensalidade",
                 external_reference=external_reference
             )
             
@@ -329,7 +342,7 @@ async def create_pro_subscription(
                 asaas_payment_id=payment_id,
                 payment_type="pro_subscription",
                 billing_type="PIX",
-                amount=49.90,
+                amount=price,
                 status="pending",
                 pix_code=pix_data.get("payload", "")[:500] if pix_data.get("payload") else None
             )
@@ -341,7 +354,7 @@ async def create_pro_subscription(
                 "payment_id": payment_id,
                 "pix_code": pix_data.get("payload", ""),
                 "pix_qr_code_base64": pix_data.get("encodedImage", ""),
-                "message": "Pague o PIX para ativar sua assinatura PRO"
+                "message": f"Pague o PIX para ativar sua assinatura {plan_label}"
             }
         
         if request.billing_type == "CREDIT_CARD":
@@ -363,9 +376,9 @@ async def create_pro_subscription(
             
             subscription = await asaas_service.create_subscription(
                 customer_id=customer_id,
-                value=49.90,
+                value=price,
                 billing_type="CREDIT_CARD",
-                description="PicNutra PRO - Assinatura Mensal",
+                description=f"PicNutra {plan_label} - Assinatura Mensal",
                 external_reference=external_reference,
                 card_data=card_data,
                 card_holder_info=card_holder_info,
@@ -378,21 +391,22 @@ async def create_pro_subscription(
                 asaas_subscription_id=subscription.get("id"),
                 payment_type="pro_subscription",
                 billing_type="CREDIT_CARD",
-                amount=49.90,
+                amount=price,
                 status="confirmed",
-                description="Assinatura PRO (Cartao)",
+                description=f"Assinatura {plan_label} (Cartao)",
                 paid_at=datetime.utcnow()
             )
             db.add(db_payment)
             
             current_user.asaas_subscription_id = subscription["id"]
-            current_user.plan = "pro"
-            current_user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
+            current_user.plan = plan_type
+            if plan_type == "pro":
+                current_user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
             current_user.pro_started_at = datetime.utcnow()
             await db.commit()
             send_upgraded_to_pro_email(current_user.email, current_user.id)
             await flush_email_logs(db)
-            return {"status": "active", "message": "Assinatura PRO ativada com sucesso!"}
+            return {"status": "active", "message": f"Assinatura {plan_label} ativada com sucesso!"}
         
         return {"status": "error", "message": "Tipo de pagamento nao suportado"}
     
@@ -546,24 +560,29 @@ async def asaas_webhook(
                             return {"status": "credits_added", "credits": credits}
                         
                         elif payment_type == "pro_subscription":
-                            if user.plan != "pro":
-                                user.plan = "pro"
-                                user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
+                            sub_plan_type = ref_data.get("plan_type", "pro")
+                            if user.plan not in ["pro", "intermediate"] or user.plan != sub_plan_type:
+                                user.plan = sub_plan_type
+                                if sub_plan_type == "pro":
+                                    user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
                                 user.pro_started_at = datetime.utcnow()
                                 
                                 if not user.asaas_subscription_id and user.asaas_customer_id:
                                     try:
                                         from datetime import timedelta
                                         next_month = datetime.utcnow() + timedelta(days=30)
+                                        sub_price = settings.PRO_MONTHLY_PRICE / 100 if sub_plan_type == "pro" else settings.INTERMEDIATE_MONTHLY_PRICE / 100
+                                        sub_label = "PRO" if sub_plan_type == "pro" else "Intermediario"
                                         
                                         subscription = await asaas_service.create_subscription(
                                             customer_id=user.asaas_customer_id,
-                                            value=49.90,
+                                            value=sub_price,
                                             billing_type="PIX",
-                                            description="PicNutra PRO - Assinatura Mensal",
+                                            description=f"PicNutra {sub_label} - Assinatura Mensal",
                                             external_reference=json.dumps({
                                                 "user_id": user.id,
-                                                "type": "pro_subscription"
+                                                "type": "pro_subscription",
+                                                "plan_type": sub_plan_type
                                             })
                                         )
                                         user.asaas_subscription_id = subscription.get("id")
@@ -572,14 +591,15 @@ async def asaas_webhook(
                                         logger.error(f"[webhook] Failed to create subscription: {sub_error}")
                                 
                                 await db.commit()
-                                logger.info(f"[webhook] PRO activated for user_id={user_id}")
+                                logger.info(f"[webhook] {sub_plan_type} activated for user_id={user_id}")
                                 send_upgraded_to_pro_email(user.email, user.id)
                                 await flush_email_logs(db)
                                 return {"status": "pro_activated"}
                             else:
-                                user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
+                                if sub_plan_type == "pro":
+                                    user.pro_analyses_remaining = settings.PRO_MONTHLY_ANALYSES
                                 await db.commit()
-                                logger.info(f"[webhook] PRO renewed for user_id={user_id}")
+                                logger.info(f"[webhook] {sub_plan_type} renewed for user_id={user_id}")
                                 send_subscription_renewed_email(user.email, settings.PRO_MONTHLY_ANALYSES, user.id)
                                 await flush_email_logs(db)
                                 return {"status": "pro_renewed"}
@@ -708,12 +728,13 @@ async def test_confirm_payment(
             try:
                 subscription = await asaas_service.create_subscription(
                     customer_id=current_user.asaas_customer_id,
-                    value=49.90,
+                    value=settings.PRO_MONTHLY_PRICE / 100,
                     billing_type="PIX",
                     description="PicNutra PRO - Assinatura Mensal",
                     external_reference=json.dumps({
                         "user_id": current_user.id,
-                        "type": "pro_subscription"
+                        "type": "pro_subscription",
+                        "plan_type": "pro"
                     })
                 )
                 current_user.asaas_subscription_id = subscription.get("id")

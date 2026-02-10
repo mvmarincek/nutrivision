@@ -1,11 +1,12 @@
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey, DateTime, JSON, Enum, Boolean
+from datetime import datetime, date
+from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey, DateTime, JSON, Enum, Boolean, Date
 from sqlalchemy.orm import relationship
 import enum
 from app.db.database import Base
 
 class PlanType(str, enum.Enum):
     FREE = "free"
+    INTERMEDIATE = "intermediate"
     PRO = "pro"
 
 class JobStatus(str, enum.Enum):
@@ -40,6 +41,9 @@ class User(Base):
     commission_rate = Column(Float, default=0.10)
     phone = Column(String(20), nullable=True)
     plan = Column(String(20), default=PlanType.FREE.value)
+    trial_started = Column(Boolean, default=False)
+    trial_days_used = Column(Integer, default=0)
+    last_active_date = Column(Date, nullable=True)
     credit_balance = Column(Integer, default=0)
     asaas_customer_id = Column(String(255), nullable=True)
     asaas_subscription_id = Column(String(255), nullable=True)

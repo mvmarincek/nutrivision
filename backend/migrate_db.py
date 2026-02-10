@@ -97,6 +97,9 @@ async def migrate():
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS user_type VARCHAR(10) DEFAULT 'pf'",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS commission_rate FLOAT DEFAULT 0.10",
             "CREATE INDEX IF NOT EXISTS ix_users_cnpj ON users(cnpj)",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_started BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_days_used INTEGER DEFAULT 0",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active_date DATE",
         ]
         
         for sql in migrations:
