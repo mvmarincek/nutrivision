@@ -314,7 +314,7 @@ async def get_my_referrals(current_user: User = Depends(get_current_user), db: A
                 .where(Commission.partner_id == current_user.id)
                 .where(Commission.referred_user_id == referred_user.id)
             ) or 0.0
-            has_active_sub = referred_user.plan in ("pro", "premium") and referred_user.asaas_subscription_id is not None
+            has_active_sub = referred_user.plan in ("basic", "pro", "premium") and referred_user.asaas_subscription_id is not None
             referred_users.append(ReferredUserInfo(
                 id=referred_user.id,
                 name=referred_user.name,
@@ -333,7 +333,6 @@ async def get_my_referrals(current_user: User = Depends(get_current_user), db: A
     
     return MyReferralsResponse(
         total_referred=len(referrals),
-        total_credits_earned=total_credits,
         total_commission_earned=float(total_commission_earned),
         commission_balance=float(current_user.commission_balance or 0),
         commission_rate=current_user.commission_rate,

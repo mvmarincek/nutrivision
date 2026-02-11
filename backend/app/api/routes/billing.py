@@ -218,6 +218,9 @@ async def create_pro_subscription(
             await db.commit()
             send_upgraded_to_pro_email(current_user.email, current_user.id)
             await flush_email_logs(db)
+            
+            await calculate_partner_commission(db, current_user, db_payment, price)
+            
             return {"status": "active", "message": f"Assinatura {plan_label} ativada com sucesso!"}
         
         return {"status": "error", "message": "Tipo de pagamento nao suportado"}
@@ -318,7 +321,7 @@ async def calculate_partner_commission(db: AsyncSession, user: User, db_payment,
         if existing.scalar_one_or_none():
             return
         
-        commission_rate = partner.commission_rate or 0.30
+        commission_rate = partner.commission_rate if partner.commission_rate is not None else (0.30 if partner.user_type == "pj" else 0.10)
         commission_amount = round(payment_amount * commission_rate, 2)
         
         commission = Commission(

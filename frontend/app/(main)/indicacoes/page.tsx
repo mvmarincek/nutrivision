@@ -310,7 +310,7 @@ export default function IndicacoesPage() {
                   </div>
                   <div className="text-right">
                     <div className="flex items-center gap-1 justify-end">
-                      {ref.plan === 'pro' || ref.plan === 'premium' ? (
+                      {ref.plan === 'basic' || ref.plan === 'pro' || ref.plan === 'premium' ? (
                         <span className="inline-flex items-center gap-1 bg-gradient-to-r from-violet-100 to-purple-100 text-violet-700 text-xs font-medium px-2 py-1 rounded-full">
                           <Crown className="w-3 h-3" /> {ref.plan.toUpperCase()}
                         </span>

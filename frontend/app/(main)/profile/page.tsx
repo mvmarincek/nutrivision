@@ -533,11 +533,11 @@ export default function ProfilePage() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-emerald-500 font-bold mt-0.5">2.</span>
-              <span>Seu amigo ganha <strong>14 dias de teste gratis</strong> (ao inves de 7!)</span>
+              <span>Seu amigo ganha <strong>7 dias extras de teste gratis</strong></span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-emerald-500 font-bold mt-0.5">3.</span>
-              <span>Quando seu amigo assinar um plano, voce ganha <strong>10% de comissao</strong> sobre cada pagamento dele</span>
+              <span>Quando seu amigo assinar um plano, voce ganha <strong>comissao</strong> sobre cada pagamento dele</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-emerald-500 font-bold mt-0.5">4.</span>
@@ -545,8 +545,14 @@ export default function ProfilePage() {
             </li>
           </ul>
           <div className="mt-3 bg-amber-50 rounded-xl p-3 border border-amber-200">
-            <p className="text-xs text-amber-800">
+            <p className="text-xs text-amber-800 mb-1">
               <strong>Importante:</strong> Se o indicado cancelar ou nunca assinar, a comissao nao e gerada. Quanto mais seus indicados usarem o app, mais voce ganha!
+            </p>
+            <p className="text-xs text-amber-800 mb-1">
+              <strong>Pagamento:</strong> Os bonus acumulados sao pagos no ultimo dia util de cada mes.
+            </p>
+            <p className="text-xs text-amber-800">
+              <strong>Campanha de lancamento:</strong> Este programa de indicacoes e uma oferta especial de lancamento do app e sera por tempo limitado. Aproveite agora!
             </p>
           </div>
         </div>
@@ -605,7 +611,7 @@ export default function ProfilePage() {
                 <div>
                   <p className="text-sm font-bold text-red-700">Oferta por tempo limitado!</p>
                   <p className="text-xs text-red-600/80 mt-1 leading-relaxed">
-                    O bonus de 10% de comissao sobre os pagamentos dos seus indicados e uma promocao temporaria. Indique o maximo de pessoas agora antes que essa condicao mude!
+                    O bonus de comissao sobre os pagamentos dos seus indicados e uma promocao de lancamento por tempo limitado. Indique o maximo de pessoas agora!
                   </p>
                 </div>
               </div>

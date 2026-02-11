@@ -242,7 +242,7 @@ function RegisterContent() {
             </div>
             <div>
               <p className="font-semibold text-violet-800">Indicado por um amigo!</p>
-              <p className="text-sm text-violet-600">Seu amigo ganhará créditos quando você se cadastrar</p>
+              <p className="text-sm text-violet-600">Voce ganha dias extras de teste gratis ao se cadastrar!</p>
             </div>
           </div>
         )}
