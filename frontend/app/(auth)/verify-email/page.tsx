@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, XCircle, Loader2, ArrowRight, RefreshCw } from 'lucide-react';
-import BowlLogo from '@/components/BowlLogo';
+import NutraAvatar from '@/components/NutraAvatar';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://picnutra-api.onrender.com';
 
@@ -83,7 +83,7 @@ function VerifyEmailContent() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex flex-col items-center gap-3">
             <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center shadow-xl shadow-emerald-200/50">
-              <BowlLogo className="w-10 h-10 text-white" />
+              <NutraAvatar className="w-10 h-10 text-white" mood="happy" animate={false} />
             </div>
             <span className="text-3xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
               PicNutra
@@ -188,7 +188,7 @@ export default function VerifyEmailPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex items-center justify-center">
         <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center animate-pulse shadow-xl shadow-emerald-200/50">
-          <BowlLogo className="w-10 h-10 text-white" />
+          <NutraAvatar className="w-10 h-10 text-white" mood="happy" animate={false} />
         </div>
       </div>
     }>

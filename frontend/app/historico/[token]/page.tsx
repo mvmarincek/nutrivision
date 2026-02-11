@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Calendar, Flame, TrendingUp, BarChart3, Gift, Camera, AlertTriangle } from 'lucide-react';
-import BowlLogo from '@/components/BowlLogo';
+import NutraAvatar from '@/components/NutraAvatar';
 import Image from 'next/image';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -90,7 +90,7 @@ export default function PublicHistoryPage() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center mx-auto mb-4 animate-pulse shadow-xl">
-            <BowlLogo className="w-10 h-10 text-white" />
+            <NutraAvatar className="w-10 h-10 text-white" mood="happy" animate={false} />
           </div>
           <p className="text-emerald-700 font-medium">Carregando histórico...</p>
         </div>
@@ -118,7 +118,7 @@ export default function PublicHistoryPage() {
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <BowlLogo className="w-6 h-6 text-white" />
+              <NutraAvatar className="w-6 h-6 text-white" mood="happy" animate={false} />
             </div>
             <div>
               <h1 className="text-xl font-bold">PicNutra</h1>

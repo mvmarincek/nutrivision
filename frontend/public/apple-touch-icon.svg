@@ -5,15 +5,32 @@
       <stop offset="50%" style="stop-color:#14b8a6"/>
       <stop offset="100%" style="stop-color:#06b6d4"/>
     </linearGradient>
+    <linearGradient id="body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#34d399"/>
+      <stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#10b981"/>
+      <stop offset="100%" style="stop-color:#059669"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:white;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:white;stop-opacity:0"/>
+    </linearGradient>
   </defs>
   <rect width="180" height="180" rx="36" fill="url(#bg)"/>
-  <rect x="26" y="45" width="128" height="99" rx="20" fill="white"/>
-  <rect x="68" y="26" width="30" height="20" rx="7" fill="white"/>
-  <circle cx="90" cy="94" r="39" stroke="url(#bg)" stroke-width="7.5" fill="none"/>
-  <circle cx="90" cy="94" r="15" fill="white"/>
-  <circle cx="142" cy="54" r="7.5" fill="#14b8a6" opacity="0.6"/>
-  <circle cx="73" cy="82" r="7.5" fill="#22c55e"/>
-  <circle cx="105" cy="78" r="6.5" fill="#fb923c"/>
-  <circle cx="75" cy="106" r="6" fill="#eab308"/>
-  <circle cx="107" cy="102" r="7.5" fill="#ef4444"/>
+  <circle cx="90" cy="99" r="57" fill="url(#body)"/>
+  <ellipse cx="90" cy="62" rx="42" ry="15" fill="url(#shine)"/>
+  <path d="M88 43 Q96 16 113 25 Q103 43 88 49 Z" fill="url(#leaf)"/>
+  <path d="M88 43 Q79 18 64 27 Q73 43 88 49 Z" fill="url(#leaf)" opacity="0.85"/>
+  <line x1="88" y1="49" x2="91" y2="34" stroke="#059669" stroke-width="1.2" opacity="0.5"/>
+  <ellipse cx="69" cy="89" rx="10.5" ry="12" fill="white"/>
+  <ellipse cx="114" cy="89" rx="10.5" ry="12" fill="white"/>
+  <circle cx="71" cy="90" r="5.3" fill="#1e293b"/>
+  <circle cx="116" cy="90" r="5.3" fill="#1e293b"/>
+  <circle cx="72" cy="88" r="2" fill="white"/>
+  <circle cx="117" cy="88" r="2" fill="white"/>
+  <path d="M72 110 Q90 126 108 110" fill="none" stroke="#1e293b" stroke-width="3.8" stroke-linecap="round"/>
+  <ellipse cx="55" cy="103" rx="9" ry="5.3" fill="#fca5a5" opacity="0.45"/>
+  <ellipse cx="126" cy="103" rx="9" ry="5.3" fill="#fca5a5" opacity="0.45"/>
 </svg>

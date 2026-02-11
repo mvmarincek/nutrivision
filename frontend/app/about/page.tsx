@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowLeft, Heart, Sparkles, Shield, Mail } from 'lucide-react';
-import BowlLogo from '@/components/BowlLogo';
+import NutraAvatar from '@/components/NutraAvatar';
 
 export default function AboutPage() {
   return (
@@ -16,7 +16,7 @@ export default function AboutPage() {
         <div className="bg-white rounded-3xl shadow-xl p-8 border border-green-100">
           <div className="text-center mb-8">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <BowlLogo className="w-10 h-10 text-white" />
+              <NutraAvatar className="w-10 h-10 text-white" mood="happy" animate={false} />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">PicNutra</h1>
             <p className="text-gray-500 mt-1">Estimativas nutricionais com inteligência artificial</p>

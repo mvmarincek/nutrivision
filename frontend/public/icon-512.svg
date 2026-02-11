@@ -5,15 +5,32 @@
       <stop offset="50%" style="stop-color:#14b8a6"/>
       <stop offset="100%" style="stop-color:#06b6d4"/>
     </linearGradient>
+    <linearGradient id="body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#34d399"/>
+      <stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#10b981"/>
+      <stop offset="100%" style="stop-color:#059669"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:white;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:white;stop-opacity:0"/>
+    </linearGradient>
   </defs>
   <rect width="512" height="512" rx="102" fill="url(#bg)"/>
-  <rect x="74" y="128" width="364" height="282" rx="58" fill="white"/>
-  <rect x="192" y="74" width="86" height="58" rx="22" fill="white"/>
-  <circle cx="256" cy="269" r="112" stroke="url(#bg)" stroke-width="22" fill="none"/>
-  <circle cx="256" cy="269" r="42" fill="white"/>
-  <circle cx="406" cy="154" r="22" fill="#14b8a6" opacity="0.6"/>
-  <circle cx="208" cy="234" r="22" fill="#22c55e"/>
-  <circle cx="300" cy="224" r="19" fill="#fb923c"/>
-  <circle cx="214" cy="304" r="17" fill="#eab308"/>
-  <circle cx="304" cy="294" r="22" fill="#ef4444"/>
+  <circle cx="256" cy="282" r="162" fill="url(#body)"/>
+  <ellipse cx="256" cy="176" rx="119" ry="43" fill="url(#shine)"/>
+  <path d="M250 122 Q271 46 322 72 Q293 122 250 139 Z" fill="url(#leaf)"/>
+  <path d="M250 122 Q224 52 181 78 Q206 122 250 139 Z" fill="url(#leaf)" opacity="0.85"/>
+  <line x1="250" y1="139" x2="259" y2="96" stroke="#059669" stroke-width="3.4" opacity="0.5"/>
+  <ellipse cx="196" cy="252" rx="30" ry="34" fill="white"/>
+  <ellipse cx="324" cy="252" rx="30" ry="34" fill="white"/>
+  <circle cx="200" cy="256" r="15" fill="#1e293b"/>
+  <circle cx="328" cy="256" r="15" fill="#1e293b"/>
+  <circle cx="206" cy="249" r="5.5" fill="white"/>
+  <circle cx="334" cy="249" r="5.5" fill="white"/>
+  <path d="M204 314 Q256 360 308 314" fill="none" stroke="#1e293b" stroke-width="10.6" stroke-linecap="round"/>
+  <ellipse cx="157" cy="292" rx="25.5" ry="15" fill="#fca5a5" opacity="0.45"/>
+  <ellipse cx="358" cy="292" rx="25.5" ry="15" fill="#fca5a5" opacity="0.45"/>
 </svg>

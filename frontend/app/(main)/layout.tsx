@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
 import { Home, History, Sparkles, User, LogOut, Crown, Heart, MessageCircle, Clock } from 'lucide-react';
 import Footer from '@/components/Footer';
-import BowlLogo from '@/components/BowlLogo';
+
 import InstallPWAButton from '@/components/InstallPWAButton';
 import LanguageSelector from '@/components/LanguageSelector';
 import NutraCompanion from '@/components/NutraCompanion';
@@ -30,7 +30,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center animate-pulse shadow-xl shadow-emerald-200/50">
-            <BowlLogo className="w-8 h-8 text-white" />
+            <NutraAvatar className="w-8 h-8 text-white" mood="happy" animate={false} />
           </div>
           <p className="text-gray-500">Carregando...</p>
         </div>
@@ -57,7 +57,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           {pathname === '/home' ? (
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center shadow-md shadow-emerald-200/50">
-                <BowlLogo className="w-5 h-5 text-white" />
+                <NutraAvatar className="w-5 h-5 text-white" mood="happy" animate={false} />
               </div>
               <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
                 PicNutra
@@ -76,7 +76,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           ) : (
             <Link href="/home" className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center shadow-md shadow-emerald-200/50">
-                <BowlLogo className="w-5 h-5 text-white" />
+                <NutraAvatar className="w-5 h-5 text-white" mood="happy" animate={false} />
               </div>
               <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
                 PicNutra
