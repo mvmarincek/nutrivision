@@ -203,6 +203,7 @@ export interface User {
   simple_analyses_used: number;
   full_analyses_used: number;
   trial_days_used: number;
+  trial_bonus_days: number;
   referral_code?: string;
   email_verified: boolean;
   is_admin: boolean;
@@ -326,6 +327,7 @@ export interface MealDetail {
 export interface BillingStatus {
   plan: string;
   trial_days_used: number;
+  trial_bonus_days: number;
   simple_analyses_used: number;
   full_analyses_used: number;
   has_subscription: boolean;
@@ -590,6 +592,7 @@ export interface AdminUser {
   simple_analyses_used: number;
   full_analyses_used: number;
   trial_days_used: number;
+  trial_bonus_days: number;
   email_verified: boolean;
   is_admin: boolean;
   created_at: string | null;

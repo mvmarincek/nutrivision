@@ -112,7 +112,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               >
                 <Clock className="w-4 h-4 text-amber-600" />
                 <span className="text-sm font-bold text-amber-700">
-                  {Math.max(0, 7 - (user.trial_days_used || 0))} dias
+                  {Math.max(0, (7 + (user.trial_bonus_days || 0)) - (user.trial_days_used || 0))} dias
                 </span>
               </Link>
             )}

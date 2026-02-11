@@ -44,6 +44,7 @@ class User(Base):
     plan = Column(String(20), default=PlanType.FREE.value)
     trial_started = Column(Boolean, default=False)
     trial_days_used = Column(Integer, default=0)
+    trial_bonus_days = Column(Integer, default=0)
     last_active_date = Column(Date, nullable=True)
     credit_balance = Column(Integer, default=0)
     simple_analyses_used = Column(Integer, default=0)

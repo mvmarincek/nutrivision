@@ -35,6 +35,7 @@ class UserResponse(BaseModel):
     phone: Optional[str] = None
     plan: str
     trial_days_used: int = 0
+    trial_bonus_days: int = 0
     simple_analyses_used: int = 0
     full_analyses_used: int = 0
     referral_code: Optional[str] = None

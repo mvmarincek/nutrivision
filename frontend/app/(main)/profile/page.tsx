@@ -525,7 +525,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 mb-4 border border-emerald-100">
-          <h4 className="font-semibold text-gray-800 mb-2">Como funciona a comissão?</h4>
+          <h4 className="font-semibold text-gray-800 mb-2">Como funciona?</h4>
           <ul className="text-sm text-gray-600 space-y-1.5">
             <li className="flex items-start gap-2">
               <span className="text-emerald-500 font-bold mt-0.5">1.</span>
@@ -533,13 +533,22 @@ export default function ProfilePage() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-emerald-500 font-bold mt-0.5">2.</span>
-              <span>Quando seu amigo se cadastrar e assinar um plano, você ganha <strong>10% de comissão</strong> sobre cada pagamento</span>
+              <span>Seu amigo ganha <strong>14 dias de teste gratis</strong> (ao inves de 7!)</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-emerald-500 font-bold mt-0.5">3.</span>
-              <span>Acompanhe seus ganhos e solicite saques pelo painel de indicações</span>
+              <span>Quando seu amigo assinar um plano, voce ganha <strong>10% de comissao</strong> sobre cada pagamento dele</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-emerald-500 font-bold mt-0.5">4.</span>
+              <span>A comissao e <strong>recorrente</strong>: voce recebe enquanto seu indicado mantiver a assinatura ativa</span>
             </li>
           </ul>
+          <div className="mt-3 bg-amber-50 rounded-xl p-3 border border-amber-200">
+            <p className="text-xs text-amber-800">
+              <strong>Importante:</strong> Se o indicado cancelar ou nunca assinar, a comissao nao e gerada. Quanto mais seus indicados usarem o app, mais voce ganha!
+            </p>
+          </div>
         </div>
 
         {user?.referral_code ? (

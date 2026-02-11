@@ -276,7 +276,7 @@ export default function LandingPage() {
             <div className="mt-4 bg-white/20 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3">
               <Award className="w-8 h-8 text-yellow-300 flex-shrink-0" />
               <p className="text-sm">
-                <span className="font-bold">10% de comissao</span> sobre cada pagamento dos seus indicados!
+                <span className="font-bold">10% de comissao recorrente</span> enquanto seu indicado mantiver a assinatura! Seu amigo ganha 14 dias gratis.
               </p>
             </div>
             <div className="mt-2 bg-red-500/30 backdrop-blur-sm rounded-xl px-3 py-2 border border-red-300/30 text-center">

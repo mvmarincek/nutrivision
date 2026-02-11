@@ -29,7 +29,8 @@ class NutriOrchestrator:
         
         if user.plan == "free":
             if mode == "simple":
-                if user.trial_days_used < settings.TRIAL_MAX_DAYS:
+                trial_total = settings.TRIAL_MAX_DAYS + (user.trial_bonus_days or 0)
+                if user.trial_days_used < trial_total:
                     return True, "trial"
                 return False, "Seu período de teste expirou. Assine um plano para continuar."
             return False, "Análise completa não disponível no plano gratuito. Assine o plano PRO ou PREMIUM."

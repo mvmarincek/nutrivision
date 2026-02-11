@@ -195,9 +195,11 @@ async def flush_email_logs(db: AsyncSession):
         print(f"[EMAIL] Error saving logs: {e}")
         await db.rollback()
 
-def send_welcome_email(user_email: str, user_id: Optional[int] = None):
+def send_welcome_email(user_email: str, user_id: Optional[int] = None, trial_bonus_days: int = 0):
     frontend_url = get_setting("frontend_url")
-    subject = "Bem-vindo ao PicNutra! Seus 7 dias grátis começaram!"
+    trial_total = 7 + trial_bonus_days
+    bonus_text = f" (incluindo {trial_bonus_days} dias extras por indicação!)" if trial_bonus_days > 0 else ""
+    subject = f"Bem-vindo ao PicNutra! Seus {trial_total} dias grátis começaram!"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f0fdfa;">
@@ -207,7 +209,7 @@ def send_welcome_email(user_email: str, user_id: Optional[int] = None):
             <div style="text-align: center; margin-bottom: 20px;">
                 <span style="font-size: 48px;">🎁</span>
             </div>
-            <h2 style="color: #10b981; margin: 0 0 20px 0; text-align: center;">7 dias grátis para experimentar tudo!</h2>
+            <h2 style="color: #10b981; margin: 0 0 20px 0; text-align: center;">{trial_total} dias grátis para experimentar tudo{bonus_text}!</h2>
             <p style="color: #334155; line-height: 1.8; margin: 0 0 15px 0;">
                 Parabéns por dar o primeiro passo em direção a uma alimentação mais consciente!
             </p>
@@ -223,7 +225,7 @@ def send_welcome_email(user_email: str, user_id: Optional[int] = None):
             </ul>
             <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 15px; padding: 15px; margin-bottom: 15px;">
                 <p style="color: #92400e; margin: 0; text-align: center;">
-                    <strong>Aproveite ao máximo os 7 dias! Use todos os recursos e descubra como o PicNutra pode transformar sua alimentação.</strong>
+                    <strong>Aproveite ao máximo os {trial_total} dias! Use todos os recursos e descubra como o PicNutra pode transformar sua alimentação.</strong>
                 </p>
             </div>
         </div>
@@ -311,10 +313,15 @@ def send_referral_activated_email(referrer_email: str, referred_email: str, refe
             </p>
             <div style="background: linear-gradient(135deg, #ecfdf5, #f0fdfa); border-radius: 15px; padding: 20px; margin-bottom: 15px;">
                 <p style="color: #047857; margin: 0; text-align: center;">
-                    <strong>Você ganha 10% de comissão</strong> sobre cada pagamento que seu indicado fizer!
+                    <strong>Você ganha 10% de comissão recorrente</strong> enquanto seu indicado mantiver a assinatura ativa!
                 </p>
                 <p style="color: #047857; margin: 10px 0 0 0; text-align: center; font-size: 14px;">
-                    Acompanhe seus ganhos e solicite saques no painel de indicações.
+                    Seu amigo recebeu <strong>14 dias de teste grátis</strong> para conhecer o app. Quanto mais ele usar e assinar, mais você ganha!
+                </p>
+            </div>
+            <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 15px; padding: 15px; margin-bottom: 15px;">
+                <p style="color: #92400e; margin: 0; text-align: center; font-size: 13px;">
+                    <strong>Lembre-se:</strong> A comissão só é gerada quando seu indicado assinar um plano pago. Se ele cancelar, a comissão para. Estimule seus amigos a assinar!
                 </p>
             </div>
         </div>
@@ -487,8 +494,10 @@ def send_email_verification(user_email: str, verification_token: str, user_id: O
     """
     return send_email(user_email, subject, html, email_type="email_verification", user_id=user_id)
 
-def send_email_verified_success(user_email: str, user_id: Optional[int] = None):
+def send_email_verified_success(user_email: str, user_id: Optional[int] = None, trial_bonus_days: int = 0):
     frontend_url = get_setting("frontend_url")
+    trial_total = 7 + trial_bonus_days
+    bonus_text = " (incluindo dias extras por indicação!)" if trial_bonus_days > 0 else ""
     subject = "Email confirmado! Bem-vindo ao PicNutra!"
     html = f"""
     <html>
@@ -505,7 +514,7 @@ def send_email_verified_success(user_email: str, user_id: Optional[int] = None):
             </p>
             <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 15px; padding: 15px; margin-bottom: 15px;">
                 <p style="color: #92400e; margin: 0; text-align: center;">
-                    <strong>Você tem 7 dias grátis para experimentar TODOS os recursos!</strong>
+                    <strong>Você tem {trial_total} dias grátis para experimentar TODOS os recursos{bonus_text}</strong>
                 </p>
             </div>
         </div>

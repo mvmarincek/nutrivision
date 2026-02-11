@@ -656,12 +656,12 @@ export default function BillingPage() {
               <div>
                 <p className="text-sm text-gray-600">Plano atual</p>
                 <p className="text-2xl font-bold text-gray-900">Gratuito</p>
-                <p className="text-sm text-gray-500">Trial de 7 dias</p>
+                <p className="text-sm text-gray-500">Trial de {7 + (user?.trial_bonus_days || 0)} dias</p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-600">Dias usados</p>
                 <p className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                  {user?.trial_days_used || 0}/7
+                  {user?.trial_days_used || 0}/{7 + (user?.trial_bonus_days || 0)}
                 </p>
               </div>
             </div>
@@ -671,7 +671,7 @@ export default function BillingPage() {
               <div className="w-full bg-emerald-100 rounded-full h-2">
                 <div 
                   className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full h-2 transition-all" 
-                  style={{ width: `${Math.min(((user?.trial_days_used || 0) / 7) * 100, 100)}%` }}
+                  style={{ width: `${Math.min(((user?.trial_days_used || 0) / (7 + (user?.trial_bonus_days || 0))) * 100, 100)}%` }}
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1">Apenas analises simples disponiveis</p>

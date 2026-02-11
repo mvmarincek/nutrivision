@@ -396,7 +396,7 @@ function ResultContent() {
                 <h3 className="font-bold text-lg">Indique amigos e ganhe!</h3>
               </div>
               <p className="text-emerald-100 text-sm mb-3">
-                Compartilhe seu codigo e ganhe 10% de comissao sobre cada pagamento dos seus indicados!
+                Compartilhe seu codigo e ganhe 10% de comissao recorrente enquanto seu indicado mantiver a assinatura! Seu amigo ganha 14 dias de teste gratis.
               </p>
               <div className="bg-white/15 backdrop-blur-sm rounded-xl px-3 py-2 mb-3 flex items-center gap-2 border border-white/20">
                 <AlertTriangle className="w-4 h-4 text-yellow-300 flex-shrink-0" />

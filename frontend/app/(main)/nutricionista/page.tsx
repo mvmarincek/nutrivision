@@ -18,7 +18,8 @@ export default function NutricionistaPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const trialDaysRemaining = user?.plan === 'free' ? Math.max(0, 7 - (user?.trial_days_used || 0)) : 0;
+  const trialTotal = 7 + (user?.trial_bonus_days || 0);
+  const trialDaysRemaining = user?.plan === 'free' ? Math.max(0, trialTotal - (user?.trial_days_used || 0)) : 0;
   const hasAccess = user?.plan === 'premium' || (user?.plan === 'free' && trialDaysRemaining > 0);
 
   useEffect(() => {

@@ -69,6 +69,8 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks, db:
         phone=user_data.phone,
         credit_balance=0,
         referral_code=referral_code,
+        referred_by=referrer.id if referrer else None,
+        trial_bonus_days=7 if referrer else 0,
         email_verified=False,
         email_verification_token=verification_token,
     )
@@ -264,8 +266,8 @@ async def verify_email(request: VerifyEmailRequest, background_tasks: Background
     user.email_verification_token = None
     await db.commit()
     
-    background_tasks.add_task(send_email_verified_success, user.email, user.id)
-    background_tasks.add_task(send_welcome_email, user.email, user.id)
+    background_tasks.add_task(send_email_verified_success, user.email, user.id, user.trial_bonus_days or 0)
+    background_tasks.add_task(send_welcome_email, user.email, user.id, user.trial_bonus_days or 0)
     
     return {"message": "Email verificado com sucesso!", "already_verified": False}
 

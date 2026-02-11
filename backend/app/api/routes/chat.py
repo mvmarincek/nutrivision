@@ -62,7 +62,8 @@ async def get_user_profile_context(user: User, db: AsyncSession) -> str:
 
 
 def check_chat_access(user: User):
-    trial_days_remaining = 7 - (user.trial_days_used or 0)
+    trial_total = 7 + (user.trial_bonus_days or 0)
+    trial_days_remaining = trial_total - (user.trial_days_used or 0)
     has_access = user.plan == "premium" or (user.plan == "free" and trial_days_remaining > 0)
     if not has_access:
         raise HTTPException(

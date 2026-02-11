@@ -117,6 +117,7 @@ async def run_migrations(conn):
         "CREATE INDEX IF NOT EXISTS idx_motivational_posts_user_date ON motivational_posts(user_id, post_date)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(20)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by INTEGER",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_bonus_days INTEGER DEFAULT 0",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_token VARCHAR(64)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS public_share_token VARCHAR(64)",
