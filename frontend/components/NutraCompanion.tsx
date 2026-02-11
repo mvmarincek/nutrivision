@@ -278,8 +278,8 @@ export default function NutraCompanion() {
           }`}
           style={{ transformOrigin: 'top center' }}
         >
-          <div className="relative bg-gradient-to-br from-white to-emerald-50/50 rounded-2xl shadow-2xl shadow-emerald-200/30 border border-emerald-200/60 max-w-[320px] overflow-hidden">
-            <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-l border-t border-emerald-200/60 rotate-45" />
+          <div className="relative bg-white rounded-2xl shadow-2xl shadow-emerald-200/30 border border-emerald-200/60 w-[calc(100vw-2rem)] max-w-[380px] overflow-hidden">
+            <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-emerald-500 border-l border-t border-emerald-500 rotate-45" />
             <div className="px-4 py-3 flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500">
               <NutraAvatar className="w-7 h-7" mood={mood} animate={false} />
               <span className="text-sm font-bold text-white">NutraIA</span>
