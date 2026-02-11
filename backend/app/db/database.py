@@ -115,6 +115,7 @@ async def run_migrations(conn):
             created_at TIMESTAMP DEFAULT NOW()
         )""",
         "CREATE INDEX IF NOT EXISTS idx_motivational_posts_user_date ON motivational_posts(user_id, post_date)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_motivational_posts_user_date ON motivational_posts(user_id, post_date)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(20)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by INTEGER",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_bonus_days INTEGER DEFAULT 0",

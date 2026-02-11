@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
-from datetime import date
+from datetime import date, datetime, timezone, timedelta
 from openai import AsyncOpenAI
 
 from app.db.database import get_db
@@ -12,6 +12,8 @@ from app.core.config import settings
 router = APIRouter(prefix="/motivacional", tags=["motivacional"])
 
 client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+
+BR_TZ = timezone(timedelta(hours=-3))
 
 async def get_user_context(user: User, db: AsyncSession) -> str:
     parts = []
@@ -53,7 +55,7 @@ async def get_user_context(user: User, db: AsyncSession) -> str:
 
 @router.get("/today")
 async def get_today_post(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    today = date.today()
+    today = datetime.now(BR_TZ).date()
     
     result = await db.execute(
         select(MotivationalPost).where(

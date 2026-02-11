@@ -22,8 +22,19 @@ export default function MotivacionalPage() {
     loadTodayPost();
   }, []);
 
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && !todayPost) {
+        loadTodayPost();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [todayPost]);
+
   async function loadTodayPost() {
     try {
+      setLoading(true);
       const post = await api<Post>('/motivacional/today');
       setTodayPost(post);
     } catch (err) {
