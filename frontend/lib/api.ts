@@ -536,7 +536,7 @@ export interface CardPaymentRequest {
 
 export interface ProSubscriptionRequest {
   billing_type: 'PIX' | 'CREDIT_CARD' | 'BOLETO';
-  plan_type?: 'pro' | 'intermediate';
+  plan_type?: 'basic' | 'pro' | 'premium';
   card_holder_name?: string;
   card_number?: string;
   expiry_month?: string;
