@@ -45,7 +45,7 @@ async def run_analysis_task(
             user = await db.get(User, user_id)
             
             logger.info(f"[job_id={job_id}] Starting analysis for meal_id={meal_id}, user_id={user_id}, mode={mode}")
-            logger.info(f"[job_id={job_id}] User plan={user.plan}, pro_remaining={user.pro_analyses_remaining}, credits={user.credit_balance}")
+            logger.info(f"[job_id={job_id}] User plan={user.plan}, simple_used={user.simple_analyses_used}, full_used={user.full_analyses_used}")
             
             orchestrator = NutriOrchestrator(settings.OPENAI_API_KEY)
             
@@ -59,17 +59,8 @@ async def run_analysis_task(
             
             logger.info(f"[job_id={job_id}] Credit source: {source}")
             
-            if source == "pro_quota":
-                user.pro_analyses_remaining -= 1
-                await db.commit()
-                await db.refresh(user)
-                logger.info(f"[job_id={job_id}] PRO analyses decremented to {user.pro_analyses_remaining}")
-            elif source == "credits":
-                cost = settings.CREDIT_COST_FULL
-                user.credit_balance -= cost
-                await db.commit()
-                await db.refresh(user)
-                logger.info(f"[job_id={job_id}] Credits deducted, new balance: {user.credit_balance}")
+            await orchestrator.deduct_credits(db, user, mode, source)
+            logger.info(f"[job_id={job_id}] Credits deducted via orchestrator")
             
             result = await orchestrator.run_analysis(db, job, meal, user, mode, answers)
             
@@ -168,7 +159,7 @@ async def analyze_meal(
         raise HTTPException(status_code=404, detail="Refeição não encontrada")
     
     from app.agents.orchestrator import NutriOrchestrator
-    _orch = NutriOrchestrator()
+    _orch = NutriOrchestrator(settings.OPENAI_API_KEY)
     can_analyze, _source = await _orch.validate_credits(current_user, request.mode)
     if not can_analyze:
         raise HTTPException(status_code=402, detail=_source)

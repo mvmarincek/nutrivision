@@ -106,6 +106,15 @@ async def run_migrations(conn):
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS razao_social VARCHAR(255)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS user_type VARCHAR(10) DEFAULT 'pf'",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS commission_rate FLOAT DEFAULT 0.10",
+        """CREATE TABLE IF NOT EXISTS motivational_posts (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) NOT NULL,
+            post_date DATE NOT NULL,
+            content TEXT NOT NULL,
+            image_url VARCHAR(500),
+            created_at TIMESTAMP DEFAULT NOW()
+        )""",
+        "CREATE INDEX IF NOT EXISTS idx_motivational_posts_user_date ON motivational_posts(user_id, post_date)",
     ]
     
     for sql in migrations:
