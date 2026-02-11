@@ -14,6 +14,7 @@ export default function IndicacoesPage() {
   const [loading, setLoading] = useState(true);
   const [linkCopiado, setLinkCopiado] = useState(false);
   const [pixKey, setPixKey] = useState('');
+  const [savedPixKey, setSavedPixKey] = useState('');
   const [showPixInput, setShowPixInput] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
   const [savingPix, setSavingPix] = useState(false);
@@ -40,6 +41,7 @@ export default function IndicacoesPage() {
       setDashboard(dashboardData);
       setCommissions(commissionsResult.commissions);
       setPixKey(dashboardData.pix_key || '');
+      setSavedPixKey(dashboardData.pix_key || '');
     } catch (err) {
       console.error('Erro ao carregar dados:', err);
     } finally {
@@ -60,6 +62,7 @@ export default function IndicacoesPage() {
     setSavingPix(true);
     try {
       await partnerApi.updatePixKey(pixKey.trim());
+      setSavedPixKey(pixKey.trim());
       setMessage('Chave PIX salva com sucesso!');
       setShowPixInput(false);
       setTimeout(() => setMessage(''), 3000);
@@ -163,7 +166,7 @@ export default function IndicacoesPage() {
             <KeyRound className={`w-4 h-4 ${accentText}`} />
             Chave PIX para saque
           </h3>
-          {!showPixInput && pixKey && (
+          {!showPixInput && savedPixKey && (
             <button
               onClick={() => setShowPixInput(true)}
               className={`text-xs ${isPJ ? 'text-violet-600' : 'text-emerald-600'} hover:underline`}
@@ -173,7 +176,7 @@ export default function IndicacoesPage() {
           )}
         </div>
         
-        {showPixInput || !pixKey ? (
+        {showPixInput || !savedPixKey ? (
           <div className="flex gap-2">
             <input
               type="text"
@@ -191,7 +194,7 @@ export default function IndicacoesPage() {
             </button>
           </div>
         ) : (
-          <p className="text-sm text-gray-600 bg-gray-50 px-4 py-2.5 rounded-xl">{pixKey}</p>
+          <p className="text-sm text-gray-600 bg-gray-50 px-4 py-2.5 rounded-xl">{savedPixKey}</p>
         )}
       </div>
 
