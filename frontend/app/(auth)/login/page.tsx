@@ -123,7 +123,12 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      router.push('/home');
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      if (storedUser.user_type === 'pj') {
+        router.push('/indicacoes');
+      } else {
+        router.push('/home');
+      }
     } catch (err: any) {
       setLoading(false);
       const errorMessage = err.message || 'Erro ao fazer login';

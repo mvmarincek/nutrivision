@@ -157,6 +157,7 @@ export default function IndicacoesPage() {
 
 
 
+      {!isPJ && (
       <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-gray-800 flex items-center gap-2">
@@ -206,6 +207,7 @@ export default function IndicacoesPage() {
           <p className="text-xs text-gray-400 text-center">Saldo mínimo para saque: R$10,00</p>
         )}
       </div>
+      )}
 
       <div className={`rounded-2xl p-5 border shadow-sm bg-gradient-to-r ${accentBgLight} ${accentBorder}`}>
         <h3 className="font-semibold text-gray-800 mb-3">Seu link de indicação</h3>
