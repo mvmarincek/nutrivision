@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { authApi, partnerApi, MyReferralsResponse, PartnerDashboard, CommissionItem } from '@/lib/api';
-import { Users, TrendingUp, Copy, Check, Building2, User, Crown, DollarSign, Wallet, ArrowDownToLine, KeyRound, AlertTriangle, CalendarDays, Info } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+import { Users, TrendingUp, Copy, Check, Building2, User, Crown, DollarSign, Wallet, ArrowDownToLine, KeyRound, AlertTriangle, CalendarDays, Info, Download } from 'lucide-react';
+import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 
 export default function IndicacoesPage() {
   const { user } = useAuth();
@@ -218,7 +218,7 @@ export default function IndicacoesPage() {
             {linkCopiado ? <><Check className="w-4 h-4" /> Copiado!</> : <><Copy className="w-4 h-4" /> Copiar</>}
           </button>
         </div>
-        <div className="mt-3 flex justify-center">
+        <div className="mt-3 flex flex-col items-center gap-3">
           <div className="bg-white p-3 rounded-xl border border-gray-200 inline-block">
             {referralLink ? (
               <QRCodeSVG key={referralLink} value={referralLink} size={112} level="M" />
@@ -226,6 +226,28 @@ export default function IndicacoesPage() {
               <div className="w-[112px] h-[112px] flex items-center justify-center text-xs text-gray-400">Carregando...</div>
             )}
           </div>
+          {referralLink && (
+            <>
+              <div style={{ position: 'absolute', left: '-9999px' }}>
+                <QRCodeCanvas id="qr-canvas-hd" value={referralLink} size={1024} level="H" includeMargin={true} />
+              </div>
+              <button
+                onClick={() => {
+                  const canvas = document.getElementById('qr-canvas-hd') as HTMLCanvasElement;
+                  if (!canvas) return;
+                  const url = canvas.toDataURL('image/png');
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `qrcode-${user?.referral_code || 'indicacao'}.png`;
+                  a.click();
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all bg-gradient-to-r ${accentFrom} ${accentTo} text-white hover:shadow-lg ${accentBg}`}
+              >
+                <Download className="w-4 h-4" />
+                Salvar QR Code em alta resolução
+              </button>
+            </>
+          )}
         </div>
         <p className={`text-xs ${isPJ ? 'text-violet-600' : 'text-emerald-600'} mt-3 text-center`}>
           Seu código: <span className="font-bold">{user?.referral_code}</span>

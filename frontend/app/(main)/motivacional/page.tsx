@@ -35,10 +35,19 @@ export default function MotivacionalPage() {
   async function loadTodayPost() {
     try {
       setLoading(true);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       const post = await api<Post>('/motivacional/today');
+      clearTimeout(timeoutId);
       setTodayPost(post);
     } catch (err) {
       console.error('Erro ao carregar post motivacional:', err);
+      try {
+        const post = await api<Post>('/motivacional/today');
+        setTodayPost(post);
+      } catch (retryErr) {
+        console.error('Retry falhou:', retryErr);
+      }
     } finally {
       setLoading(false);
     }

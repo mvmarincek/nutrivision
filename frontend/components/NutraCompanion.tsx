@@ -278,26 +278,30 @@ export default function NutraCompanion() {
           }`}
           style={{ transformOrigin: 'top center' }}
         >
-          <div className="relative bg-white rounded-2xl shadow-xl border border-emerald-100/80 px-5 py-4 max-w-[300px]">
-            <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-l border-t border-emerald-100/80 rotate-45" />
-            <div className="flex items-start gap-2">
-              <p className="text-sm text-gray-700 leading-relaxed flex-1 font-medium">{bubbleText}</p>
+          <div className="relative bg-gradient-to-br from-white to-emerald-50/50 rounded-2xl shadow-2xl shadow-emerald-200/30 border border-emerald-200/60 max-w-[320px] overflow-hidden">
+            <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-l border-t border-emerald-200/60 rotate-45" />
+            <div className="px-4 py-3 flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500">
+              <NutraAvatar className="w-7 h-7" mood={mood} animate={false} />
+              <span className="text-sm font-bold text-white">NutraIA</span>
               <button
                 onClick={handleDismiss}
-                className="text-gray-300 hover:text-gray-500 transition-colors flex-shrink-0 -mt-0.5 -mr-1"
+                className="ml-auto text-white/60 hover:text-white transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
-            {bubbleAction && (
-              <button
-                onClick={bubbleAction.onClick}
-                className="mt-2 flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
-              >
-                {bubbleAction.label}
-                <ChevronRight className="w-3 h-3" />
-              </button>
-            )}
+            <div className="px-5 py-4">
+              <p className="text-sm text-gray-700 leading-relaxed font-medium">{bubbleText}</p>
+              {bubbleAction && (
+                <button
+                  onClick={bubbleAction.onClick}
+                  className="mt-3 flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+                >
+                  {bubbleAction.label}
+                  <ChevronRight className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

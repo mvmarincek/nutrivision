@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
 import { profileApi, feedbackApi, billingApi, mealsApi, authApi, MealStats } from '@/lib/api';
-import { Save, User, ArrowRight, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera, Crown, Loader2, Flame, TrendingUp, Calendar, Trophy, AlertTriangle } from 'lucide-react';
+import { Save, User, ArrowRight, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera, Crown, Loader2, Flame, TrendingUp, Calendar, Trophy, AlertTriangle, Download } from 'lucide-react';
 import NutraAvatar from '@/components/NutraAvatar';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -592,7 +592,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="flex justify-center">
+            <div className="flex flex-col items-center gap-3">
               <div className="bg-white p-4 rounded-2xl border-2 border-purple-100 inline-block shadow-lg shadow-purple-50">
                 {referralLink ? (
                   <QRCodeSVG key={referralLink} value={referralLink} size={144} level="M" />
@@ -601,6 +601,28 @@ export default function ProfilePage() {
                 )}
               <p className="text-xs text-center text-gray-500 mt-2">Escaneie para se cadastrar</p>
               </div>
+              {referralLink && (
+                <>
+                  <div style={{ position: 'absolute', left: '-9999px' }}>
+                    <QRCodeCanvas id="qr-canvas-hd-profile" value={referralLink} size={1024} level="H" includeMargin={true} />
+                  </div>
+                  <button
+                    onClick={() => {
+                      const canvas = document.getElementById('qr-canvas-hd-profile') as HTMLCanvasElement;
+                      if (!canvas) return;
+                      const url = canvas.toDataURL('image/png');
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `qrcode-${user?.referral_code || 'indicacao'}.png`;
+                      a.click();
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all bg-gradient-to-r from-purple-500 to-violet-500 text-white hover:shadow-lg shadow-purple-200"
+                  >
+                    <Download className="w-4 h-4" />
+                    Salvar QR Code em alta resolução
+                  </button>
+                </>
+              )}
             </div>
 
             <div className="mt-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-4 border border-red-200 relative overflow-hidden">
