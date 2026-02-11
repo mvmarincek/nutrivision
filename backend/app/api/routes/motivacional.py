@@ -11,7 +11,7 @@ from app.core.config import settings
 
 router = APIRouter(prefix="/motivacional", tags=["motivacional"])
 
-client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY, timeout=20.0)
 
 BR_TZ = timezone(timedelta(hours=-3))
 

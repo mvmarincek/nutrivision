@@ -32,21 +32,30 @@ export default function MotivacionalPage() {
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [todayPost]);
 
+  async function fetchWithTimeout(timeoutMs: number): Promise<Post> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const post = await api<Post>('/motivacional/today', { signal: controller.signal });
+      return post;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
   async function loadTodayPost() {
     try {
       setLoading(true);
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      const post = await api<Post>('/motivacional/today');
-      clearTimeout(timeoutId);
+      const post = await fetchWithTimeout(25000);
       setTodayPost(post);
-    } catch (err) {
-      console.error('Erro ao carregar post motivacional:', err);
+    } catch (err: any) {
+      console.error('Erro ao carregar post motivacional:', err?.message || err);
       try {
-        const post = await api<Post>('/motivacional/today');
+        await new Promise(r => setTimeout(r, 2000));
+        const post = await fetchWithTimeout(25000);
         setTodayPost(post);
-      } catch (retryErr) {
-        console.error('Retry falhou:', retryErr);
+      } catch (retryErr: any) {
+        console.error('Retry falhou:', retryErr?.message || retryErr);
       }
     } finally {
       setLoading(false);

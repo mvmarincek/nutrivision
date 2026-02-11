@@ -112,10 +112,11 @@ interface ApiOptions {
   token?: string;
   isFormData?: boolean;
   skipAuth?: boolean;
+  signal?: AbortSignal;
 }
 
 export async function api<T>(endpoint: string, options: ApiOptions = {}): Promise<T> {
-  const { method = 'GET', body, token, isFormData = false, skipAuth = false } = options;
+  const { method = 'GET', body, token, isFormData = false, skipAuth = false, signal } = options;
   
   const headers: Record<string, string> = {};
   
@@ -128,11 +129,14 @@ export async function api<T>(endpoint: string, options: ApiOptions = {}): Promis
     headers['Content-Type'] = 'application/json';
   }
   
-  let response = await fetch(`${API_URL}${endpoint}`, {
+  const fetchOptions: RequestInit = {
     method,
     headers,
-    body: isFormData ? body : body ? JSON.stringify(body) : undefined
-  });
+    body: isFormData ? body : body ? JSON.stringify(body) : undefined,
+  };
+  if (signal) fetchOptions.signal = signal;
+  
+  let response = await fetch(`${API_URL}${endpoint}`, fetchOptions);
   
   if (response.status === 401 && !skipAuth && !endpoint.includes('/auth/refresh')) {
     if (!isRefreshing) {
