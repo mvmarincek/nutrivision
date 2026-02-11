@@ -24,7 +24,7 @@ export default function NutricionistaPage() {
 
   useEffect(() => {
     if (hasAccess) {
-      loadConversations();
+      loadConversations(true);
     }
   }, [hasAccess]);
 
@@ -36,11 +36,17 @@ export default function NutricionistaPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const loadConversations = async () => {
+  const loadConversations = async (autoOpen = false) => {
     try {
       setLoading(true);
       const data = await chatApi.listConversations();
       setConversations(data);
+      if (autoOpen && data.length > 0 && !currentConversationId) {
+        const latest = data[0];
+        const conv = await chatApi.getConversation(latest.id);
+        setCurrentConversationId(latest.id);
+        setMessages(conv.messages);
+      }
     } catch (err) {
       console.error('Erro ao carregar conversas:', err);
     } finally {
