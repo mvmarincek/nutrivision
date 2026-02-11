@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { authApi, partnerApi, MyReferralsResponse, PartnerDashboard, CommissionItem } from '@/lib/api';
 import { Users, TrendingUp, Copy, Check, Building2, User, Crown, DollarSign, Wallet, ArrowDownToLine, KeyRound, AlertTriangle, CalendarDays, Info } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function IndicacoesPage() {
   const { user } = useAuth();
@@ -228,11 +229,7 @@ export default function IndicacoesPage() {
         </div>
         <div className="mt-3 flex justify-center">
           <div className="bg-white p-3 rounded-xl border border-gray-200 inline-block">
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(referralLink)}`}
-              alt="QR Code"
-              className="w-28 h-28"
-            />
+            <QRCodeSVG value={referralLink} size={112} />
           </div>
         </div>
         <p className={`text-xs ${isPJ ? 'text-violet-600' : 'text-emerald-600'} mt-3 text-center`}>

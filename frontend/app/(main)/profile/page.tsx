@@ -7,6 +7,7 @@ import { useFeedback } from '@/lib/feedback';
 import { profileApi, feedbackApi, billingApi, mealsApi, authApi, MealStats } from '@/lib/api';
 import { Save, User, ArrowRight, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera, Crown, Loader2, Flame, TrendingUp, Calendar, Trophy, AlertTriangle } from 'lucide-react';
 import BowlLogo from '@/components/BowlLogo';
+import { QRCodeSVG } from 'qrcode.react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -593,11 +594,7 @@ export default function ProfilePage() {
 
             <div className="flex justify-center">
               <div className="bg-white p-4 rounded-2xl border-2 border-purple-100 inline-block shadow-lg shadow-purple-50">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(referralLink)}`}
-                  alt="QR Code de Indicação"
-                  className="w-36 h-36"
-                />
+                <QRCodeSVG value={referralLink} size={144} />
               <p className="text-xs text-center text-gray-500 mt-2">Escaneie para se cadastrar</p>
               </div>
             </div>
