@@ -51,7 +51,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50/50 via-teal-50/30 to-white pb-24">
+    <div className={`min-h-screen bg-gradient-to-b from-emerald-50/50 via-teal-50/30 to-white ${user.user_type !== 'pj' ? 'pb-24' : 'pb-6'}`}>
       <header className="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-10 border-b border-emerald-100">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           {pathname === '/home' ? (
@@ -94,18 +94,22 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             </Link>
           )}
           <div className="flex items-center gap-2">
-            <Link href="/nutricionista" className="relative group" title="NutraIA">
-              <NutraAvatar className="w-9 h-9 drop-shadow-md group-hover:scale-110 transition-transform" mood="happy" animate={false} />
-            </Link>
-            <Link
-              href="/billing"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-full text-sm font-medium hover:shadow-lg hover:scale-105 transition-all"
-              title="Ver Planos"
-            >
-              <Crown className="w-4 h-4" />
-              <span className="hidden sm:inline">Planos</span>
-            </Link>
-            {user.plan === 'free' && (
+            {user.user_type !== 'pj' && (
+              <Link href="/nutricionista" className="relative group" title="NutraIA">
+                <NutraAvatar className="w-9 h-9 drop-shadow-md group-hover:scale-110 transition-transform" mood="happy" animate={false} />
+              </Link>
+            )}
+            {user.user_type !== 'pj' && (
+              <Link
+                href="/billing"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-full text-sm font-medium hover:shadow-lg hover:scale-105 transition-all"
+                title="Ver Planos"
+              >
+                <Crown className="w-4 h-4" />
+                <span className="hidden sm:inline">Planos</span>
+              </Link>
+            )}
+            {user.user_type !== 'pj' && user.plan === 'free' && (
               <Link
                 href="/billing"
                 className="flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 px-3 py-1.5 rounded-full border border-amber-200 hover:shadow-md transition-all"
@@ -136,8 +140,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
       <Footer />
 
-      <NutraCompanion />
+      {user.user_type !== 'pj' && <NutraCompanion />}
 
+      {user.user_type !== 'pj' && (
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-emerald-100 shadow-lg z-20 pb-[env(safe-area-inset-bottom)]">
         <div className="mx-auto px-1">
           <div className="flex justify-around py-1">
@@ -169,6 +174,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </nav>
+      )}
     </div>
   );
 }
