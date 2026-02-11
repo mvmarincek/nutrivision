@@ -193,22 +193,6 @@ export default function IndicacoesPage() {
         ) : (
           <p className="text-sm text-gray-600 bg-gray-50 px-4 py-2.5 rounded-xl">{pixKey}</p>
         )}
-
-        {!isPJ && (
-          <>
-            <button
-              onClick={handleWithdraw}
-              disabled={withdrawing || (dashboard?.commission_balance || 0) < 10}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r ${accentFrom} to-teal-600 hover:shadow-emerald-200 text-white rounded-xl font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:hover:shadow-none`}
-            >
-              <ArrowDownToLine className="w-4 h-4" />
-              {withdrawing ? 'Processando...' : `Solicitar Saque (R$${(dashboard?.commission_balance || 0).toFixed(2)})`}
-            </button>
-            {(dashboard?.commission_balance || 0) < 10 && (
-              <p className="text-xs text-gray-400 text-center">Saldo mínimo para saque: R$10,00</p>
-            )}
-          </>
-        )}
       </div>
 
       <div className={`rounded-2xl p-5 border shadow-sm bg-gradient-to-r ${accentBgLight} ${accentBorder}`}>
