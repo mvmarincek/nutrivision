@@ -169,7 +169,7 @@ export default function IndicacoesPage() {
           {!showPixInput && savedPixKey && (
             <button
               onClick={() => setShowPixInput(true)}
-              className={`text-xs ${isPJ ? 'text-violet-600' : 'text-emerald-600'} hover:underline`}
+              className={`px-4 py-2.5 ${isPJ ? 'bg-violet-500 hover:bg-violet-600' : 'bg-emerald-500 hover:bg-emerald-600'} text-white rounded-xl text-sm font-medium`}
             >
               Alterar
             </button>
