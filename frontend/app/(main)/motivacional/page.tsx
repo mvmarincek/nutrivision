@@ -15,6 +15,7 @@ export default function MotivacionalPage() {
   const [todayPost, setTodayPost] = useState<Post | null>(null);
   const [history, setHistory] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
@@ -22,41 +23,18 @@ export default function MotivacionalPage() {
     loadTodayPost();
   }, []);
 
-  useEffect(() => {
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible' && !todayPost) {
-        loadTodayPost();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-    return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, [todayPost]);
-
-  async function fetchWithTimeout(timeoutMs: number): Promise<Post> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const post = await api<Post>('/motivacional/today', { signal: controller.signal });
-      return post;
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  }
-
   async function loadTodayPost() {
+    setLoading(true);
+    setError(false);
     try {
-      setLoading(true);
-      const post = await fetchWithTimeout(25000);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const post = await api<Post>('/motivacional/today', { signal: controller.signal });
+      clearTimeout(timeoutId);
       setTodayPost(post);
     } catch (err: any) {
-      console.error('Erro ao carregar post motivacional:', err?.message || err);
-      try {
-        await new Promise(r => setTimeout(r, 2000));
-        const post = await fetchWithTimeout(25000);
-        setTodayPost(post);
-      } catch (retryErr: any) {
-        console.error('Retry falhou:', retryErr?.message || retryErr);
-      }
+      console.error('Erro motivacional:', err?.message || err);
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -149,20 +127,20 @@ export default function MotivacionalPage() {
             </div>
           </div>
         </div>
-      ) : (
+      ) : error ? (
         <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border-2 border-gray-100 p-10 text-center mb-6">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
             <Heart className="w-8 h-8 text-gray-300" />
           </div>
           <p className="text-gray-500 text-lg font-medium mb-4">Nao foi possivel carregar a mensagem de hoje.</p>
           <button
-            onClick={() => { setLoading(true); loadTodayPost(); }}
+            onClick={loadTodayPost}
             className="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl font-bold hover:shadow-lg hover:scale-105 transition-all"
           >
             Tentar novamente
           </button>
         </div>
-      )}
+      ) : null}
 
       <button
         onClick={loadHistory}
