@@ -16,30 +16,30 @@ interface NutraLine {
 
 const LINES_BY_ROUTE: Record<string, NutraLine[]> = {
   '/home': [
-    { text: 'Psst! Bora tirar uma foto do prato? To morrendo de curiosidade!', mood: 'excited', action: { label: 'Analisar agora' } },
-    { text: 'Dica de mestre: quanto melhor a luz, mais precisa fica a analise!', mood: 'thinking' },
-    { text: 'Ja comeu hoje? Me mostra o que tem no prato!', mood: 'waving' },
-    { text: 'Sabia que cada analise me ajuda a te conhecer melhor?', mood: 'happy' },
-    { text: 'E ai, cadê a foto do almoco? To esperando!', mood: 'excited' },
+    { text: 'Psst! Bora tirar uma foto do prato? Tô morrendo de curiosidade!', mood: 'excited', action: { label: 'Analisar agora' } },
+    { text: 'Dica de mestre: quanto melhor a luz, mais precisa fica a análise!', mood: 'thinking' },
+    { text: 'Já comeu hoje? Me mostra o que tem no prato!', mood: 'waving' },
+    { text: 'Sabia que cada análise me ajuda a te conhecer melhor?', mood: 'happy' },
+    { text: 'E aí, cadê a foto do almoço? Tô esperando!', mood: 'excited' },
   ],
   '/history': [
-    { text: 'Olha a sua evolucao! Cada prato conta uma historia.', mood: 'happy' },
-    { text: 'Repara nos padroes... voce ta comendo melhor do que pensa!', mood: 'thinking' },
+    { text: 'Olha a sua evolução! Cada prato conta uma história.', mood: 'happy' },
+    { text: 'Repara nos padrões... você tá comendo melhor do que pensa!', mood: 'thinking' },
     { text: 'Que tal comparar o prato de hoje com o da semana passada?', mood: 'excited' },
   ],
   '/motivacional': [
-    { text: 'Preparei algo especial pra voce hoje. Le com carinho!', mood: 'happy' },
-    { text: 'Lembra: progresso nao e perfeicao. Voce ta arrasando!', mood: 'excited' },
-    { text: 'Cada escolha saudavel e uma vitoria. E voce ta cheia delas!', mood: 'waving' },
+    { text: 'Preparei algo especial pra você hoje. Lê com carinho!', mood: 'happy' },
+    { text: 'Lembra: progresso não é perfeição. Você tá arrasando!', mood: 'excited' },
+    { text: 'Cada escolha saudável é uma vitória. E você tá cheia delas!', mood: 'waving' },
   ],
   '/nutricionista': [
     { text: 'Pode perguntar qualquer coisa! Sem julgamento, prometo.', mood: 'waving' },
-    { text: 'Duvida boba nao existe. Manda ver!', mood: 'happy' },
-    { text: 'Posso te ajudar com substituicoes, receitas, dicas... o que precisar!', mood: 'excited' },
+    { text: 'Dúvida boba não existe. Manda ver!', mood: 'happy' },
+    { text: 'Posso te ajudar com substituições, receitas, dicas... o que precisar!', mood: 'excited' },
   ],
   '/billing': [
-    { text: 'Com o Pro voce desbloqueia tudo! E um investimento na sua saude.', mood: 'excited' },
-    { text: 'Analises ilimitadas, sem restricao. Imagina a evolucao!', mood: 'happy' },
+    { text: 'Com o Pro você desbloqueia tudo! É um investimento na sua saúde.', mood: 'excited' },
+    { text: 'Análises ilimitadas, sem restrição. Imagina a evolução!', mood: 'happy' },
   ],
   '/profile': [
     { text: 'Atualiza seus objetivos que eu me adapto na hora!', mood: 'waving' },
@@ -48,9 +48,9 @@ const LINES_BY_ROUTE: Record<string, NutraLine[]> = {
 };
 
 const IDLE_POKES: NutraLine[] = [
-  { text: 'Ei, to aqui! Se precisar de mim e so chamar.', mood: 'waving' },
-  { text: 'Nao esquece de mim! Bora cuidar da alimentacao juntos?', mood: 'happy' },
-  { text: 'Hmm... to pensando numa dica boa pra voce...', mood: 'thinking' },
+  { text: 'Ei, tô aqui! Se precisar de mim é só chamar.', mood: 'waving' },
+  { text: 'Não esquece de mim! Bora cuidar da alimentação juntos?', mood: 'happy' },
+  { text: 'Hmm... tô pensando numa dica boa pra você...', mood: 'thinking' },
 ];
 
 const COMPANION_STATE_KEY = 'nutra_companion_state';
@@ -116,8 +116,12 @@ export default function NutraCompanion() {
       if (line) {
         setMood('waving');
         setTimeout(() => showLine(line), 600);
+      } else {
+        const poke = IDLE_POKES[Math.floor(Math.random() * IDLE_POKES.length)];
+        setMood('waving');
+        setTimeout(() => showLine(poke), 600);
       }
-    }, 1500);
+    }, 1200);
 
     return () => {
       clearTimeout(entryTimer);
@@ -131,7 +135,7 @@ export default function NutraCompanion() {
     if (pokeTimerRef.current) clearTimeout(pokeTimerRef.current);
 
     const schedulePoke = () => {
-      const delay = 25000 + Math.random() * 20000;
+      const delay = 15000 + Math.random() * 10000;
       pokeTimerRef.current = setTimeout(() => {
         if (!showBubble) {
           const routeLines = LINES_BY_ROUTE[pathname];
@@ -166,7 +170,7 @@ export default function NutraCompanion() {
         setIsWiggling(true);
         setTimeout(() => setIsWiggling(false), 800);
       }
-    }, 12000);
+    }, 8000);
 
     return () => {
       if (wiggleTimerRef.current) clearInterval(wiggleTimerRef.current);
@@ -191,7 +195,7 @@ export default function NutraCompanion() {
     if (newCount >= 3) {
       setTapCount(0);
       setMood('excited');
-      setBubbleText('Haha, ta me fazendo cosquinha!');
+      setBubbleText('Haha, tá me fazendo cócegas!');
       setBubbleAction(undefined);
       setBubbleAnimating(true);
       setTimeout(() => setShowBubble(true), 50);
@@ -238,7 +242,7 @@ export default function NutraCompanion() {
   if (pathname === '/admin') return null;
 
   return (
-    <div className="fixed top-20 right-3 z-40 flex flex-col items-end gap-2"
+    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-2"
       style={{ pointerEvents: 'none' }}
     >
       <button
@@ -254,7 +258,7 @@ export default function NutraCompanion() {
           minimized ? 'scale-75 opacity-60' : 'scale-100 opacity-100'
         } group-hover:scale-110 group-active:scale-95`}>
           <NutraAvatar
-            className="w-14 h-14 drop-shadow-lg"
+            className="w-18 h-18 drop-shadow-lg"
             mood={mood}
             animate={!minimized}
           />
@@ -272,12 +276,12 @@ export default function NutraCompanion() {
               ? 'opacity-100 translate-y-0 scale-100'
               : 'opacity-0 -translate-y-4 scale-95'
           }`}
-          style={{ transformOrigin: 'top right' }}
+          style={{ transformOrigin: 'top center' }}
         >
-          <div className="relative bg-white rounded-2xl rounded-tr-sm shadow-xl border border-emerald-100/80 px-4 py-3 max-w-[250px]">
-            <div className="absolute -top-[6px] right-5 w-3 h-3 bg-white border-l border-t border-emerald-100/80 rotate-45" />
+          <div className="relative bg-white rounded-2xl shadow-xl border border-emerald-100/80 px-5 py-4 max-w-[300px]">
+            <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-l border-t border-emerald-100/80 rotate-45" />
             <div className="flex items-start gap-2">
-              <p className="text-[13px] text-gray-700 leading-relaxed flex-1 font-medium">{bubbleText}</p>
+              <p className="text-sm text-gray-700 leading-relaxed flex-1 font-medium">{bubbleText}</p>
               <button
                 onClick={handleDismiss}
                 className="text-gray-300 hover:text-gray-500 transition-colors flex-shrink-0 -mt-0.5 -mr-1"

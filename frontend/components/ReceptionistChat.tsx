@@ -67,7 +67,7 @@ export default function ReceptionistChat() {
     } catch {
       setMessages([{
         role: 'assistant',
-        content: 'Oi! Eu sou a Nutra, sua guia no PicNutra! Quer descobrir como transformar sua alimentacao com inteligencia artificial?'
+        content: 'Oi! Eu sou a Nutra, sua guia no PicNutra! Quer descobrir como transformar sua alimentação com inteligência artificial?'
       }]);
     } finally {
       setSending(false);
@@ -110,7 +110,7 @@ export default function ReceptionistChat() {
     } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Ops, tive um probleminha aqui. Mas posso te garantir: o PicNutra vai mudar a forma como voce cuida da sua alimentacao!'
+        content: 'Ops, tive um probleminha aqui. Mas posso te garantir: o PicNutra vai mudar a forma como você cuida da sua alimentação!'
       }]);
     } finally {
       setSending(false);
@@ -197,7 +197,7 @@ export default function ReceptionistChat() {
                     href="/register"
                     className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm hover:shadow-lg transition-all"
                   >
-                    Comecar Gratis
+                    Começar Grátis
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 )}

@@ -10,6 +10,7 @@ import BowlLogo from '@/components/BowlLogo';
 import InstallPWAButton from '@/components/InstallPWAButton';
 import LanguageSelector from '@/components/LanguageSelector';
 import NutraCompanion from '@/components/NutraCompanion';
+import NutraAvatar from '@/components/NutraAvatar';
 import { useLanguage } from '@/lib/i18n';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -94,6 +95,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             </Link>
           )}
           <div className="flex items-center gap-3">
+            <Link href="/nutricionista" className="relative group" title="NutraIA">
+              <NutraAvatar className="w-9 h-9 drop-shadow-md group-hover:scale-110 transition-transform" mood="happy" animate={false} />
+            </Link>
             {/* <LanguageSelector /> */}
             {user.plan === 'free' && (
               <div className="flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-teal-50 px-3 py-1.5 rounded-full border border-emerald-100">

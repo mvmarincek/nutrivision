@@ -66,10 +66,10 @@ async def list_conversations(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    if current_user.plan != "pro":
+    if current_user.plan != "premium":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="A IA Nutricionista esta disponivel apenas no plano PRO."
+            detail="A IA Nutricionista está disponível apenas no plano Premium."
         )
     
     result = await db.execute(
@@ -97,10 +97,10 @@ async def get_conversation(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    if current_user.plan != "pro":
+    if current_user.plan != "premium":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="A IA Nutricionista esta disponivel apenas no plano PRO."
+            detail="A IA Nutricionista está disponível apenas no plano Premium."
         )
     
     result = await db.execute(
@@ -143,10 +143,10 @@ async def send_message(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    if current_user.plan != "pro":
+    if current_user.plan != "premium":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="A IA Nutricionista esta disponivel apenas no plano PRO."
+            detail="A IA Nutricionista está disponível apenas no plano Premium."
         )
     
     conversation = None
@@ -235,10 +235,10 @@ async def delete_conversation(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    if current_user.plan != "pro":
+    if current_user.plan != "premium":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="A IA Nutricionista esta disponivel apenas no plano PRO."
+            detail="A IA Nutricionista está disponível apenas no plano Premium."
         )
     
     result = await db.execute(

@@ -219,7 +219,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Meu Perfil</h1>
-              <p className="text-emerald-100">Configure suas preferencias</p>
+              <p className="text-emerald-100">Configure suas preferências</p>
             </div>
           </div>
         </div>
@@ -273,7 +273,7 @@ export default function ProfilePage() {
                 <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center shadow-md">
                   <Trophy className="w-4 h-4 text-white" />
                 </div>
-                <h3 className="font-semibold text-gray-900">Suas Estatisticas</h3>
+                <h3 className="font-semibold text-gray-900">Suas Estatísticas</h3>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="bg-white rounded-xl p-3 text-center shadow-sm border border-gray-100">
@@ -281,7 +281,7 @@ export default function ProfilePage() {
                     <TrendingUp className="w-4 h-4 text-emerald-600" />
                   </div>
                   <p className="text-lg font-bold text-gray-900">{stats.total_meals}</p>
-                  <p className="text-xs text-gray-500">analises</p>
+                  <p className="text-xs text-gray-500">análises</p>
                 </div>
                 <div className="bg-white rounded-xl p-3 text-center shadow-sm border border-gray-100">
                   <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center mx-auto mb-2">
@@ -345,7 +345,7 @@ export default function ProfilePage() {
               <div className="w-6 h-6 bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg flex items-center justify-center">
                 <span className="text-xs">🍽️</span>
               </div>
-              Restricoes Alimentares
+              Restrições Alimentares
             </label>
             <div className="flex flex-wrap gap-2">
               {restricoesOptions.map((rest) => (
@@ -369,14 +369,14 @@ export default function ProfilePage() {
               <div className="w-6 h-6 bg-gradient-to-br from-red-100 to-rose-100 rounded-lg flex items-center justify-center">
                 <span className="text-xs">⚠️</span>
               </div>
-              Alergias (separadas por virgula)
+              Alergias (separadas por vírgula)
             </label>
             <input
               type="text"
               value={alergias}
               onChange={(e) => setAlergias(e.target.value)}
               className="w-full px-4 py-3 border-2 border-gray-100 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-400 transition-all"
-              placeholder="Ex: amendoim, camarao, leite"
+              placeholder="Ex: amendoim, camarão, leite"
             />
           </div>
 
@@ -406,7 +406,7 @@ export default function ProfilePage() {
       </div>
 
       <p className="text-sm text-gray-500 text-center mb-6">
-        Essas informacoes ajudam a personalizar suas analises nutricionais.
+        Essas informações ajudam a personalizar suas análises nutricionais.
       </p>
 
       {user?.plan === 'pro' && (
@@ -514,7 +514,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <h3 className="font-bold text-gray-900">Indique Amigos</h3>
-            <p className="text-sm text-gray-500">Ganhe 12 créditos por indicação!</p>
+            <p className="text-sm text-gray-500">Ganhe comissão por cada indicação!</p>
           </div>
           {myReferrals && myReferrals.total_referred > 0 && (
             <div className="ml-auto text-right">
@@ -524,9 +524,23 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <p className="text-sm text-gray-600 mb-4">
-          Compartilhe seu link ou QR Code. Quando seu amigo se cadastrar, você ganha 12 créditos para análises PRO!
-        </p>
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 mb-4 border border-emerald-100">
+          <h4 className="font-semibold text-gray-800 mb-2">Como funciona a comissão?</h4>
+          <ul className="text-sm text-gray-600 space-y-1.5">
+            <li className="flex items-start gap-2">
+              <span className="text-emerald-500 font-bold mt-0.5">1.</span>
+              <span>Compartilhe seu link ou QR Code com amigos</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-emerald-500 font-bold mt-0.5">2.</span>
+              <span>Quando seu amigo se cadastrar e assinar um plano, você ganha <strong>10% de comissão</strong> sobre cada pagamento</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-emerald-500 font-bold mt-0.5">3.</span>
+              <span>Acompanhe seus ganhos e solicite saques pelo painel de indicações</span>
+            </li>
+          </ul>
+        </div>
 
         {user?.referral_code ? (
           <>
@@ -577,7 +591,7 @@ export default function ProfilePage() {
               className="w-full mt-4 py-3 rounded-2xl font-medium text-sm bg-gradient-to-r from-violet-50 to-purple-50 text-violet-700 border border-violet-200 hover:shadow-md transition-all flex items-center justify-center gap-2"
             >
               <TrendingUp className="w-4 h-4" />
-              Ver painel de indicacoes
+              Ver painel de indicações
               <ArrowRight className="w-4 h-4" />
             </button>
           </>

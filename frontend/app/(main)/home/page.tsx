@@ -7,8 +7,8 @@ import { useFeedback } from '@/lib/feedback';
 import { mealsApi } from '@/lib/api';
 import { normalizeImageOrientation } from '@/lib/image-utils';
 import { 
-  Upload, UtensilsCrossed, Cake, Coffee, Target, Crown, Zap, Sparkles, 
-  ArrowRight, X, FileText, Scale, Droplet, Check, Camera
+  Upload, UtensilsCrossed, Cake, Target, Crown, Zap, Sparkles, 
+  ArrowRight, X, FileText, Scale, Check, Camera
 } from 'lucide-react';
 import PageAds from '@/components/PageAds';
 
@@ -17,7 +17,6 @@ type Phase = 'idle' | 'loading_image' | 'uploading';
 const mealTypes = [
   { id: 'prato', label: 'Prato', icon: UtensilsCrossed, color: 'from-emerald-400 to-teal-400' },
   { id: 'sobremesa', label: 'Sobremesa', icon: Cake, color: 'from-pink-400 to-rose-400' },
-  { id: 'bebida', label: 'Bebida', icon: Coffee, color: 'from-amber-400 to-orange-400' }
 ];
 
 export default function HomePage() {
@@ -28,7 +27,6 @@ export default function HomePage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [userNotes, setUserNotes] = useState('');
   const [weightGrams, setWeightGrams] = useState('');
-  const [volumeMl, setVolumeMl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const analyzeButtonRef = useRef<HTMLButtonElement>(null);
   const { user, refreshUser } = useAuth();
@@ -75,7 +73,6 @@ export default function HomePage() {
     clearFeedback();
     setUserNotes('');
     setWeightGrams('');
-    setVolumeMl('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -90,13 +87,11 @@ export default function HomePage() {
     clearFeedback();
 
     try {
-      const uploadOptions: { userNotes?: string; weightGrams?: number; volumeMl?: number } = {};
+      const uploadOptions: { userNotes?: string; weightGrams?: number } = {};
       if (userNotes.trim()) {
         uploadOptions.userNotes = userNotes.trim();
       }
-      if (mealType === 'bebida' && volumeMl) {
-        uploadOptions.volumeMl = parseFloat(volumeMl);
-      } else if (weightGrams) {
+      if (weightGrams) {
         uploadOptions.weightGrams = parseFloat(weightGrams);
       }
       const uploadResult = await mealsApi.upload(imageFile, mealType, uploadOptions);
@@ -199,7 +194,7 @@ export default function HomePage() {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Crown className="w-5 h-5" />
-                  <span className="font-semibold">Analises completas</span>
+                  <span className="font-semibold">Análises completas</span>
                 </div>
                 <button 
                   onClick={() => refreshUser()}
@@ -222,7 +217,7 @@ export default function HomePage() {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Crown className="w-5 h-5" />
-                  <span className="font-semibold">Analises completas</span>
+                  <span className="font-semibold">Análises completas</span>
                 </div>
                 <button 
                   onClick={() => refreshUser()}
@@ -247,7 +242,7 @@ export default function HomePage() {
               </div>
               O que você vai analisar?
             </h3>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {mealTypes.map((type) => (
                 <button
                   key={type.id}
@@ -356,9 +351,7 @@ export default function HomePage() {
                 <textarea
                   value={userNotes}
                   onChange={(e) => setUserNotes(e.target.value)}
-                  placeholder={mealType === 'bebida' 
-                    ? "Ex: caipirinha, mojito, suco de laranja natural..." 
-                    : mealType === 'sobremesa'
+                  placeholder={mealType === 'sobremesa'
                     ? "Ex: pudim de leite, brownie, sorvete de chocolate..."
                     : "Ex: arroz integral, frango grelhado sem pele..."}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none resize-none text-sm bg-white"
@@ -366,35 +359,19 @@ export default function HomePage() {
                 />
               </div>
               
-              {mealType === 'bebida' ? (
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-2">
-                    <Droplet className="w-4 h-4 text-blue-400" />
-                    Volume máximo do copo (ml)
-                  </label>
-                  <input
-                    type="number"
-                    value={volumeMl}
-                    onChange={(e) => setVolumeMl(e.target.value)}
-                    placeholder="Ex: 250"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none text-sm bg-white"
-                  />
-                </div>
-              ) : (
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-2">
-                    <Scale className="w-4 h-4 text-amber-400" />
-                    Peso aproximado (gramas)
-                  </label>
-                  <input
-                    type="number"
-                    value={weightGrams}
-                    onChange={(e) => setWeightGrams(e.target.value)}
-                    placeholder={mealType === 'sobremesa' ? "Ex: 300" : "Ex: 600"}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none text-sm bg-white"
-                  />
-                </div>
-              )}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-2">
+                  <Scale className="w-4 h-4 text-amber-400" />
+                  Peso aproximado (gramas)
+                </label>
+                <input
+                  type="number"
+                  value={weightGrams}
+                  onChange={(e) => setWeightGrams(e.target.value)}
+                  placeholder={mealType === 'sobremesa' ? "Ex: 300" : "Ex: 600"}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none text-sm bg-white"
+                />
+              </div>
             </div>
           </div>
 
@@ -473,12 +450,12 @@ export default function HomePage() {
 
           <p className="text-center text-sm text-gray-400 mt-4">
             {['pro', 'premium'].includes(user?.plan || '')
-              ? `Analise inclusa no seu plano ${user?.plan?.toUpperCase()}`
+              ? `Análise inclusa no seu plano ${user?.plan?.toUpperCase()}`
               : user?.plan === 'free' && mode === 'simple' 
-                ? 'Analise rapida gratuita' 
+                ? 'Análise rápida gratuita' 
                 : user?.plan === 'basic' && mode === 'simple'
-                  ? `Analises simples: ${user?.simple_analyses_used || 0}/30 usadas`
-                  : 'Analise completa requer plano PRO ou Premium'
+                  ? `Análises simples: ${user?.simple_analyses_used || 0}/30 usadas`
+                  : 'Análise completa requer plano PRO ou Premium'
             }
           </p>
         </div>
@@ -492,8 +469,8 @@ export default function HomePage() {
                 <Crown className="w-7 h-7 text-yellow-300" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">Faca upgrade</h3>
-                <p className="text-purple-100">Desbloqueie analises completas e muito mais</p>
+                <h3 className="text-xl font-bold text-white">Faça upgrade</h3>
+                <p className="text-purple-100">Desbloqueie análises completas e muito mais</p>
               </div>
             </div>
           </div>
@@ -504,7 +481,7 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
                   <Zap className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-medium text-gray-700">Basico: 30 analises simples/mes por R$ 9,90</span>
+                <span className="font-medium text-gray-700">Básico: 30 análises simples/mês por R$ 9,90</span>
               </div>
               <div className="flex items-center gap-3 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center flex-shrink-0">
@@ -539,8 +516,8 @@ export default function HomePage() {
                 <Crown className="w-7 h-7 text-yellow-300" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">Faca upgrade</h3>
-                <p className="text-purple-100">Desbloqueie analises completas e IA</p>
+                <h3 className="text-xl font-bold text-white">Faça upgrade</h3>
+                <p className="text-purple-100">Desbloqueie análises completas e IA</p>
               </div>
             </div>
           </div>

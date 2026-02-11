@@ -18,7 +18,7 @@ export default function NutricionistaPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const isPro = user?.plan === 'pro';
+  const isPro = user?.plan === 'premium';
 
   useEffect(() => {
     if (isPro) {
@@ -147,17 +147,17 @@ export default function NutricionistaPage() {
             IA Nutricionista
           </h2>
           <p className="text-gray-500 mb-6 leading-relaxed">
-            Converse com nossa IA especializada em nutricao. Tire duvidas sobre alimentacao, dietas e habitos saudaveis.
+            Converse com nossa IA especializada em nutrição. Tire dúvidas sobre alimentação, dietas e hábitos saudáveis.
           </p>
           <p className="text-sm text-gray-400 mb-6">
-            Disponivel exclusivamente no plano PRO.
+            Disponível exclusivamente no plano Premium.
           </p>
           <Link
             href="/billing"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white px-8 py-3 rounded-2xl font-semibold shadow-lg shadow-emerald-200/50 hover:shadow-xl transition-all"
           >
             <Crown className="w-5 h-5" />
-            Assinar PRO - R$ 19,90/mes
+            Assinar Premium - R$ 49,90/mês
           </Link>
         </div>
       </div>
@@ -180,7 +180,7 @@ export default function NutricionistaPage() {
             <MessageCircle className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-bold text-gray-800">NutriIA</h1>
+            <h1 className="font-bold text-gray-800">NutraIA</h1>
             <p className="text-xs text-gray-400">Sua nutricionista virtual</p>
           </div>
         </div>
@@ -237,7 +237,7 @@ export default function NutricionistaPage() {
             <div className="w-16 h-16 mb-4 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
               <MessageCircle className="w-8 h-8 text-emerald-500" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">Ola! Sou a NutriIA</h3>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Olá! Sou a NutraIA</h3>
             <p className="text-gray-400 text-sm max-w-sm leading-relaxed">
               Pergunte sobre alimentacao, dietas, nutrientes ou habitos saudaveis. Estou aqui para ajudar!
             </p>
