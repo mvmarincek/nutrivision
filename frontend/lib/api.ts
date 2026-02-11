@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://nutrivision-api-dcr0.onrender.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://picnutra-api.onrender.com';
 
 interface ErrorLogOptions {
   error_type?: string;

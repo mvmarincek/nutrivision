@@ -125,27 +125,27 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
       <NutraCompanion />
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-emerald-100 shadow-lg">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-around py-2">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-emerald-100 shadow-lg z-20 pb-[env(safe-area-inset-bottom)]">
+        <div className="mx-auto px-1">
+          <div className="flex justify-around py-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link 
                   key={item.href}
                   href={item.href} 
-                  className={`flex flex-col items-center py-2 px-4 rounded-xl transition-all ${
+                  className={`flex flex-col items-center py-1 px-1 rounded-xl transition-all min-w-0 ${
                     isActive 
                       ? 'text-emerald-600' 
                       : 'text-gray-400 hover:text-gray-600'
                   }`}
                 >
-                  <div className={`p-2 rounded-xl transition-all ${
+                  <div className={`p-1.5 rounded-xl transition-all ${
                     isActive ? 'bg-gradient-to-br from-emerald-100 to-teal-100' : ''
                   }`}>
                     <item.icon className="w-5 h-5" />
                   </div>
-                  <span className={`text-xs mt-1 font-medium ${
+                  <span className={`text-[10px] mt-0.5 font-medium truncate max-w-[56px] text-center ${
                     isActive ? 'text-emerald-600' : ''
                   }`}>
                     {item.label}

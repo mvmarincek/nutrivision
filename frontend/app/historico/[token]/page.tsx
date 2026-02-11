@@ -41,7 +41,7 @@ export default function PublicHistoryPage() {
   const [error, setError] = useState('');
   const [showQRModal, setShowQRModal] = useState(false);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://nutrivision-api-dcr0.onrender.com';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://picnutra-api.onrender.com';
 
   useEffect(() => {
     if (!token) return;

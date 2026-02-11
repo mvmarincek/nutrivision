@@ -95,7 +95,7 @@ function ResultContent() {
     );
   }
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://nutrivision-api-dcr0.onrender.com';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://picnutra-api.onrender.com';
 
   const getConfiancaInfo = (confianca: string) => {
     switch (confianca) {

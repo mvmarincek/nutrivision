@@ -68,6 +68,9 @@ async def register(user_data: UserCreate, background_tasks: BackgroundTasks, db:
         name=user_data.name,
         phone=user_data.phone,
         credit_balance=0,
+        referral_code=referral_code,
+        email_verified=False,
+        email_verification_token=verification_token,
     )
     db.add(user)
     await db.commit()

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { CheckCircle, XCircle, Loader2, ArrowRight } from 'lucide-react';
 import BowlLogo from '@/components/BowlLogo';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://nutrivision-api-dcr0.onrender.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://picnutra-api.onrender.com';
 
 function VerifyEmailContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'already_verified' | 'error'>('loading');
@@ -87,12 +87,7 @@ function VerifyEmailContent() {
                 <CheckCircle className="w-10 h-10 text-white" />
               </div>
               <h2 className="text-xl font-bold text-gray-900 mb-2">Email verificado!</h2>
-              <p className="text-gray-500 mb-4">{message}</p>
-              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 mb-6 border border-emerald-100">
-                <p className="text-emerald-700 font-semibold">
-                  Seus 36 créditos de bônus estão disponíveis!
-                </p>
-              </div>
+              <p className="text-gray-500 mb-6">{message}</p>
               <button
                 onClick={() => router.push('/login')}
                 className="w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white py-4 rounded-2xl font-bold hover:shadow-xl hover:shadow-emerald-200/50 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
