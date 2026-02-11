@@ -113,12 +113,12 @@ export default function IndicacoesPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {isPJ ? 'Painel do Parceiro' : 'Minhas Indicacoes'}
+            {isPJ ? 'Painel do Parceiro' : 'Minhas Indicações'}
           </h1>
           <p className="text-sm text-gray-500">
             {isPJ
-              ? 'Acompanhe seus indicados e comissoes (30%)'
-              : 'Indique amigos e ganhe comissao de 10%'}
+              ? 'Acompanhe seus indicados e comissões (30%)'
+              : 'Indique amigos e ganhe comissão de 10%'}
           </p>
         </div>
       </div>
@@ -145,12 +145,12 @@ export default function IndicacoesPage() {
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
           <TrendingUp className="w-5 h-5 mx-auto mb-1.5 text-amber-500" />
           <p className="text-2xl font-bold text-gray-900">R${(dashboard?.total_commission_earned || 0).toFixed(2)}</p>
-          <p className="text-xs text-gray-500">Comissao total ({commissionPct}%)</p>
+          <p className="text-xs text-gray-500">Comissão total ({commissionPct}%)</p>
         </div>
         <div className={`bg-gradient-to-br ${accentFrom} ${isPJ ? 'to-purple-600' : 'to-teal-600'} rounded-2xl p-4 shadow-sm text-center text-white`}>
           <Wallet className="w-5 h-5 mx-auto mb-1.5 text-white/80" />
           <p className="text-2xl font-bold">R${(dashboard?.commission_balance || 0).toFixed(2)}</p>
-          <p className="text-xs text-white/70">Saldo disponivel</p>
+          <p className="text-xs text-white/70">Saldo disponível</p>
         </div>
       </div>
 
@@ -202,12 +202,12 @@ export default function IndicacoesPage() {
           {withdrawing ? 'Processando...' : `Solicitar Saque (R$${(dashboard?.commission_balance || 0).toFixed(2)})`}
         </button>
         {(dashboard?.commission_balance || 0) < 10 && (
-          <p className="text-xs text-gray-400 text-center">Saldo minimo para saque: R$10,00</p>
+          <p className="text-xs text-gray-400 text-center">Saldo mínimo para saque: R$10,00</p>
         )}
       </div>
 
       <div className={`rounded-2xl p-5 border shadow-sm bg-gradient-to-r ${accentBgLight} ${accentBorder}`}>
-        <h3 className="font-semibold text-gray-800 mb-3">Seu link de indicacao</h3>
+        <h3 className="font-semibold text-gray-800 mb-3">Seu link de indicação</h3>
         <div className="flex items-center gap-2">
           <input
             type="text"
@@ -236,7 +236,7 @@ export default function IndicacoesPage() {
           </div>
         </div>
         <p className={`text-xs ${isPJ ? 'text-violet-600' : 'text-emerald-600'} mt-3 text-center`}>
-          Seu codigo: <span className="font-bold">{user?.referral_code}</span>
+          Seu código: <span className="font-bold">{user?.referral_code}</span>
         </p>
       </div>
 
@@ -244,17 +244,17 @@ export default function IndicacoesPage() {
         <div className="flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-bold text-amber-800">Campanha de lancamento por tempo limitado!</p>
-            <p className="text-xs text-amber-700 mt-1">As comissoes de indicacao sao uma promocao especial de lancamento e podem ser encerradas a qualquer momento.</p>
+            <p className="text-sm font-bold text-amber-800">Campanha de lançamento por tempo limitado!</p>
+            <p className="text-xs text-amber-700 mt-1">As comissões de indicação são uma promoção especial de lançamento e podem ser encerradas a qualquer momento.</p>
           </div>
         </div>
         <div className="flex items-start gap-3">
           <CalendarDays className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-amber-700">Os bonus acumulados sao pagos no <strong>ultimo dia util de cada mes</strong> via PIX.</p>
+          <p className="text-xs text-amber-700">Os bônus acumulados são pagos no <strong>último dia útil de cada mês</strong> via PIX.</p>
         </div>
         <div className="flex items-start gap-3">
           <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-amber-700">Comissoes so sao geradas quando o indicado <strong>assina um plano pago</strong>. Indicados no plano Free nao geram bonus.</p>
+          <p className="text-xs text-amber-700">Comissões só são geradas quando o indicado <strong>assina um plano pago</strong>. Indicados no plano Free não geram bônus.</p>
         </div>
       </div>
 
@@ -277,7 +277,7 @@ export default function IndicacoesPage() {
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          Comissoes ({commissions.length})
+          Comissões ({commissions.length})
         </button>
       </div>
 
@@ -319,7 +319,7 @@ export default function IndicacoesPage() {
                       )}
                     </div>
                     {ref.commission_generated > 0 && (
-                      <p className="text-xs text-emerald-600 mt-1 font-medium">Bonus: R${ref.commission_generated.toFixed(2)}</p>
+                      <p className="text-xs text-emerald-600 mt-1 font-medium">Bônus: R${ref.commission_generated.toFixed(2)}</p>
                     )}
                     {ref.total_paid > 0 && (
                       <p className="text-xs text-gray-500 mt-0.5">Pagou: R${ref.total_paid.toFixed(2)}</p>
@@ -335,7 +335,7 @@ export default function IndicacoesPage() {
             <div className="px-5 py-12 text-center">
               <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
               <p className="text-gray-500 font-medium">Nenhum indicado ainda</p>
-              <p className="text-sm text-gray-400 mt-1">Compartilhe seu link para comecar a indicar</p>
+              <p className="text-sm text-gray-400 mt-1">Compartilhe seu link para começar a indicar</p>
             </div>
           )}
         </div>
@@ -344,7 +344,7 @@ export default function IndicacoesPage() {
       {activeTab === 'comissoes' && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
-            <h3 className="font-semibold text-gray-800">Historico de comissoes</h3>
+            <h3 className="font-semibold text-gray-800">Histórico de comissões</h3>
           </div>
           {commissions.length > 0 ? (
             <div className="divide-y divide-gray-50">
@@ -378,8 +378,8 @@ export default function IndicacoesPage() {
           ) : (
             <div className="px-5 py-12 text-center">
               <DollarSign className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-gray-500 font-medium">Nenhuma comissao ainda</p>
-              <p className="text-sm text-gray-400 mt-1">Comissoes aparecerao quando seus indicados fizerem pagamentos</p>
+              <p className="text-gray-500 font-medium">Nenhuma comissão ainda</p>
+              <p className="text-sm text-gray-400 mt-1">Comissões aparecerão quando seus indicados fizerem pagamentos</p>
             </div>
           )}
         </div>

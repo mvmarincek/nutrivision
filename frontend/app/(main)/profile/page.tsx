@@ -300,7 +300,7 @@ export default function ProfilePage() {
               </div>
               <div className="mt-4 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Nivel: <span className="font-semibold text-gray-900">{stats.title}</span></span>
+                  <span className="text-sm text-gray-600">Nível: <span className="font-semibold text-gray-900">{stats.title}</span></span>
                   <span className="text-xs text-gray-500">{stats.total_meals}/{stats.next_level_at}</span>
                 </div>
                 <div className="bg-gray-100 rounded-full h-2">
@@ -533,26 +533,26 @@ export default function ProfilePage() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-emerald-500 font-bold mt-0.5">2.</span>
-              <span>Seu amigo ganha <strong>7 dias extras de teste gratis</strong></span>
+              <span>Seu amigo ganha <strong>7 dias extras de teste grátis</strong></span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-emerald-500 font-bold mt-0.5">3.</span>
-              <span>Quando seu amigo assinar um plano, voce ganha <strong>comissao</strong> sobre cada pagamento dele</span>
+              <span>Quando seu amigo assinar um plano, você ganha <strong>comissão</strong> sobre cada pagamento dele</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-emerald-500 font-bold mt-0.5">4.</span>
-              <span>A comissao e <strong>recorrente</strong>: voce recebe enquanto seu indicado mantiver a assinatura ativa</span>
+              <span>A comissão é <strong>recorrente</strong>: você recebe enquanto seu indicado mantiver a assinatura ativa</span>
             </li>
           </ul>
           <div className="mt-3 bg-amber-50 rounded-xl p-3 border border-amber-200">
             <p className="text-xs text-amber-800 mb-1">
-              <strong>Importante:</strong> Se o indicado cancelar ou nunca assinar, a comissao nao e gerada. Quanto mais seus indicados usarem o app, mais voce ganha!
+              <strong>Importante:</strong> Se o indicado cancelar ou nunca assinar, a comissão não é gerada. Quanto mais seus indicados usarem o app, mais você ganha!
             </p>
             <p className="text-xs text-amber-800 mb-1">
-              <strong>Pagamento:</strong> Os bonus acumulados sao pagos no ultimo dia util de cada mes.
+              <strong>Pagamento:</strong> Os bônus acumulados são pagos no último dia útil de cada mês.
             </p>
             <p className="text-xs text-amber-800">
-              <strong>Campanha de lancamento:</strong> Este programa de indicacoes e uma oferta especial de lancamento do app e sera por tempo limitado. Aproveite agora!
+              <strong>Campanha de lançamento:</strong> Este programa de indicações é uma oferta especial de lançamento do app e será por tempo limitado. Aproveite agora!
             </p>
           </div>
         </div>
@@ -598,7 +598,7 @@ export default function ProfilePage() {
                   alt="QR Code de Indicação"
                   className="w-36 h-36"
                 />
-                <p className="text-xs text-center text-gray-500 mt-2">Escaneie para se cadastrar</p>
+              <p className="text-xs text-center text-gray-500 mt-2">Escaneie para se cadastrar</p>
               </div>
             </div>
 
@@ -611,7 +611,7 @@ export default function ProfilePage() {
                 <div>
                   <p className="text-sm font-bold text-red-700">Oferta por tempo limitado!</p>
                   <p className="text-xs text-red-600/80 mt-1 leading-relaxed">
-                    O bonus de comissao sobre os pagamentos dos seus indicados e uma promocao de lancamento por tempo limitado. Indique o maximo de pessoas agora!
+                    O bônus de comissão sobre os pagamentos dos seus indicados é uma promoção de lançamento por tempo limitado. Indique o máximo de pessoas agora!
                   </p>
                 </div>
               </div>

@@ -177,7 +177,7 @@ function RegisterContent() {
               </div>
             </div>
             <p className="text-sm text-gray-400 mb-4">
-              Nao recebeu o email? Verifique a pasta de spam ou clique abaixo para reenviar.
+              Não recebeu o email? Verifique a pasta de spam ou clique abaixo para reenviar.
             </p>
             <div className="flex gap-3">
               <button
@@ -242,7 +242,7 @@ function RegisterContent() {
             </div>
             <div>
               <p className="font-semibold text-violet-800">Indicado por um amigo!</p>
-              <p className="text-sm text-violet-600">Voce ganha dias extras de teste gratis ao se cadastrar!</p>
+              <p className="text-sm text-violet-600">Você ganha dias extras de teste grátis ao se cadastrar!</p>
             </div>
           </div>
         )}
@@ -354,7 +354,7 @@ function RegisterContent() {
                 </Link>{' '}
                 e a{' '}
                 <Link href="/privacy" target="_blank" className="text-emerald-600 hover:text-emerald-700 font-medium">
-                  Politica de Privacidade
+                  Política de Privacidade
                 </Link>
               </span>
             </label>
@@ -372,14 +372,14 @@ function RegisterContent() {
               </>
             ) : (
               <>
-                Criar Conta Gratis
+                Criar Conta Grátis
                 <ArrowRight className="w-5 h-5" />
               </>
             )}
           </button>
 
           <p className="text-center text-gray-500 mt-6">
-            Ja tem uma conta?{' '}
+            Já tem uma conta?{' '}
             <Link href="/login" className="text-emerald-600 hover:text-emerald-700 font-semibold">
               Fazer login
             </Link>
