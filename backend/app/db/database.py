@@ -115,6 +115,68 @@ async def run_migrations(conn):
             created_at TIMESTAMP DEFAULT NOW()
         )""",
         "CREATE INDEX IF NOT EXISTS idx_motivational_posts_user_date ON motivational_posts(user_id, post_date)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(20)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by INTEGER",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_token VARCHAR(64)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS public_share_token VARCHAR(64)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_public_share_token ON users(public_share_token)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_referral_code ON users(referral_code)",
+        "ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500)",
+        "ALTER TABLE profiles ALTER COLUMN avatar_url TYPE TEXT",
+        "ALTER TABLE credit_transactions ADD COLUMN IF NOT EXISTS payment_id VARCHAR(255)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS asaas_customer_id VARCHAR(255)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS asaas_subscription_id VARCHAR(255)",
+        "ALTER TABLE meals ADD COLUMN IF NOT EXISTS user_notes TEXT",
+        "ALTER TABLE meals ADD COLUMN IF NOT EXISTS weight_grams FLOAT",
+        "ALTER TABLE meals ADD COLUMN IF NOT EXISTS volume_ml FLOAT",
+        """CREATE TABLE IF NOT EXISTS email_settings (
+            id SERIAL PRIMARY KEY,
+            key VARCHAR(100) UNIQUE NOT NULL,
+            value TEXT NOT NULL,
+            description VARCHAR(255),
+            updated_at TIMESTAMP DEFAULT NOW()
+        )""",
+        "CREATE UNIQUE INDEX IF NOT EXISTS ix_email_settings_key ON email_settings(key)",
+        "INSERT INTO email_settings (key, value, description) VALUES ('admin_email', 'mvmarincek@gmail.com', 'Email do administrador') ON CONFLICT (key) DO NOTHING",
+        "INSERT INTO email_settings (key, value, description) VALUES ('support_email', 'contato@picnutra.com', 'Email de suporte') ON CONFLICT (key) DO NOTHING",
+        "INSERT INTO email_settings (key, value, description) VALUES ('app_url', 'https://picnutra.vercel.app', 'URL base da aplicacao') ON CONFLICT (key) DO NOTHING",
+        "INSERT INTO email_settings (key, value, description) VALUES ('frontend_url', 'https://picnutra.vercel.app', 'URL do frontend') ON CONFLICT (key) DO NOTHING",
+        "INSERT INTO email_settings (key, value, description) VALUES ('from_name', 'PicNutra', 'Nome do remetente') ON CONFLICT (key) DO NOTHING",
+        "INSERT INTO email_settings (key, value, description) VALUES ('from_email', 'noreply@picnutra.com', 'Email do remetente') ON CONFLICT (key) DO NOTHING",
+        "INSERT INTO email_settings (key, value, description) VALUES ('welcome_credits', '36', 'Creditos de bonus para novos usuarios') ON CONFLICT (key) DO NOTHING",
+        "INSERT INTO email_settings (key, value, description) VALUES ('referral_credits', '12', 'Creditos por indicacao') ON CONFLICT (key) DO NOTHING",
+        "ALTER TABLE meal_analysis DROP COLUMN IF EXISTS receita",
+        """CREATE TABLE IF NOT EXISTS error_logs (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id),
+            error_type VARCHAR(50) NOT NULL,
+            error_message TEXT NOT NULL,
+            error_stack TEXT,
+            url VARCHAR(500),
+            user_agent VARCHAR(500),
+            extra_data JSONB,
+            resolved BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT NOW()
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_error_logs_error_type ON error_logs(error_type)",
+        "CREATE INDEX IF NOT EXISTS ix_error_logs_created_at ON error_logs(created_at)",
+        """CREATE TABLE IF NOT EXISTS chat_conversations (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) NOT NULL,
+            title VARCHAR(255),
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW()
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_chat_conversations_user ON chat_conversations(user_id)",
+        """CREATE TABLE IF NOT EXISTS chat_messages (
+            id SERIAL PRIMARY KEY,
+            conversation_id INTEGER REFERENCES chat_conversations(id) NOT NULL,
+            role VARCHAR(20) NOT NULL,
+            content TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_chat_messages_conversation ON chat_messages(conversation_id)",
     ]
     
     for sql in migrations:

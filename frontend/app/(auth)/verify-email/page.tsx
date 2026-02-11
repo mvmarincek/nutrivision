@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle, XCircle, Loader2, ArrowRight } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, ArrowRight, RefreshCw } from 'lucide-react';
 import BowlLogo from '@/components/BowlLogo';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://picnutra-api.onrender.com';
@@ -11,6 +11,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://picnutra-api.onrende
 function VerifyEmailContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'already_verified' | 'error'>('loading');
   const [message, setMessage] = useState('');
+  const [resendEmail, setResendEmail] = useState('');
+  const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -52,6 +54,25 @@ function VerifyEmailContent() {
 
     verifyEmail();
   }, [token]);
+
+  const handleResend = async () => {
+    if (!resendEmail) return;
+    setResendStatus('sending');
+    try {
+      const response = await fetch(`${API_URL}/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resendEmail })
+      });
+      if (response.ok) {
+        setResendStatus('sent');
+      } else {
+        setResendStatus('error');
+      }
+    } catch {
+      setResendStatus('error');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex items-center justify-center p-4">
@@ -121,7 +142,30 @@ function VerifyEmailContent() {
                 <XCircle className="w-10 h-10 text-white" />
               </div>
               <h2 className="text-xl font-bold text-gray-900 mb-2">Erro na verificacao</h2>
-              <p className="text-gray-500 mb-6">{message}</p>
+              <p className="text-gray-500 mb-4">{message}</p>
+              
+              <div className="bg-gray-50 rounded-2xl p-4 mb-4">
+                <p className="text-sm text-gray-600 mb-3">Reenviar email de verificacao:</p>
+                <input
+                  type="email"
+                  placeholder="Seu email"
+                  value={resendEmail}
+                  onChange={(e) => setResendEmail(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+                <button
+                  onClick={handleResend}
+                  disabled={resendStatus === 'sending' || resendStatus === 'sent' || !resendEmail}
+                  className="w-full bg-amber-500 text-white py-3 rounded-xl font-semibold hover:bg-amber-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {resendStatus === 'sending' && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {resendStatus === 'sent' && <CheckCircle className="w-4 h-4" />}
+                  {resendStatus === 'idle' && <RefreshCw className="w-4 h-4" />}
+                  {resendStatus === 'error' && <RefreshCw className="w-4 h-4" />}
+                  {resendStatus === 'sending' ? 'Enviando...' : resendStatus === 'sent' ? 'Email reenviado!' : 'Reenviar verificacao'}
+                </button>
+              </div>
+
               <div className="space-y-3">
                 <button
                   onClick={() => router.push('/login')}
@@ -129,12 +173,6 @@ function VerifyEmailContent() {
                 >
                   Ir para login
                   <ArrowRight className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => router.push('/register')}
-                  className="w-full bg-gray-100 text-gray-700 py-4 rounded-2xl font-semibold hover:bg-gray-200 transition-all"
-                >
-                  Criar nova conta
                 </button>
               </div>
             </div>
