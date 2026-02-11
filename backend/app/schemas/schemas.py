@@ -183,6 +183,8 @@ class ReferredUserInfo(BaseModel):
     email: str
     plan: str
     total_paid: float = 0.0
+    has_active_subscription: bool = False
+    commission_generated: float = 0.0
     created_at: datetime
     
     class Config:

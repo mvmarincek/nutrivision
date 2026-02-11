@@ -309,12 +309,20 @@ async def get_my_referrals(current_user: User = Depends(get_current_user), db: A
                 .where(Payment.user_id == referred_user.id)
                 .where(Payment.status == "confirmed")
             ) or 0.0
+            commission_for_user = await db.scalar(
+                select(func.sum(Commission.commission_amount))
+                .where(Commission.partner_id == current_user.id)
+                .where(Commission.referred_user_id == referred_user.id)
+            ) or 0.0
+            has_active_sub = referred_user.plan in ("pro", "premium") and referred_user.asaas_subscription_id is not None
             referred_users.append(ReferredUserInfo(
                 id=referred_user.id,
                 name=referred_user.name,
                 email=referred_user.email,
                 plan=referred_user.plan,
                 total_paid=float(total_paid_result),
+                has_active_subscription=has_active_sub,
+                commission_generated=float(commission_for_user),
                 created_at=ref.created_at
             ))
     

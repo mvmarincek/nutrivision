@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { authApi, partnerApi, MyReferralsResponse, PartnerDashboard, CommissionItem } from '@/lib/api';
-import { Users, TrendingUp, Copy, Check, Building2, User, Crown, DollarSign, Wallet, ArrowDownToLine, KeyRound } from 'lucide-react';
+import { Users, TrendingUp, Copy, Check, Building2, User, Crown, DollarSign, Wallet, ArrowDownToLine, KeyRound, AlertTriangle, CalendarDays, Info } from 'lucide-react';
 
 export default function IndicacoesPage() {
   const { user } = useAuth();
@@ -240,6 +240,24 @@ export default function IndicacoesPage() {
         </p>
       </div>
 
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-200 space-y-3">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-bold text-amber-800">Campanha de lancamento por tempo limitado!</p>
+            <p className="text-xs text-amber-700 mt-1">As comissoes de indicacao sao uma promocao especial de lancamento e podem ser encerradas a qualquer momento.</p>
+          </div>
+        </div>
+        <div className="flex items-start gap-3">
+          <CalendarDays className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-700">Os bonus acumulados sao pagos no <strong>ultimo dia util de cada mes</strong> via PIX.</p>
+        </div>
+        <div className="flex items-start gap-3">
+          <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-700">Comissoes so sao geradas quando o indicado <strong>assina um plano pago</strong>. Indicados no plano Free nao geram bonus.</p>
+        </div>
+      </div>
+
       <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
         <button
           onClick={() => setActiveTab('indicados')}
@@ -278,19 +296,33 @@ export default function IndicacoesPage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-900 truncate">{ref.name || 'Sem nome'}</p>
                     <p className="text-sm text-gray-500 truncate">{ref.email}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {ref.has_active_subscription ? (
+                        <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full">
+                          Assinatura ativa
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-500 text-xs font-medium px-2 py-0.5 rounded-full">
+                          Sem assinatura
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center gap-1">
-                      {ref.plan === 'pro' ? (
+                    <div className="flex items-center gap-1 justify-end">
+                      {ref.plan === 'pro' || ref.plan === 'premium' ? (
                         <span className="inline-flex items-center gap-1 bg-gradient-to-r from-violet-100 to-purple-100 text-violet-700 text-xs font-medium px-2 py-1 rounded-full">
-                          <Crown className="w-3 h-3" /> PRO
+                          <Crown className="w-3 h-3" /> {ref.plan.toUpperCase()}
                         </span>
                       ) : (
                         <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">Free</span>
                       )}
                     </div>
+                    {ref.commission_generated > 0 && (
+                      <p className="text-xs text-emerald-600 mt-1 font-medium">Bonus: R${ref.commission_generated.toFixed(2)}</p>
+                    )}
                     {ref.total_paid > 0 && (
-                      <p className="text-xs text-emerald-600 mt-1 font-medium">R${ref.total_paid.toFixed(2)}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Pagou: R${ref.total_paid.toFixed(2)}</p>
                     )}
                     <p className="text-xs text-gray-400 mt-1">
                       {new Date(ref.created_at).toLocaleDateString('pt-BR')}

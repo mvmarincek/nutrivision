@@ -339,6 +339,8 @@ export interface ReferredUserInfo {
   email: string;
   plan: string;
   total_paid: number;
+  has_active_subscription: boolean;
+  commission_generated: number;
   created_at: string;
 }
 
