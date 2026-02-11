@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useFeedback } from '@/lib/feedback';
 import { profileApi, feedbackApi, billingApi, mealsApi, authApi, MealStats } from '@/lib/api';
-import { Save, User, ArrowRight, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera, Crown, Loader2, Flame, TrendingUp, Calendar, Trophy } from 'lucide-react';
+import { Save, User, ArrowRight, Send, Lightbulb, Gift, Copy, Check, QrCode, Camera, Crown, Loader2, Flame, TrendingUp, Calendar, Trophy, AlertTriangle } from 'lucide-react';
 import BowlLogo from '@/components/BowlLogo';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -586,6 +586,22 @@ export default function ProfilePage() {
                 <p className="text-xs text-center text-gray-500 mt-2">Escaneie para se cadastrar</p>
               </div>
             </div>
+
+            <div className="mt-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-4 border border-red-200 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-red-100/50 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="relative flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center flex-shrink-0 shadow-md shadow-red-200">
+                  <AlertTriangle className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-red-700">Oferta por tempo limitado!</p>
+                  <p className="text-xs text-red-600/80 mt-1 leading-relaxed">
+                    O bonus de 10% de comissao sobre os pagamentos dos seus indicados e uma promocao temporaria. Indique o maximo de pessoas agora antes que essa condicao mude!
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <button
               onClick={() => router.push('/indicacoes')}
               className="w-full mt-4 py-3 rounded-2xl font-medium text-sm bg-gradient-to-r from-violet-50 to-purple-50 text-violet-700 border border-violet-200 hover:shadow-md transition-all flex items-center justify-center gap-2"

@@ -279,6 +279,9 @@ export default function LandingPage() {
                 <span className="font-bold">10% de comissao</span> sobre cada pagamento dos seus indicados!
               </p>
             </div>
+            <div className="mt-2 bg-red-500/30 backdrop-blur-sm rounded-xl px-3 py-2 border border-red-300/30 text-center">
+              <p className="text-xs font-bold text-white">Oferta por tempo limitado! Indique agora.</p>
+            </div>
           </div>
         </div>
 

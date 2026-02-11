@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Calendar, Flame, TrendingUp, BarChart3, Gift, Camera } from 'lucide-react';
+import { Calendar, Flame, TrendingUp, BarChart3, Gift, Camera, AlertTriangle } from 'lucide-react';
 import BowlLogo from '@/components/BowlLogo';
 import Image from 'next/image';
 import { QRCodeSVG } from 'qrcode.react';
@@ -203,6 +203,10 @@ export default function PublicHistoryPage() {
               <div className="text-center mb-4">
                 <p className="text-emerald-600 font-bold">Indique e ganhe 10% de comissao!</p>
                 <p className="text-gray-500 text-xs mt-1">Sobre cada pagamento dos seus indicados</p>
+                <div className="mt-2 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl px-3 py-2 border border-red-200 flex items-center justify-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                  <p className="text-xs font-bold text-red-600">Oferta por tempo limitado!</p>
+                </div>
               </div>
 
               <a

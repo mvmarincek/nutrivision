@@ -395,9 +395,15 @@ function ResultContent() {
                 <Gift className="w-6 h-6 text-yellow-300" />
                 <h3 className="font-bold text-lg">Indique amigos e ganhe!</h3>
               </div>
-              <p className="text-emerald-100 text-sm mb-4">
+              <p className="text-emerald-100 text-sm mb-3">
                 Compartilhe seu codigo e ganhe 10% de comissao sobre cada pagamento dos seus indicados!
               </p>
+              <div className="bg-white/15 backdrop-blur-sm rounded-xl px-3 py-2 mb-3 flex items-center gap-2 border border-white/20">
+                <AlertTriangle className="w-4 h-4 text-yellow-300 flex-shrink-0" />
+                <p className="text-xs text-white font-semibold">
+                  Oferta por tempo limitado! Indique agora antes que essa condicao mude.
+                </p>
+              </div>
               
               <div className="bg-white rounded-2xl p-4 flex flex-col items-center">
                 <QRCodeSVG 
