@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
-import { Home, History, Sparkles, User, LogOut, Crown, Heart, MessageCircle } from 'lucide-react';
+import { Home, History, Sparkles, User, LogOut, Crown, Heart, MessageCircle, Clock } from 'lucide-react';
 import Footer from '@/components/Footer';
 import BowlLogo from '@/components/BowlLogo';
 import InstallPWAButton from '@/components/InstallPWAButton';
@@ -47,7 +47,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     { href: '/motivacional', icon: Heart, label: t('nav.motivacional') },
     { href: '/nutricionista', icon: MessageCircle, label: t('nav.nutricionista') },
     { href: '/history', icon: History, label: t('nav.history') },
-    { href: '/billing', icon: Sparkles, label: t('nav.credits') },
     { href: '/profile', icon: User, label: t('nav.profile') },
   ];
 
@@ -94,18 +93,28 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               )}
             </Link>
           )}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link href="/nutricionista" className="relative group" title="NutraIA">
               <NutraAvatar className="w-9 h-9 drop-shadow-md group-hover:scale-110 transition-transform" mood="happy" animate={false} />
             </Link>
-            {/* <LanguageSelector /> */}
+            <Link
+              href="/billing"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-full text-sm font-medium hover:shadow-lg hover:scale-105 transition-all"
+              title="Ver Planos"
+            >
+              <Crown className="w-4 h-4" />
+              <span className="hidden sm:inline">Planos</span>
+            </Link>
             {user.plan === 'free' && (
-              <div className="flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-teal-50 px-3 py-1.5 rounded-full border border-emerald-100">
-                <Sparkles className="w-4 h-4 text-amber-500" />
-                <span className="text-sm font-medium text-emerald-700">
-                  Trial
+              <Link
+                href="/billing"
+                className="flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 px-3 py-1.5 rounded-full border border-amber-200 hover:shadow-md transition-all"
+              >
+                <Clock className="w-4 h-4 text-amber-600" />
+                <span className="text-sm font-bold text-amber-700">
+                  {Math.max(0, 7 - (user.trial_days_used || 0))} dias
                 </span>
-              </div>
+              </Link>
             )}
             <button
               onClick={() => { logout(); router.push('/'); }}

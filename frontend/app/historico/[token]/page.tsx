@@ -201,8 +201,8 @@ export default function PublicHistoryPage() {
               </div>
 
               <div className="text-center mb-4">
-                <p className="text-emerald-600 font-bold">🎁 Ganhe créditos de bônus!</p>
-                <p className="text-gray-500 text-xs mt-1">Ao se cadastrar com esta indicação</p>
+                <p className="text-emerald-600 font-bold">Indique e ganhe 10% de comissao!</p>
+                <p className="text-gray-500 text-xs mt-1">Sobre cada pagamento dos seus indicados</p>
               </div>
 
               <a

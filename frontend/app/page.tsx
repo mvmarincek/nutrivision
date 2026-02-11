@@ -260,13 +260,13 @@ export default function LandingPage() {
               Indique amigos e ganhe!
             </h2>
             <p className="text-emerald-100 text-sm mb-4">
-              Compartilhe seu link ou QR Code de afiliado (disponível na aba Perfil) e ganhe créditos 
-              para análises completas quando seus amigos se cadastrarem!
+              Compartilhe seu link ou QR Code de afiliado (disponivel na aba Perfil) e ganhe comissao 
+              sobre os pagamentos dos seus indicados!
             </p>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3 text-center">
                 <Share2 className="w-5 h-5 text-white mx-auto mb-1" />
-                <p className="text-xs font-medium">Link de indicação</p>
+                <p className="text-xs font-medium">Link de indicacao</p>
               </div>
               <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3 text-center">
                 <QrCode className="w-5 h-5 text-white mx-auto mb-1" />
@@ -276,7 +276,7 @@ export default function LandingPage() {
             <div className="mt-4 bg-white/20 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3">
               <Award className="w-8 h-8 text-yellow-300 flex-shrink-0" />
               <p className="text-sm">
-                <span className="font-bold">+12 créditos</span> para você a cada amigo que se cadastrar!
+                <span className="font-bold">10% de comissao</span> sobre cada pagamento dos seus indicados!
               </p>
             </div>
           </div>

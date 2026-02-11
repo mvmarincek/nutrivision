@@ -16,9 +16,7 @@ DEFAULT_SETTINGS = {
     "app_url": "https://picnutra.vercel.app",
     "frontend_url": "https://picnutra.vercel.app",
     "from_name": "PicNutra",
-    "from_email": "noreply@picnutra.com",
-    "welcome_credits": "36",
-    "referral_credits": "12"
+    "from_email": "noreply@picnutra.com"
 }
 
 def get_setting(key: str) -> str:
@@ -199,42 +197,40 @@ async def flush_email_logs(db: AsyncSession):
 
 def send_welcome_email(user_email: str, user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
-    welcome_credits = get_setting("welcome_credits")
-    subject = f"Bem-vindo ao PicNutra! Voce ganhou {welcome_credits} creditos!"
+    subject = "Bem-vindo ao PicNutra! Seus 7 dias grátis começaram!"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f0fdfa;">
-        {get_email_header("PicNutra", "Sua jornada para uma alimentacao saudavel comeca agora!")}
+        {get_email_header("PicNutra", "Sua jornada para uma alimentação saudável começa agora!")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 20px;">
                 <span style="font-size: 48px;">🎁</span>
             </div>
-            <h2 style="color: #10b981; margin: 0 0 20px 0; text-align: center;">Voce ganhou {welcome_credits} creditos de bonus!</h2>
+            <h2 style="color: #10b981; margin: 0 0 20px 0; text-align: center;">7 dias grátis para experimentar tudo!</h2>
             <p style="color: #334155; line-height: 1.8; margin: 0 0 15px 0;">
-                Parabens por dar o primeiro passo em direcao a uma alimentacao mais consciente!
+                Parabéns por dar o primeiro passo em direção a uma alimentação mais consciente!
             </p>
             <p style="color: #334155; line-height: 1.8; margin: 0 0 20px 0;">
-                Com seus <strong style="color: #10b981;">{welcome_credits} creditos de bonus</strong>, voce pode fazer <strong>{int(welcome_credits) // 12} analises completas</strong> com:
+                Durante seu período de teste gratuito, você tem acesso a <strong style="color: #10b981;">TODOS</strong> os recursos do PicNutra:
             </p>
             <ul style="color: #334155; line-height: 2; padding-left: 20px; margin: 0 0 20px 0;">
-                <li>Analise detalhada de calorias, proteinas, carboidratos e gorduras</li>
-                <li>Sugestoes de melhorias para suas refeicoes</li>
-                <li>Visualizacao de versoes otimizadas dos seus pratos</li>
+                <li>Análises completas de calorias, proteínas, carboidratos e gorduras</li>
+                <li>NutraIA - sua nutricionista virtual 24h</li>
+                <li>Mensagens motivacionais diárias</li>
+                <li>Histórico completo de refeições</li>
+                <li>Sugestões de melhorias para seus pratos</li>
             </ul>
-            <div style="background: linear-gradient(135deg, #ecfdf5, #f0fdfa); border-radius: 15px; padding: 15px; margin-bottom: 15px;">
-                <p style="color: #047857; margin: 0; text-align: center;">
-                    <strong>Analises simples sao sempre gratuitas e ilimitadas!</strong>
+            <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 15px; padding: 15px; margin-bottom: 15px;">
+                <p style="color: #92400e; margin: 0; text-align: center;">
+                    <strong>Aproveite ao máximo os 7 dias! Use todos os recursos e descubra como o PicNutra pode transformar sua alimentação.</strong>
                 </p>
             </div>
-            <p style="color: #64748b; line-height: 1.8; margin: 0; font-size: 14px;">
-                Quando seus creditos acabarem, voce pode continuar usando analises simples gratuitamente ou assinar o plano PRO para acesso ilimitado a todas as funcionalidades.
-            </p>
         </div>
         
         <div style="text-align: center; margin-bottom: 20px;">
             <a href="{frontend_url}/home" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6, #06b6d4); color: white; text-decoration: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; font-size: 16px;">
-                Usar meus creditos
+                Começar agora
             </a>
         </div>
         
@@ -297,35 +293,35 @@ def send_suggestion_email(user_email: str, user_id: int, mensagem: str):
     """
     return send_email(admin_email, subject, html, email_type="suggestion", user_id=user_id)
 
-def send_referral_activated_email(referrer_email: str, referred_email: str, credits_earned: int, new_balance: int, referrer_id: Optional[int] = None):
+def send_referral_activated_email(referrer_email: str, referred_email: str, referrer_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
-    subject = "Voce ganhou creditos! - PicNutra"
+    subject = "Nova indicação confirmada! - PicNutra"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f0fdfa;">
-        {get_email_header("PicNutra", "Parabens! Sua indicacao deu certo!")}
+        {get_email_header("PicNutra", "Parabéns! Sua indicação deu certo!")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 20px;">
                 <span style="font-size: 48px;">🎉</span>
             </div>
-            <h2 style="color: #10b981; margin: 0 0 20px 0; text-align: center;">+{credits_earned} creditos!</h2>
+            <h2 style="color: #10b981; margin: 0 0 20px 0; text-align: center;">Nova indicação!</h2>
             <p style="color: #334155; line-height: 1.8; margin: 0 0 15px 0; text-align: center;">
-                Seu amigo <strong>{referred_email}</strong> se cadastrou usando seu link de indicacao!
+                Seu amigo <strong>{referred_email}</strong> se cadastrou usando seu link de indicação!
             </p>
-            <p style="color: #334155; line-height: 1.8; margin: 0 0 15px 0; text-align: center;">
-                Seu novo saldo: <strong style="color: #10b981;">{new_balance} creditos</strong>
-            </p>
-            <div style="background: linear-gradient(135deg, #ecfdf5, #f0fdfa); border-radius: 15px; padding: 15px;">
-                <p style="color: #047857; margin: 0; text-align: center; font-size: 14px;">
-                    Com {new_balance} creditos voce pode fazer <strong>{new_balance // 12} analise(s) completa(s)</strong>!
+            <div style="background: linear-gradient(135deg, #ecfdf5, #f0fdfa); border-radius: 15px; padding: 20px; margin-bottom: 15px;">
+                <p style="color: #047857; margin: 0; text-align: center;">
+                    <strong>Você ganha 10% de comissão</strong> sobre cada pagamento que seu indicado fizer!
+                </p>
+                <p style="color: #047857; margin: 10px 0 0 0; text-align: center; font-size: 14px;">
+                    Acompanhe seus ganhos e solicite saques no painel de indicações.
                 </p>
             </div>
         </div>
         
         <div style="text-align: center; margin-bottom: 20px;">
-            <a href="{frontend_url}/home" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6, #06b6d4); color: white; text-decoration: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; font-size: 16px;">
-                Usar meus creditos
+            <a href="{frontend_url}/indicacoes" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6, #06b6d4); color: white; text-decoration: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; font-size: 16px;">
+                Ver minhas indicações
             </a>
         </div>
         
@@ -335,39 +331,49 @@ def send_referral_activated_email(referrer_email: str, referred_email: str, cred
     """
     return send_email(referrer_email, subject, html, email_type="referral", user_id=referrer_id)
 
-def send_upgraded_to_pro_email(user_email: str, user_id: Optional[int] = None):
+def send_upgraded_to_pro_email(user_email: str, plan_name: str = "Básico", user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
-    subject = "Bem-vindo ao PicNutra PRO!"
+    
+    plan_benefits = {
+        "basic": ["30 análises completas por mês", "Análises simples ilimitadas", "Histórico completo"],
+        "pro": ["60 análises completas por mês", "Análises simples ilimitadas", "Histórico completo", "Suporte prioritário"],
+        "premium": ["90 análises completas por mês", "Análises simples ilimitadas", "NutraIA - nutricionista virtual 24h", "Histórico completo", "Suporte VIP"]
+    }
+    
+    plan_key = plan_name.lower().replace("á", "a").replace("é", "e")
+    if plan_key not in plan_benefits:
+        plan_key = "basic"
+    
+    benefits = plan_benefits.get(plan_key, plan_benefits["basic"])
+    benefits_html = "".join([f"<li><strong>{b}</strong></li>" for b in benefits])
+    
+    subject = f"Bem-vindo ao PicNutra {plan_name}!"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #faf5ff;">
-        {get_email_header("PicNutra PRO", "Sua assinatura foi ativada com sucesso!", "linear-gradient(135deg, #8b5cf6, #a855f7, #d946ef)")}
+        {get_email_header(f"PicNutra {plan_name}", "Sua assinatura foi ativada com sucesso!", "linear-gradient(135deg, #8b5cf6, #a855f7, #d946ef)")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 20px;">
                 <span style="font-size: 48px;">👑</span>
             </div>
-            <h2 style="color: #8b5cf6; margin: 0 0 20px 0; text-align: center;">Parabens! Voce agora e PRO!</h2>
+            <h2 style="color: #8b5cf6; margin: 0 0 20px 0; text-align: center;">Parabéns! Você agora é {plan_name}!</h2>
             <p style="color: #334155; line-height: 1.8; margin: 0 0 20px 0;">
-                Como assinante PRO, voce tem:
+                Como assinante {plan_name}, você tem:
             </p>
             <ul style="color: #334155; line-height: 2; padding-left: 20px; margin: 0 0 20px 0;">
-                <li><strong>90 analises PRO por mes</strong></li>
-                <li><strong>Analises simples ilimitadas</strong></li>
-                <li><strong>Sem anuncios</strong></li>
-                <li>Sugestoes visuais de melhorias</li>
-                <li>Acesso a todos os recursos premium</li>
+                {benefits_html}
             </ul>
             <div style="background: #faf5ff; border-radius: 15px; padding: 15px;">
                 <p style="color: #7c3aed; margin: 0; text-align: center; font-size: 14px;">
-                    Sua assinatura sera renovada automaticamente todo mes e suas analises PRO serao resetadas.
+                    Sua assinatura será renovada automaticamente todo mês.
                 </p>
             </div>
         </div>
         
         <div style="text-align: center; margin-bottom: 20px;">
             <a href="{frontend_url}/home" style="display: inline-block; background: linear-gradient(135deg, #8b5cf6, #a855f7, #d946ef); color: white; text-decoration: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; font-size: 16px;">
-                Comecar a usar
+                Começar a usar
             </a>
         </div>
         
@@ -416,7 +422,7 @@ def send_credits_purchased_email(user_email: str, credits_purchased: int, new_ba
 
 def send_subscription_cancelled_email(user_email: str, user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
-    subject = "Assinatura PRO cancelada - PicNutra"
+    subject = "Assinatura cancelada - PicNutra"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f1f5f9;">
@@ -424,23 +430,19 @@ def send_subscription_cancelled_email(user_email: str, user_id: Optional[int] = 
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <p style="color: #334155; line-height: 1.8; margin: 0 0 15px 0;">
-                Sua assinatura PRO foi cancelada. Voce voltou para o plano FREE.
+                Sua assinatura foi cancelada. Você voltou para o plano gratuito.
             </p>
             <p style="color: #334155; line-height: 1.8; margin: 0 0 20px 0;">
-                Voce ainda pode usar:
+                Você ainda pode usar as análises simples gratuitamente.
             </p>
-            <ul style="color: #334155; line-height: 2; padding-left: 20px; margin: 0 0 20px 0;">
-                <li>Analises simples gratuitas e ilimitadas</li>
-                <li>Seus creditos restantes para analises completas</li>
-            </ul>
             <p style="color: #64748b; font-size: 14px; margin: 0;">
-                Sentiremos sua falta! Voce pode voltar ao PRO a qualquer momento.
+                Sentiremos sua falta! Você pode assinar novamente a qualquer momento.
             </p>
         </div>
         
         <div style="text-align: center; margin-bottom: 20px;">
             <a href="{frontend_url}/billing" style="display: inline-block; background: linear-gradient(135deg, #8b5cf6, #a855f7, #d946ef); color: white; text-decoration: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; font-size: 16px;">
-                Voltar ao PRO
+                Ver planos
             </a>
         </div>
         
@@ -487,7 +489,6 @@ def send_email_verification(user_email: str, verification_token: str, user_id: O
 
 def send_email_verified_success(user_email: str, user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
-    welcome_credits = get_setting("welcome_credits")
     subject = "Email confirmado! Bem-vindo ao PicNutra!"
     html = f"""
     <html>
@@ -500,18 +501,18 @@ def send_email_verified_success(user_email: str, user_id: Optional[int] = None):
             </div>
             <h2 style="color: #10b981; margin: 0 0 20px 0; text-align: center;">Conta ativada!</h2>
             <p style="color: #334155; line-height: 1.8; margin: 0 0 15px 0; text-align: center;">
-                Seu email foi confirmado e sua conta esta pronta para uso.
+                Seu email foi confirmado e sua conta está pronta para uso.
             </p>
-            <div style="background: linear-gradient(135deg, #ecfdf5, #f0fdfa); border-radius: 15px; padding: 15px; margin-bottom: 15px;">
-                <p style="color: #047857; margin: 0; text-align: center;">
-                    <strong>Voce tem {welcome_credits} creditos de bonus para comecar!</strong>
+            <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 15px; padding: 15px; margin-bottom: 15px;">
+                <p style="color: #92400e; margin: 0; text-align: center;">
+                    <strong>Você tem 7 dias grátis para experimentar TODOS os recursos!</strong>
                 </p>
             </div>
         </div>
         
         <div style="text-align: center; margin-bottom: 20px;">
             <a href="{frontend_url}/home" style="display: inline-block; background: linear-gradient(135deg, #10b981, #14b8a6, #06b6d4); color: white; text-decoration: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; font-size: 16px;">
-                Comecar a usar
+                Começar a usar
             </a>
         </div>
         
@@ -521,29 +522,29 @@ def send_email_verified_success(user_email: str, user_id: Optional[int] = None):
     """
     return send_email(user_email, subject, html, email_type="email_verified", user_id=user_id)
 
-def send_subscription_renewed_email(user_email: str, analyses_remaining: int = 90, user_id: Optional[int] = None):
+def send_subscription_renewed_email(user_email: str, plan_name: str = "Básico", analyses_remaining: int = 30, user_id: Optional[int] = None):
     frontend_url = get_setting("frontend_url")
-    subject = "Assinatura PRO renovada - PicNutra"
+    subject = f"Assinatura {plan_name} renovada - PicNutra"
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #faf5ff;">
-        {get_email_header("PicNutra PRO", "Assinatura renovada!", "linear-gradient(135deg, #8b5cf6, #a855f7, #d946ef)")}
+        {get_email_header(f"PicNutra {plan_name}", "Assinatura renovada!", "linear-gradient(135deg, #8b5cf6, #a855f7, #d946ef)")}
         
         <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 20px;">
                 <span style="font-size: 48px;">👑</span>
             </div>
-            <h2 style="color: #8b5cf6; margin: 0 0 20px 0; text-align: center;">Renovacao confirmada!</h2>
+            <h2 style="color: #8b5cf6; margin: 0 0 20px 0; text-align: center;">Renovação confirmada!</h2>
             <p style="color: #334155; line-height: 1.8; margin: 0 0 15px 0; text-align: center;">
-                Sua assinatura PRO foi renovada automaticamente.
+                Sua assinatura {plan_name} foi renovada automaticamente.
             </p>
             <div style="background: linear-gradient(135deg, #faf5ff, #f5f3ff); border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 15px;">
-                <p style="color: #7c3aed; margin: 0 0 10px 0; font-size: 14px;">Suas analises PRO foram resetadas:</p>
-                <p style="color: #8b5cf6; margin: 0; font-size: 32px; font-weight: bold;">{analyses_remaining} analises</p>
-                <p style="color: #7c3aed; margin: 10px 0 0 0; font-size: 14px;">disponiveis este mes</p>
+                <p style="color: #7c3aed; margin: 0 0 10px 0; font-size: 14px;">Suas análises foram resetadas:</p>
+                <p style="color: #8b5cf6; margin: 0; font-size: 32px; font-weight: bold;">{analyses_remaining} análises</p>
+                <p style="color: #7c3aed; margin: 10px 0 0 0; font-size: 14px;">disponíveis este mês</p>
             </div>
             <p style="color: #334155; line-height: 1.8; margin: 0; text-align: center;">
-                Continue aproveitando todos os beneficios PRO!
+                Continue aproveitando todos os benefícios!
             </p>
         </div>
         

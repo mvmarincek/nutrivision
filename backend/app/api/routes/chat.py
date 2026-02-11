@@ -61,16 +61,22 @@ async def get_user_profile_context(user: User, db: AsyncSession) -> str:
     return ""
 
 
+def check_chat_access(user: User):
+    trial_days_remaining = 7 - (user.trial_days_used or 0)
+    has_access = user.plan == "premium" or (user.plan == "free" and trial_days_remaining > 0)
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Seu período de teste expirou. Assine o plano Premium para usar a NutraIA."
+        )
+
+
 @router.get("/conversations")
 async def list_conversations(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    if current_user.plan != "premium":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="A IA Nutricionista está disponível apenas no plano Premium."
-        )
+    check_chat_access(current_user)
     
     result = await db.execute(
         select(ChatConversation)
@@ -97,11 +103,7 @@ async def get_conversation(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    if current_user.plan != "premium":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="A IA Nutricionista está disponível apenas no plano Premium."
-        )
+    check_chat_access(current_user)
     
     result = await db.execute(
         select(ChatConversation).where(
@@ -143,11 +145,7 @@ async def send_message(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    if current_user.plan != "premium":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="A IA Nutricionista está disponível apenas no plano Premium."
-        )
+    check_chat_access(current_user)
     
     conversation = None
     if request.conversation_id:
@@ -235,11 +233,7 @@ async def delete_conversation(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    if current_user.plan != "premium":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="A IA Nutricionista está disponível apenas no plano Premium."
-        )
+    check_chat_access(current_user)
     
     result = await db.execute(
         select(ChatConversation).where(

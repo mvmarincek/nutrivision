@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth';
 import { chatApi, ChatConversationItem, ChatMessageItem } from '@/lib/api';
-import { MessageCircle, Send, Plus, Trash2, Loader2, ArrowLeft, Crown, ChevronDown } from 'lucide-react';
+import { MessageCircle, Send, Plus, Trash2, Loader2, ArrowLeft, Crown, ChevronDown, Clock, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 export default function NutricionistaPage() {
@@ -18,13 +18,14 @@ export default function NutricionistaPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const isPro = user?.plan === 'premium';
+  const trialDaysRemaining = user?.plan === 'free' ? Math.max(0, 7 - (user?.trial_days_used || 0)) : 0;
+  const hasAccess = user?.plan === 'premium' || (user?.plan === 'free' && trialDaysRemaining > 0);
 
   useEffect(() => {
-    if (isPro) {
+    if (hasAccess) {
       loadConversations();
     }
-  }, [isPro]);
+  }, [hasAccess]);
 
   useEffect(() => {
     scrollToBottom();
@@ -136,7 +137,7 @@ export default function NutricionistaPage() {
     return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
   };
 
-  if (!isPro) {
+  if (!hasAccess) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-8 text-center max-w-md border border-gray-100">
@@ -144,13 +145,13 @@ export default function NutricionistaPage() {
             <Crown className="w-10 h-10 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-3">
-            IA Nutricionista
+            NutraIA
           </h2>
           <p className="text-gray-500 mb-6 leading-relaxed">
             Converse com nossa IA especializada em nutrição. Tire dúvidas sobre alimentação, dietas e hábitos saudáveis.
           </p>
           <p className="text-sm text-gray-400 mb-6">
-            Disponível exclusivamente no plano Premium.
+            Seu período de teste gratuito expirou. Assine o plano Premium para continuar usando.
           </p>
           <Link
             href="/billing"
