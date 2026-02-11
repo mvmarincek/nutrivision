@@ -360,6 +360,16 @@ async def check_email_verified(current_user: User = Depends(get_current_user)):
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     await db.refresh(current_user)
+    if not current_user.referral_code:
+        prefix = "PJ" if current_user.user_type == "pj" else ""
+        while True:
+            code = prefix + generate_referral_code()[:8 - len(prefix)]
+            check = await db.execute(select(User).where(User.referral_code == code))
+            if not check.scalar_one_or_none():
+                break
+        current_user.referral_code = code
+        await db.commit()
+        await db.refresh(current_user)
     return UserResponse.model_validate(current_user)
 
 @router.post("/downgrade-to-free", response_model=UserResponse)
