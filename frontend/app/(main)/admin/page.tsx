@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { adminApi, AdminStats, AdminUser, AdminPayment, UserDetails, ChartData, ErrorLogItem } from '@/lib/api';
+import { adminApi, AdminStats, AdminUser, AdminPayment, AdminPartner, UserDetails, ChartData, ErrorLogItem } from '@/lib/api';
 import { useFeedback } from '@/lib/feedback';
 import { 
   Users, CreditCard, TrendingUp, Activity, Search, ChevronLeft, ChevronRight,
   Crown, Shield, Plus, Eye, X, Calendar, Mail, Phone, Hash, Trash2, RefreshCw,
-  MessageCircle, BarChart3, DollarSign, UserPlus, Zap, Download, Gift, AlertCircle, Check, Send
+  MessageCircle, BarChart3, DollarSign, UserPlus, Zap, Download, Gift, AlertCircle, Check, Send, Building2, ExternalLink
 } from 'lucide-react';
 
 function formatPrice(cents: number) {
@@ -30,7 +30,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [payments, setPayments] = useState<AdminPayment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'payments' | 'logs'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'partners' | 'payments' | 'logs'>('dashboard');
   
   const [searchTerm, setSearchTerm] = useState('');
   const [planFilter, setPlanFilter] = useState('');
@@ -56,6 +56,11 @@ export default function AdminPage() {
   const [errorFilter, setErrorFilter] = useState<'all' | 'unresolved'>('unresolved');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [partners, setPartners] = useState<AdminPartner[]>([]);
+  const [partnerSearch, setPartnerSearch] = useState('');
+  const [partnerPage, setPartnerPage] = useState(1);
+  const [partnerPages, setPartnerPages] = useState(1);
 
   useEffect(() => {
     if (!authLoading && user && !user.is_admin) {
@@ -171,6 +176,22 @@ export default function AdminPage() {
       loadErrors();
     }
   }, [activeTab, errorPage, errorFilter]);
+
+  const loadPartners = async () => {
+    try {
+      const result = await adminApi.getPartners({ search: partnerSearch, page: partnerPage, limit: 20 });
+      setPartners(result.partners);
+      setPartnerPages(result.pages);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.is_admin && activeTab === 'partners') {
+      loadPartners();
+    }
+  }, [activeTab, partnerPage]);
 
   const handleResolveError = async (errorId: number) => {
     try {
@@ -338,18 +359,18 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <div className="flex gap-2 mb-6 bg-white rounded-2xl p-2 shadow-lg shadow-gray-100/50 border border-gray-100">
-        {['dashboard', 'users', 'payments', 'logs'].map((tab) => (
+      <div className="flex gap-2 mb-6 bg-white rounded-2xl p-2 shadow-lg shadow-gray-100/50 border border-gray-100 overflow-x-auto">
+        {['dashboard', 'users', 'partners', 'payments', 'logs'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
-            className={`px-6 py-3 font-medium rounded-xl transition-all flex items-center gap-2 ${
+            className={`px-6 py-3 font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${
               activeTab === tab 
                 ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md' 
                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
             }`}
           >
-            {tab === 'dashboard' ? 'Dashboard' : tab === 'users' ? 'Usuarios' : tab === 'payments' ? 'Pagamentos' : 'Logs'}
+            {tab === 'dashboard' ? 'Dashboard' : tab === 'users' ? 'Usuarios' : tab === 'partners' ? 'Parceiros' : tab === 'payments' ? 'Pagamentos' : 'Logs'}
             {tab === 'logs' && errorStats && errorStats.unresolved > 0 && (
               <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{errorStats.unresolved}</span>
             )}
@@ -764,6 +785,183 @@ export default function AdminPage() {
               Próxima <ChevronRight className="w-4 h-4" />
             </button>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'partners' && (
+        <div>
+          <div className="flex gap-2 mb-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Buscar por email, nome, CNPJ ou razao social..."
+                value={partnerSearch}
+                onChange={(e) => setPartnerSearch(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && loadPartners()}
+                className="w-full pl-11 pr-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-400 transition-all"
+              />
+            </div>
+            <button onClick={loadPartners} className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-orange-200 hover:scale-[1.02] transition-all">
+              Buscar
+            </button>
+            <a
+              href="/parceiro/register"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-emerald-200 hover:scale-[1.02] transition-all flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Cadastrar PJ
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div className="bg-white rounded-2xl p-4 shadow-lg shadow-gray-100/50 border border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-gradient-to-br from-violet-100 to-purple-100 rounded-xl">
+                  <Building2 className="w-5 h-5 text-violet-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Total Parceiros</p>
+                  <p className="text-xl font-bold text-gray-900">{stats?.partners?.total || partners.length}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl p-4 shadow-lg shadow-gray-100/50 border border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl">
+                  <DollarSign className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Receita via Parceiros</p>
+                  <p className="text-xl font-bold text-gray-900">R$ {(stats?.partners?.revenue_from_referrals || 0).toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl p-4 shadow-lg shadow-gray-100/50 border border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-gradient-to-br from-amber-100 to-yellow-100 rounded-xl">
+                  <TrendingUp className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Comissoes Pendentes</p>
+                  <p className="text-xl font-bold text-gray-900">R$ {(stats?.partners?.commission_pending || 0).toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl p-4 shadow-lg shadow-gray-100/50 border border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl">
+                  <Check className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Comissoes Pagas</p>
+                  <p className="text-xl font-bold text-gray-900">R$ {(stats?.partners?.commission_paid || 0).toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg shadow-gray-100/50 border border-gray-100 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                  <tr>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Parceiro</th>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">CNPJ</th>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Contato</th>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Codigo</th>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Indicados</th>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Receita Gerada</th>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Comissao</th>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Saldo</th>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase">PIX</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {partners.map((p) => (
+                    <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-4">
+                        <div>
+                          <p className="font-medium text-gray-900">{p.razao_social || p.name || '-'}</p>
+                          <p className="text-xs text-gray-500">{p.email}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-700">{p.cnpj || '-'}</td>
+                      <td className="px-4 py-4">
+                        {p.phone ? (
+                          <a
+                            href={`https://wa.me/55${p.phone.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 rounded-full text-xs font-medium hover:from-green-200 hover:to-emerald-200 transition-all"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            {p.phone}
+                          </a>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="px-2.5 py-1 bg-gradient-to-r from-violet-100 to-purple-100 text-violet-700 rounded-full text-xs font-semibold">
+                          {p.referral_code || '-'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <span className="text-lg font-bold text-gray-900">{p.total_referred}</span>
+                      </td>
+                      <td className="px-4 py-4 font-semibold text-gray-900">R$ {p.total_revenue_generated.toFixed(2)}</td>
+                      <td className="px-4 py-4">
+                        <div>
+                          <p className="font-semibold text-emerald-600">R$ {p.total_commission_earned.toFixed(2)}</p>
+                          <p className="text-xs text-gray-400">{(p.commission_rate * 100).toFixed(0)}% taxa</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className={`font-bold ${p.commission_balance > 0 ? 'text-amber-600' : 'text-gray-400'}`}>
+                          R$ {p.commission_balance.toFixed(2)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-xs text-gray-600 max-w-[120px] truncate" title={p.pix_key || ''}>
+                        {p.pix_key || '-'}
+                      </td>
+                    </tr>
+                  ))}
+                  {partners.length === 0 && (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-12 text-center text-gray-500">
+                        <Building2 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                        <p>Nenhum parceiro cadastrado</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {partnerPages > 1 && (
+            <div className="flex justify-between items-center mt-4">
+              <button
+                onClick={() => setPartnerPage(p => Math.max(1, p - 1))}
+                disabled={partnerPage === 1}
+                className="flex items-center gap-1 px-4 py-2 bg-white border-2 border-gray-100 rounded-xl disabled:opacity-50 hover:bg-gray-50 transition-all"
+              >
+                <ChevronLeft className="w-4 h-4" /> Anterior
+              </button>
+              <span className="text-sm text-gray-500 font-medium">Pagina {partnerPage} de {partnerPages}</span>
+              <button
+                onClick={() => setPartnerPage(p => Math.min(partnerPages, p + 1))}
+                disabled={partnerPage === partnerPages}
+                className="flex items-center gap-1 px-4 py-2 bg-white border-2 border-gray-100 rounded-xl disabled:opacity-50 hover:bg-gray-50 transition-all"
+              >
+                Proxima <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
 

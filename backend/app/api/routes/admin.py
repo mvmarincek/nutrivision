@@ -97,6 +97,85 @@ async def get_dashboard_stats(
         }
     }
 
+@router.get("/partners")
+async def list_partners(
+    search: Optional[str] = None,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    query = select(User).where(User.user_type == "pj").order_by(desc(User.created_at))
+
+    if search:
+        search_filter = f"%{search}%"
+        query = query.where(
+            (User.email.ilike(search_filter)) |
+            (User.name.ilike(search_filter)) |
+            (User.cnpj.ilike(search_filter)) |
+            (User.razao_social.ilike(search_filter))
+        )
+
+    total = await db.scalar(select(func.count()).select_from(query.subquery()))
+
+    offset = (page - 1) * limit
+    result = await db.execute(query.offset(offset).limit(limit))
+    partners = result.scalars().all()
+
+    partners_list = []
+    for p in partners:
+        total_referred = await db.scalar(
+            select(func.count(Referral.id)).where(Referral.referrer_id == p.id)
+        ) or 0
+
+        total_revenue = await db.scalar(
+            select(func.sum(Commission.payment_amount)).where(Commission.partner_id == p.id)
+        ) or 0.0
+
+        total_commission = await db.scalar(
+            select(func.sum(Commission.commission_amount)).where(Commission.partner_id == p.id)
+        ) or 0.0
+
+        pending = await db.scalar(
+            select(func.count(Commission.id)).where(
+                Commission.partner_id == p.id,
+                Commission.status == "pending"
+            )
+        ) or 0
+
+        paid = await db.scalar(
+            select(func.count(Commission.id)).where(
+                Commission.partner_id == p.id,
+                Commission.status == "paid"
+            )
+        ) or 0
+
+        partners_list.append({
+            "id": p.id,
+            "email": p.email,
+            "name": p.name,
+            "cnpj": p.cnpj,
+            "razao_social": p.razao_social,
+            "phone": p.phone,
+            "referral_code": p.referral_code,
+            "commission_rate": p.commission_rate or 0.30,
+            "commission_balance": float(p.commission_balance or 0),
+            "pix_key": p.pix_key,
+            "total_referred": total_referred,
+            "total_revenue_generated": float(total_revenue),
+            "total_commission_earned": float(total_commission),
+            "pending_commissions": pending,
+            "paid_commissions": paid,
+            "created_at": p.created_at.isoformat() if p.created_at else None
+        })
+
+    return {
+        "partners": partners_list,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit if total else 1
+    }
+
 @router.get("/charts")
 async def get_chart_data(
     admin: User = Depends(get_admin_user),
@@ -275,6 +354,8 @@ async def list_users(
                 "plan": u.plan,
                 "credit_balance": u.credit_balance,
                 "pro_analyses_remaining": u.pro_analyses_remaining,
+                "simple_analyses_used": u.simple_analyses_used or 0,
+                "full_analyses_used": u.full_analyses_used or 0,
                 "email_verified": u.email_verified,
                 "is_admin": u.is_admin,
                 "created_at": u.created_at.isoformat() if u.created_at else None,

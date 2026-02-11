@@ -582,6 +582,7 @@ export interface AdminStats {
   revenue: { total: number; month: number };
   meals: { total: number; today: number };
   pending_payments: number;
+  partners: { total: number; commission_pending: number; commission_paid: number; revenue_from_referrals: number };
 }
 
 export interface AdminUser {
@@ -614,6 +615,25 @@ export interface AdminPayment {
   description: string | null;
   credits_purchased: number | null;
   paid_at: string | null;
+  created_at: string | null;
+}
+
+export interface AdminPartner {
+  id: number;
+  email: string;
+  name: string | null;
+  cnpj: string | null;
+  razao_social: string | null;
+  phone: string | null;
+  referral_code: string | null;
+  commission_rate: number;
+  commission_balance: number;
+  pix_key: string | null;
+  total_referred: number;
+  total_revenue_generated: number;
+  total_commission_earned: number;
+  pending_commissions: number;
+  paid_commissions: number;
   created_at: string | null;
 }
 
@@ -670,6 +690,14 @@ export const adminApi = {
   
   getCharts: () =>
     api<ChartData>('/admin/charts'),
+  
+  getPartners: (params?: { search?: string; page?: number; limit?: number }) => {
+    const query = new URLSearchParams();
+    if (params?.search) query.set('search', params.search);
+    if (params?.page) query.set('page', params.page.toString());
+    if (params?.limit) query.set('limit', params.limit.toString());
+    return api<{ partners: AdminPartner[]; total: number; page: number; pages: number }>(`/admin/partners?${query}`);
+  },
   
   getUsers: (params?: { search?: string; plan?: string; page?: number; limit?: number }) => {
     const query = new URLSearchParams();
