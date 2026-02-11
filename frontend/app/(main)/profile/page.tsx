@@ -594,7 +594,11 @@ export default function ProfilePage() {
 
             <div className="flex justify-center">
               <div className="bg-white p-4 rounded-2xl border-2 border-purple-100 inline-block shadow-lg shadow-purple-50">
-                <QRCodeSVG value={referralLink} size={144} />
+                {referralLink ? (
+                  <QRCodeSVG key={referralLink} value={referralLink} size={144} level="M" />
+                ) : (
+                  <div className="w-[144px] h-[144px] flex items-center justify-center text-xs text-gray-400">Carregando...</div>
+                )}
               <p className="text-xs text-center text-gray-500 mt-2">Escaneie para se cadastrar</p>
               </div>
             </div>

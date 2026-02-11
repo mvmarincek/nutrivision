@@ -231,7 +231,11 @@ export default function IndicacoesPage() {
         </div>
         <div className="mt-3 flex justify-center">
           <div className="bg-white p-3 rounded-xl border border-gray-200 inline-block">
-            <QRCodeSVG value={referralLink} size={112} />
+            {referralLink ? (
+              <QRCodeSVG key={referralLink} value={referralLink} size={112} level="M" />
+            ) : (
+              <div className="w-[112px] h-[112px] flex items-center justify-center text-xs text-gray-400">Carregando...</div>
+            )}
           </div>
         </div>
         <p className={`text-xs ${isPJ ? 'text-violet-600' : 'text-emerald-600'} mt-3 text-center`}>
