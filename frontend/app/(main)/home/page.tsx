@@ -33,6 +33,11 @@ export default function HomePage() {
   const { showError, showWarning, clearFeedback } = useFeedback();
   const router = useRouter();
 
+  const trialTotal = (user?.plan === 'free') ? 7 + (user?.trial_bonus_days || 0) : 0;
+  const trialRemaining = (user?.plan === 'free') ? Math.max(0, trialTotal - (user?.trial_days_used || 0)) : 0;
+  const isInTrial = user?.plan === 'free' && trialRemaining > 0;
+  const hasFullAccess = ['pro', 'premium'].includes(user?.plan || '') || isInTrial;
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -274,7 +279,7 @@ export default function HomePage() {
               Tipo de análise
             </h3>
             <div className="space-y-3">
-              {!['pro', 'premium'].includes(user?.plan || '') && (
+              {!hasFullAccess && (
                 <button
                   onClick={() => setMode('simple')}
                   className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${
@@ -323,7 +328,7 @@ export default function HomePage() {
                       <span className={`font-bold text-lg ${mode === 'full' ? 'text-purple-700' : 'text-gray-700'}`}>
                         Análise Completa
                       </span>
-                      {!['pro', 'premium'].includes(user?.plan || '') && (
+                      {!hasFullAccess && (
                         <span className="bg-purple-100 text-purple-700 text-xs font-semibold px-3 py-1 rounded-full">
                           PRO
                         </span>
@@ -451,11 +456,11 @@ export default function HomePage() {
           <p className="text-center text-sm text-gray-400 mt-4">
             {['pro', 'premium'].includes(user?.plan || '')
               ? `Análise inclusa no seu plano ${user?.plan?.toUpperCase()}`
-              : user?.plan === 'free' && mode === 'simple' 
-                ? 'Análise rápida gratuita' 
+              : isInTrial
+                ? `Trial gratuito: ${trialRemaining} dia${trialRemaining > 1 ? 's' : ''} restante${trialRemaining > 1 ? 's' : ''}`
                 : user?.plan === 'basic' && mode === 'simple'
                   ? `Análises simples: ${user?.simple_analyses_used || 0}/30 usadas`
-                  : 'Análise completa requer plano PRO ou Premium'
+                  : 'Assine um plano para continuar analisando'
             }
           </p>
         </div>

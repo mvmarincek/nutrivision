@@ -28,12 +28,10 @@ class NutriOrchestrator:
         logger.info(f"[validate_analysis] user_id={user.id}, mode={mode}, plan={user.plan}")
         
         if user.plan == "free":
-            if mode == "simple":
-                trial_total = settings.TRIAL_MAX_DAYS + (user.trial_bonus_days or 0)
-                if user.trial_days_used < trial_total:
-                    return True, "trial"
-                return False, "Seu período de teste expirou. Assine um plano para continuar."
-            return False, "Análise completa não disponível no plano gratuito. Assine o plano PRO ou PREMIUM."
+            trial_total = settings.TRIAL_MAX_DAYS + (user.trial_bonus_days or 0)
+            if user.trial_days_used < trial_total:
+                return True, "trial"
+            return False, "Seu período de teste expirou. Assine um plano para continuar."
         
         if user.plan == "basic":
             if mode == "full":
